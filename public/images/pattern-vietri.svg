@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120">
+  <defs>
+    <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
+      <rect width="60" height="60" fill="#faf7f0"/>
+      <!-- Stella blu cobalto -->
+      <g transform="translate(30,30)">
+        <polygon points="0,-16 4,-4 16,0 4,4 0,16 -4,4 -16,0 -4,-4" fill="#0047ab" opacity="0.9"/>
+        <circle r="4" fill="#2bb1c9"/>
+      </g>
+      <!-- Limone -->
+      <g transform="translate(10,10)">
+        <circle r="7" fill="#f7c948"/>
+        <circle r="3" fill="#fff2b3" opacity="0.6"/>
+      </g>
+      <!-- Foglia ramina -->
+      <g transform="translate(50,10) rotate(20)">
+        <ellipse rx="3.5" ry="8" fill="#2e8b57"/>
+      </g>
+      <!-- Onde turchesi leggere -->
+      <path d="M0 48 C 10 44, 20 52, 30 48 S 50 44, 60 48" stroke="#2bb1c9" stroke-width="1.5" fill="none" opacity="0.35"/>
+    </pattern>
+  </defs>
+  <!-- Mattonella ripetuta -->
+  <rect width="120" height="120" fill="url(#grid)"/>
+</svg>
+
+

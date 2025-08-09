@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import { CartProvider } from '@/components/CartContext'
+import { AuthProvider } from '@/components/AuthContext'
 
 export const metadata: Metadata = {
   title: 'Cioccolatini Michele - Artigianato dalla Costiera Amalfitana',
@@ -15,9 +16,11 @@ export default function RootLayout({
   return (
     <html lang="it">
       <body>
-        <CartProvider>
-          {children}
-        </CartProvider>
+        <AuthProvider>
+          <CartProvider>
+            {children}
+          </CartProvider>
+        </AuthProvider>
       </body>
     </html>
   )

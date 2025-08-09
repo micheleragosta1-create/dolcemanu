@@ -3,7 +3,7 @@ import { mockProducts } from './mock-data'
 export const mockOrders = [
   {
     id: '1',
-    user_email: 'marco.rossi@email.it',
+    user_email: 'mario@example.com',
     total_amount: 67.30,
     status: 'pending',
     shipping_address: 'Via Roma 123, 84011 Amalfi (SA), Italia',
@@ -32,7 +32,7 @@ export const mockOrders = [
   },
   {
     id: '2',
-    user_email: 'giulia.verdi@gmail.com',
+    user_email: 'giulia@example.com',
     total_amount: 28.90,
     status: 'processing',
     shipping_address: 'Corso Umberto I 45, 80073 Capri (NA), Italia',
@@ -154,6 +154,55 @@ export const mockOrders = [
         price: 32.50,
         created_at: '2024-08-06T11:30:00Z',
         products: mockProducts.find(p => p.id === '6')
+      }
+    ]
+  },
+  {
+    id: '7',
+    user_email: 'mario@example.com',
+    total_amount: 45.00,
+    status: 'delivered',
+    shipping_address: 'Via Roma 123, 84011 Amalfi (SA), Italia',
+    created_at: '2024-08-05T15:20:00Z',
+    updated_at: '2024-08-07T10:30:00Z',
+    order_items: [
+      {
+        id: '11',
+        order_id: '7',
+        product_id: '4',
+        quantity: 1,
+        price: 45.00,
+        created_at: '2024-08-05T15:20:00Z',
+        products: mockProducts.find(p => p.id === '4')
+      }
+    ]
+  },
+  {
+    id: '8',
+    user_email: 'giulia@example.com',
+    total_amount: 61.40,
+    status: 'shipped',
+    shipping_address: 'Corso Umberto I 45, 80073 Capri (NA), Italia',
+    created_at: '2024-08-03T11:45:00Z',
+    updated_at: '2024-08-06T09:15:00Z',
+    order_items: [
+      {
+        id: '12',
+        order_id: '8',
+        product_id: '6',
+        quantity: 1,
+        price: 32.50,
+        created_at: '2024-08-03T11:45:00Z',
+        products: mockProducts.find(p => p.id === '6')
+      },
+      {
+        id: '13',
+        order_id: '8',
+        product_id: '3',
+        quantity: 1,
+        price: 28.90,
+        created_at: '2024-08-03T11:45:00Z',
+        products: mockProducts.find(p => p.id === '3')
       }
     ]
   }

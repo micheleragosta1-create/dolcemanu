@@ -27,12 +27,19 @@ const mockUsers: (User & { password: string })[] = [
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  // CSR-only features (localStorage) handled in useEffect; no mount gating needed
 
   useEffect(() => {
     // Check if user is logged in on page load
-    const savedUser = localStorage.getItem('user')
-    if (savedUser) {
-      setUser(JSON.parse(savedUser))
+    if (typeof window !== 'undefined') {
+      const savedUser = localStorage.getItem('user')
+      if (savedUser) {
+        try {
+          setUser(JSON.parse(savedUser))
+        } catch (e) {
+          localStorage.removeItem('user')
+        }
+      }
     }
     setIsLoading(false)
   }, [])
@@ -48,7 +55,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (foundUser) {
       const userData = { id: foundUser.id, name: foundUser.name, email: foundUser.email }
       setUser(userData)
-      localStorage.setItem('user', JSON.stringify(userData))
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('user', JSON.stringify(userData))
+      }
       setIsLoading(false)
       return true
     }
@@ -82,14 +91,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     const userData = { id: newUser.id, name: newUser.name, email: newUser.email }
     setUser(userData)
-    localStorage.setItem('user', JSON.stringify(userData))
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('user', JSON.stringify(userData))
+    }
     setIsLoading(false)
     return true
   }
 
   const logout = () => {
     setUser(null)
-    localStorage.removeItem('user')
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('user')
+    }
   }
 
   return (

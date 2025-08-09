@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ShoppingCart, Heart, User, Menu, X } from 'lucide-react'
 import { useCart } from './CartContext'
 import Logo from './Logo'
@@ -11,6 +11,11 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [cartPopupVisible, setCartPopupVisible] = useState(false)
   const { totalQty } = useCart()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   return (
     <header className="header">
@@ -35,7 +40,7 @@ export default function Header() {
           
           <button className="icon-btn" title="Wishlist">
             <Heart size={20} />
-            {wishlistItems > 0 && <span className="cart-badge">{wishlistItems}</span>}
+            {mounted && wishlistItems > 0 && <span className="cart-badge">{wishlistItems}</span>}
           </button>
           
           <div 
@@ -45,7 +50,7 @@ export default function Header() {
           >
             <a className="icon-btn" title="Carrello" href="/cart">
               <ShoppingCart size={20} />
-              {totalQty > 0 && <span className="cart-badge">{totalQty}</span>}
+              {mounted && totalQty > 0 && <span className="cart-badge">{totalQty}</span>}
             </a>
             <CartPopup 
               isVisible={cartPopupVisible} 

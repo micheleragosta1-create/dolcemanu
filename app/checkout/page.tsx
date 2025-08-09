@@ -5,6 +5,7 @@ import Footer from "@/components/Footer"
 import { useCart } from "@/components/CartContext"
 import { loadStripe } from "@stripe/stripe-js"
 import { PayPalScriptProvider, PayPalButtons, FUNDING } from "@paypal/react-paypal-js"
+import { useEffect, useState } from "react"
 
 const stripePromise = typeof window !== 'undefined' && process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
   ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
@@ -12,6 +13,10 @@ const stripePromise = typeof window !== 'undefined' && process.env.NEXT_PUBLIC_S
 
 export default function CheckoutPage() {
   const { items, totalAmount } = useCart()
+  const [paypalReady, setPaypalReady] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+  const payableAmount = Number.isFinite(totalAmount) && totalAmount > 0 ? totalAmount : 1
 
   const handleStripeCheckout = async () => {
     if (!stripePromise) {
@@ -44,7 +49,8 @@ export default function CheckoutPage() {
     }
   }
 
-  const paypalClientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || ''
+  // Forza sandbox finché richiesto
+  const paypalClientId = 'sb'
 
   return (
     <main>
@@ -85,10 +91,10 @@ export default function CheckoutPage() {
                   <span>oppure</span>
                 </div>
 
-                {paypalClientId ? (
-                  <div className="paypal-container">
-                    <PayPalScriptProvider options={{ clientId: paypalClientId, currency: 'EUR' }}>
-                      <PayPalButtons
+                <div className="paypal-container">
+                  {mounted && (
+                  <PayPalScriptProvider options={{ clientId: paypalClientId, currency: 'EUR', intent: 'CAPTURE', components: 'buttons' }}>
+                    <PayPalButtons
                         fundingSource={FUNDING.PAYPAL}
                         style={{ 
                           layout: "vertical", 
@@ -98,6 +104,8 @@ export default function CheckoutPage() {
                           tagline: false,
                           height: 50
                         }}
+                        forceReRender={[paypalClientId, 'EUR', payableAmount]}
+                        onInit={() => setPaypalReady(true)}
                         createOrder={(data, actions) => {
                         return actions.order.create({
                           intent: 'CAPTURE',
@@ -105,7 +113,7 @@ export default function CheckoutPage() {
                             {
                               amount: {
                                 currency_code: 'EUR',
-                                value: totalAmount.toFixed(2)
+                                value: payableAmount.toFixed(2)
                               }
                             }
                           ]
@@ -116,14 +124,22 @@ export default function CheckoutPage() {
                         alert('Pagamento PayPal completato!')
                         window.location.href = '/?checkout=success'
                       }}
-                    />
+                      onError={(err) => {
+                        console.error('PayPal error', err)
+                        alert('PayPal non disponibile al momento. Riprova o usa la carta.')
+                      }}
+                      />
                   </PayPalScriptProvider>
+                  )}
+                  {!paypalReady && (
+                    <div className="paypal-skeleton">
+                      <div className="paypal-skeleton-bar" />
+                    </div>
+                  )}
+                  <div className="note" style={{marginTop: 8, textAlign: 'center'}}>
+                    {paypalClientId === 'sb' ? 'Modalità sandbox PayPal attiva (configura NEXT_PUBLIC_PAYPAL_CLIENT_ID per la modalità live).' : ''}
                   </div>
-                ) : (
-                  <div className="note">
-                    Aggiungi NEXT_PUBLIC_PAYPAL_CLIENT_ID per abilitare PayPal
-                  </div>
-                )}
+                </div>
               </div>
             </div>
           )}
@@ -159,6 +175,8 @@ export default function CheckoutPage() {
           gap: 12px;
           box-shadow: 0 4px 15px rgba(99, 91, 255, 0.3);
           margin-bottom: 20px;
+          position: relative;
+          overflow: hidden;
         }
         
         .stripe-btn:hover {
@@ -166,6 +184,8 @@ export default function CheckoutPage() {
           transform: translateY(-2px);
           box-shadow: 0 6px 20px rgba(99, 91, 255, 0.4);
         }
+
+        /* Effetto rimosso */
         
         .stripe-icon {
           filter: brightness(0) invert(1);
@@ -201,7 +221,11 @@ export default function CheckoutPage() {
         /* PayPal Container */
         .paypal-container {
           margin-top: 10px;
+          min-height: 60px;
         }
+        .paypal-skeleton { width: 100%; height: 50px; border-radius: 12px; background: #f1f5f9; position: relative; overflow: hidden; }
+        .paypal-skeleton-bar { position: absolute; inset: 0; background: linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 50%, #f1f5f9 100%); animation: shimmer 1.2s infinite; }
+        @keyframes shimmer { 0% { transform: translateX(-100%);} 100% { transform: translateX(100%);} }
         
         @media (max-width: 992px) { .checkout-grid { grid-template-columns: 1fr; } }
       `}</style>

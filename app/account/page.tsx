@@ -1,10 +1,7 @@
 "use client"
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
-import { useAuth } from "@/components/AuthContext"
 
 interface Order {
   id: string
@@ -19,65 +16,6 @@ interface Order {
 }
 
 export default function AccountPage() {
-  const { user, logout } = useAuth()
-  const router = useRouter()
-  const [orders, setOrders] = useState<Order[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    if (!user) {
-      router.push('/auth')
-      return
-    }
-    
-    // Fetch user orders
-    fetchUserOrders()
-  }, [user, router])
-
-  const fetchUserOrders = async () => {
-    try {
-      const response = await fetch(`/api/orders/user/${user?.email}`)
-      if (response.ok) {
-        const userOrders = await response.json()
-        setOrders(userOrders)
-      }
-    } catch (error) {
-      console.error('Errore nel caricamento degli ordini:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'pending': return '#fbbf24'
-      case 'processing': return '#3b82f6'
-      case 'shipped': return '#8b5cf6'
-      case 'delivered': return '#10b981'
-      case 'cancelled': return '#ef4444'
-      default: return '#6b7280'
-    }
-  }
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'pending': return 'In attesa'
-      case 'processing': return 'In elaborazione'
-      case 'shipped': return 'Spedito'
-      case 'delivered': return 'Consegnato'
-      case 'cancelled': return 'Annullato'
-      default: return status
-    }
-  }
-
-  const handleLogout = () => {
-    logout()
-    router.push('/')
-  }
-
-  if (!user) {
-    return null // Will redirect to auth page
-  }
 
   return (
     <main>
@@ -86,69 +24,9 @@ export default function AccountPage() {
         <div className="account-container">
           <div className="account-header">
             <h1 className="poppins">Il Mio Account</h1>
-            <div className="user-info">
-              <div className="avatar">
-                {user.name.charAt(0).toUpperCase()}
-              </div>
-              <div>
-                <h2 className="poppins">{user.name}</h2>
-                <p>{user.email}</p>
-              </div>
-            </div>
-            <button onClick={handleLogout} className="btn btn-secondary">
-              Esci
-            </button>
-          </div>
-
-          <div className="account-content">
-            <div className="orders-section">
-              <h2 className="poppins">I Miei Ordini</h2>
-              
-              {loading ? (
-                <div className="loading">Caricamento ordini...</div>
-              ) : orders.length === 0 ? (
-                <div className="no-orders">
-                  <p>Non hai ancora effettuato ordini.</p>
-                  <button 
-                    onClick={() => router.push('/shop')} 
-                    className="btn btn-primary"
-                  >
-                    Inizia a fare acquisti
-                  </button>
-                </div>
-              ) : (
-                <div className="orders-list">
-                  {orders.map((order) => (
-                    <div key={order.id} className="order-card">
-                      <div className="order-header">
-                        <div>
-                          <h3 className="poppins">Ordine #{order.id}</h3>
-                          <p className="order-date">{new Date(order.date).toLocaleDateString('it-IT')}</p>
-                        </div>
-                        <div className="order-status">
-                          <span 
-                            className="status-badge"
-                            style={{ backgroundColor: getStatusColor(order.status) }}
-                          >
-                            {getStatusText(order.status)}
-                          </span>
-                          <div className="order-total">€ {order.total.toFixed(2)}</div>
-                        </div>
-                      </div>
-                      
-                      <div className="order-items">
-                        {order.items.map((item, index) => (
-                          <div key={index} className="order-item">
-                            <span>{item.name} × {item.quantity}</span>
-                            <span>€ {(item.price * item.quantity).toFixed(2)}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <p>Sistema di autenticazione temporaneamente disabilitato.</p>
+            <p>Accedi tramite il pulsante nel menu per utilizzare questa funzionalità.</p>
+            <a href="/auth" className="btn btn-primary">Accedi</a>
           </div>
         </div>
       </section>

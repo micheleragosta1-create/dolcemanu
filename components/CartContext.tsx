@@ -25,19 +25,38 @@ type CartContextValue = {
 const CartContext = createContext<CartContextValue | undefined>(undefined)
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>([])
+  const [items, setItems] = useState<CartItem[]>(() => {
+    if (typeof window === 'undefined') return []
+    try {
+      const raw = localStorage.getItem('cart:v1')
+      if (!raw) return []
+      const parsed = JSON.parse(raw)
+      return Array.isArray(parsed) ? parsed : []
+    } catch {
+      return []
+    }
+  })
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem("cart:v1")
-      if (raw) setItems(JSON.parse(raw))
-    } catch {}
+    // sincronizza se cambia storage (multi-tab)
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'cart:v1' && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue)
+          if (Array.isArray(parsed)) setItems(parsed)
+        } catch {}
+      }
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
   }, [])
 
   useEffect(() => {
-    try {
-      localStorage.setItem("cart:v1", JSON.stringify(items))
-    } catch {}
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem("cart:v1", JSON.stringify(items))
+      } catch {}
+    }
   }, [items])
 
   const addItem: CartContextValue["addItem"] = (item, qty = 1) => {

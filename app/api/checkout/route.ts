@@ -1,13 +1,21 @@
 import { NextResponse } from 'next/server'
 
+// Assicura runtime Node.js (necessario per l'SDK Stripe)
+export const runtime = 'nodejs'
+
 export async function POST(request: Request) {
   try {
+    const body = await request.json()
+
+    // Fallback di test in dev: se manca la chiave Stripe, restituisco un redirect fittizio
     if (!process.env.STRIPE_SECRET_KEY) {
+      if (process.env.NODE_ENV !== 'production') {
+        const success = body?.success_url || 'http://localhost:3000/?checkout=success'
+        return NextResponse.json({ url: `${success}&mock=stripe` })
+      }
       return NextResponse.json({ error: 'Stripe non configurato' }, { status: 500 })
     }
-    
-    const body = await request.json()
-    
+
     // Dynamically import Stripe only when needed
     const Stripe = (await import('stripe')).default
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' })

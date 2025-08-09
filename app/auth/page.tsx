@@ -1,9 +1,14 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/components/AuthContext'
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import { Mail, Lock, User, Phone, CheckCircle } from "lucide-react"
+
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 export default function AuthPage() {
   const [activeTab, setActiveTab] = useState<"login" | "register">("login")
@@ -130,9 +135,17 @@ export default function AuthPage() {
 }
 
 function LoginForm() {
-  const handleSubmit = (e: React.FormEvent) => {
+  const { login } = useAuth()
+  const router = useRouter()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    alert("Accesso simulato. Integrare API/Backend per procedere.")
+    const ok = await login(email, password)
+    if (ok) router.push('/account')
+    else setError('Credenziali non valide')
   }
   return (
     <form className="form" onSubmit={handleSubmit}>
@@ -140,28 +153,41 @@ function LoginForm() {
         <label className="label" htmlFor="login-email">Email</label>
         <div className="input">
           <Mail size={18} color="#ff6b6b" />
-          <input id="login-email" type="email" placeholder="nome@email.com" required />
+          <input id="login-email" type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="nome@email.com" required />
         </div>
       </div>
       <div className="field">
         <label className="label" htmlFor="login-password">Password</label>
         <div className="input">
           <Lock size={18} color="#ff6b6b" />
-          <input id="login-password" type="password" placeholder="La tua password" required />
+          <input id="login-password" type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="La tua password" required />
         </div>
       </div>
       <div className="actions">
         <a href="#" className="link">Password dimenticata?</a>
       </div>
       <button type="submit" className="btn btn-primary submit">Accedi</button>
+      {error && <p style={{color:'#dc2626', marginTop: '.5rem'}}>{error}</p>}
     </form>
   )
 }
 
 function RegisterForm() {
-  const handleSubmit = (e: React.FormEvent) => {
+  const { register } = useAuth()
+  const router = useRouter()
+  const [name, setName] = useState('')
+  const [phone, setPhone] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [password2, setPassword2] = useState('')
+  const [error, setError] = useState<string | null>(null)
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    alert("Registrazione simulata. Integrare API/Backend per procedere.")
+    if (password !== password2) { setError('Le password non coincidono'); return }
+    const ok = await register(name, email, password)
+    if (ok) router.push('/account')
+    else setError('Email già registrata')
   }
   return (
     <form className="form" onSubmit={handleSubmit}>
@@ -170,14 +196,14 @@ function RegisterForm() {
           <label className="label" htmlFor="name">Nome e cognome</label>
           <div className="input">
             <User size={18} color="#ff6b6b" />
-            <input id="name" type="text" placeholder="Es. Emanuela Napolitano" required />
+            <input id="name" type="text" value={name} onChange={e=>setName(e.target.value)} placeholder="Es. Emanuela Napolitano" required />
           </div>
         </div>
         <div className="field">
           <label className="label" htmlFor="phone">Telefono (opzionale)</label>
           <div className="input">
             <Phone size={18} color="#ff6b6b" />
-            <input id="phone" type="tel" placeholder="Es. +39 333 123 4567" />
+            <input id="phone" type="tel" value={phone} onChange={e=>setPhone(e.target.value)} placeholder="Es. +39 333 123 4567" />
           </div>
         </div>
       </div>
@@ -185,7 +211,7 @@ function RegisterForm() {
         <label className="label" htmlFor="reg-email">Email</label>
         <div className="input">
           <Mail size={18} color="#ff6b6b" />
-          <input id="reg-email" type="email" placeholder="nome@email.com" required />
+          <input id="reg-email" type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="nome@email.com" required />
         </div>
       </div>
       <div className="row">
@@ -193,7 +219,7 @@ function RegisterForm() {
           <label className="label" htmlFor="reg-pass">Password</label>
           <div className="input">
             <Lock size={18} color="#ff6b6b" />
-            <input id="reg-pass" type="password" placeholder="Minimo 8 caratteri" required />
+            <input id="reg-pass" type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Minimo 8 caratteri" required />
           </div>
           <span className="helper">Usa almeno 8 caratteri, una lettera e un numero</span>
         </div>
@@ -201,11 +227,12 @@ function RegisterForm() {
           <label className="label" htmlFor="reg-pass2">Conferma Password</label>
           <div className="input">
             <Lock size={18} color="#ff6b6b" />
-            <input id="reg-pass2" type="password" placeholder="Ripeti password" required />
+            <input id="reg-pass2" type="password" value={password2} onChange={e=>setPassword2(e.target.value)} placeholder="Ripeti password" required />
           </div>
         </div>
       </div>
       <button type="submit" className="btn btn-primary submit">Crea account</button>
+      {error && <p style={{color:'#dc2626', marginTop: '.5rem'}}>{error}</p>}
     </form>
   )
 }

@@ -5,6 +5,12 @@
   --color-brown: #5e3621;
   --color-cream: #f6f3ea;
   --color-accent: #0b2a42;
+  /* Palette Vietri */
+  --vietri-cobalt: #0047ab;
+  --vietri-turquoise: #2bb1c9;
+  --vietri-ramina: #2e8b57;
+  --vietri-lemon: #f7c948;
+  --vietri-ivory: #faf7f0;
 }
 
 * {
@@ -92,12 +98,22 @@ body {
   position: fixed;
   top: 0;
   width: 100%;
-  background: rgba(246, 243, 234, 0.95);
+  /* Pattern Vietri ripetuto con leggero velo per aumentare la leggibilità */
+  background-image: linear-gradient(rgba(250, 247, 240, 0.82), rgba(250, 247, 240, 0.82)), url('/images/pattern-vietri.svg');
+  background-repeat: no-repeat, repeat;
+  background-size: cover, 96px 96px;
+  background-color: rgba(246, 243, 234, 0.95);
   backdrop-filter: blur(15px);
-  border-bottom: 1px solid rgba(11, 42, 66, 0.06);
+  border-bottom: 1px solid rgba(0, 71, 171, 0.12);
   z-index: 1000;
   transition: all 0.3s ease;
   box-shadow: 0 2px 20px rgba(0, 0, 0, 0.02);
+}
+
+@media (max-width: 768px) {
+  .header {
+    background-size: cover, 72px 72px;
+  }
 }
 
 .header-content {
@@ -164,6 +180,8 @@ body {
   align-items: center;
   gap: 0.5rem;
   font-size: 0.9rem;
+  position: relative;
+  overflow: hidden;
 }
 
 .btn-primary {
@@ -345,6 +363,11 @@ body {
     animation: fadeInOut 4s infinite;
     pointer-events: none;
   }
+
+  /* Pattern più fitto su mobile per "La mia passione" */
+  .storia {
+    background-size: cover, 72px 72px;
+  }
 }
 
 @keyframes fadeInOut {
@@ -359,7 +382,11 @@ body {
   padding: 6rem 2rem;
   max-width: 1400px;
   margin: 0 auto;
-  background: var(--color-cream);
+  /* Pattern Vietri anche per la sezione La mia passione */
+  background-image: linear-gradient(rgba(250, 247, 240, 0.88), rgba(250, 247, 240, 0.88)), url('/images/pattern-vietri.svg');
+  background-repeat: no-repeat, repeat;
+  background-size: cover, 96px 96px;
+  background-position: center top, left top;
   position: relative;
   z-index: 10;
 }
@@ -1836,6 +1863,9 @@ body {
   box-shadow: 0 4px 12px rgba(11, 42, 66, 0.25);
 }
 
+/* Effetto cioccolato che si scioglie su tutti i bottoni .btn */
+/* Rimosso effetto gocce di cioccolato */
+
 .storia-image {
   transition: transform 0.3s ease;
 }
@@ -1873,4 +1903,126 @@ body {
 
 @media (max-width: 768px) {
   .bg-choco-section { min-height: 35vh; }
+}
+
+/* User Menu Styles */
+.user-menu {
+  position: relative;
+}
+
+.user-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: transparent;
+  border: 2px solid var(--color-brown);
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: var(--color-brown);
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.user-btn:hover {
+  background: var(--color-brown);
+  color: white;
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #8B4513, #D2691E);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.user-name {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.user-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  background: white;
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  padding: 0.5rem;
+  min-width: 180px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+.user-dropdown.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: none;
+  color: #333;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.dropdown-item:hover {
+  background: #f8f9fa;
+  color: var(--color-brown);
+}
+
+.dropdown-item.logout {
+  color: #dc3545;
+  border-top: 1px solid #eee;
+  margin-top: 0.25rem;
+  padding-top: 0.75rem;
+}
+
+.dropdown-item.logout:hover {
+  background: #fff5f5;
+  color: #c53030;
+}
+
+@media (max-width: 768px) {
+  .user-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+  
+  .user-avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+  
+  .user-name {
+    display: none;
+  }
+  
+  .user-dropdown {
+    right: -10px;
+    min-width: 160px;
+  }
 }
