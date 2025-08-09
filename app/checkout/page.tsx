@@ -4,7 +4,7 @@ import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import { useCart } from "@/components/CartContext"
 import { loadStripe } from "@stripe/stripe-js"
-import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js"
+import { PayPalScriptProvider, PayPalButtons, FUNDING } from "@paypal/react-paypal-js"
 
 const stripePromise = typeof window !== 'undefined' && process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
   ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
@@ -83,7 +83,8 @@ export default function CheckoutPage() {
                 {paypalClientId ? (
                   <PayPalScriptProvider options={{ clientId: paypalClientId, currency: 'EUR' }}>
                     <PayPalButtons
-                      style={{ layout: "vertical" }}
+                      fundingSource={FUNDING.PAYPAL}
+                      style={{ layout: "vertical", color: "gold", shape: "rect", label: "paypal", tagline: false }}
                       createOrder={(data, actions) => {
                         return actions.order.create({
                           intent: 'CAPTURE',

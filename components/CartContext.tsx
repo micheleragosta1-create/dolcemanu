@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react"
 
 export type CartItem = {
-  id: number
+  id: string | number
   nome: string
   prezzo: number
   immagine: string
@@ -17,8 +17,8 @@ type CartContextValue = {
   totalQty: number
   totalAmount: number
   addItem: (item: Omit<CartItem, "qty">, qty?: number) => void
-  removeItem: (id: number) => void
-  updateQty: (id: number, qty: number) => void
+  removeItem: (id: string | number) => void
+  updateQty: (id: string | number, qty: number) => void
   clear: () => void
 }
 
