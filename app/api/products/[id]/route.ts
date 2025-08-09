@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { getSupabase, isSupabaseConfigured } from '@/lib/supabase'
+import { mockProducts } from '@/lib/mock-data'
 
 // GET /api/products/[id] - Fetch single product
 export async function GET(
@@ -7,6 +8,15 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    if (!isSupabaseConfigured) {
+      const product = mockProducts.find(p => p.id === params.id)
+      if (!product) {
+        return NextResponse.json({ error: 'Product not found' }, { status: 404 })
+      }
+      return NextResponse.json(product)
+    }
+
+    const supabase = getSupabase()!
     const { data: product, error } = await supabase
       .from('products')
       .select('*')
@@ -35,6 +45,23 @@ export async function PUT(
     const body = await request.json()
     const { name, description, price, image_url, category, stock_quantity } = body
 
+    if (!isSupabaseConfigured) {
+      const idx = mockProducts.findIndex(p => p.id === params.id)
+      if (idx === -1) return NextResponse.json({ error: 'Product not found' }, { status: 404 })
+      mockProducts[idx] = {
+        ...mockProducts[idx],
+        name,
+        description,
+        price,
+        image_url,
+        category,
+        stock_quantity,
+        updated_at: new Date().toISOString(),
+      }
+      return NextResponse.json(mockProducts[idx])
+    }
+
+    const supabase = getSupabase()!
     const { data: product, error } = await supabase
       .from('products')
       .update({
@@ -66,6 +93,14 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    if (!isSupabaseConfigured) {
+      const idx = mockProducts.findIndex(p => p.id === params.id)
+      if (idx === -1) return NextResponse.json({ error: 'Product not found' }, { status: 404 })
+      mockProducts.splice(idx, 1)
+      return NextResponse.json({ message: 'Product deleted successfully' })
+    }
+
+    const supabase = getSupabase()!
     const { error } = await supabase
       .from('products')
       .delete()

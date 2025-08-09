@@ -1,4 +1,4 @@
-import { supabase, Order } from './supabase'
+import { getSupabase, isSupabaseConfigured, Order } from './supabase'
 
 export interface CreateOrderData {
   user_email: string
@@ -33,6 +33,11 @@ export async function createOrder(orderData: CreateOrderData): Promise<Order | n
 }
 
 export async function getOrdersByEmail(email: string): Promise<Order[]> {
+  if (!isSupabaseConfigured) {
+    // Fallback: return empty list in environments without Supabase
+    return []
+  }
+  const supabase = getSupabase()!
   const { data, error } = await supabase
     .from('orders')
     .select(`
@@ -54,6 +59,8 @@ export async function getOrdersByEmail(email: string): Promise<Order[]> {
 }
 
 export async function updateOrderStatus(orderId: string, status: string): Promise<boolean> {
+  if (!isSupabaseConfigured) return true
+  const supabase = getSupabase()!
   const { error } = await supabase
     .from('orders')
     .update({ status })

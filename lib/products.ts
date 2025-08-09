@@ -1,6 +1,8 @@
-import { supabase, Product } from './supabase'
+import { getSupabase, isSupabaseConfigured, Product } from './supabase'
 
 export async function getProducts(): Promise<Product[]> {
+  if (!isSupabaseConfigured) return []
+  const supabase = getSupabase()!
   const { data, error } = await supabase
     .from('products')
     .select('*')
@@ -15,6 +17,8 @@ export async function getProducts(): Promise<Product[]> {
 }
 
 export async function getProduct(id: string): Promise<Product | null> {
+  if (!isSupabaseConfigured) return null
+  const supabase = getSupabase()!
   const { data, error } = await supabase
     .from('products')
     .select('*')
@@ -30,6 +34,8 @@ export async function getProduct(id: string): Promise<Product | null> {
 }
 
 export async function getProductsByCategory(category: string): Promise<Product[]> {
+  if (!isSupabaseConfigured) return []
+  const supabase = getSupabase()!
   const { data, error } = await supabase
     .from('products')
     .select('*')
