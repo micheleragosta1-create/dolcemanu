@@ -18,10 +18,10 @@ export default function Footer() {
         <div className="footer-section">
           <h3>Informazioni</h3>
           <ul>
-            <li><a href="#termini">Termini & Condizioni</a></li>
-            <li><a href="#privacy">Privacy Policy</a></li>
-            <li><a href="#spedizioni">Spedizioni</a></li>
-            <li><a href="#resi">Resi e Rimborsi</a></li>
+            <li><a href="/policy">Termini & Condizioni</a></li>
+            <li><a href="/policy#privacy">Privacy Policy</a></li>
+            <li><a href="/policy#spedizione">Spedizioni</a></li>
+            <li><a href="/policy#resi">Resi e Rimborsi</a></li>
           </ul>
         </div>
 
