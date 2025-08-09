@@ -1,12 +1,15 @@
 import { NextResponse } from 'next/server'
-import Stripe from 'stripe'
 
 export async function POST(request: Request) {
   try {
     if (!process.env.STRIPE_SECRET_KEY) {
       return NextResponse.json({ error: 'Stripe non configurato' }, { status: 500 })
     }
+    
     const body = await request.json()
+    
+    // Dynamically import Stripe only when needed
+    const Stripe = (await import('stripe')).default
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' })
 
     const line_items = (body.items || []).map((i: any) => ({
