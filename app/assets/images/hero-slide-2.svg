@@ -1,0 +1,34 @@
+<svg width="800" height="600" viewBox="0 0 800 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff6b6b;stop-opacity:0.3" />
+      <stop offset="100%" style="stop-color:#ff9f9f;stop-opacity:0.3" />
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="#fef7f7"/>
+  <rect width="800" height="600" fill="url(#bg2)"/>
+  
+  <!-- Pastry tools and elements -->
+  <ellipse cx="120" cy="150" rx="40" ry="25" fill="#8B4513" opacity="0.6" transform="rotate(20 120 150)"/>
+  <ellipse cx="680" cy="180" rx="35" ry="22" fill="#654321" opacity="0.7" transform="rotate(-30 680 180)"/>
+  <ellipse cx="150" cy="400" rx="45" ry="28" fill="#3d1f0f" opacity="0.5" transform="rotate(60 150 400)"/>
+  <ellipse cx="650" cy="450" rx="38" ry="24" fill="#6b3520" opacity="0.8" transform="rotate(-45 650 450)"/>
+  
+  <!-- Central elegant frame -->
+  <rect x="150" y="200" width="500" height="200" fill="rgba(255,255,255,0.95)" rx="20" stroke="#ff6b6b" stroke-width="3"/>
+  <text x="400" y="240" font-family="Georgia, serif" font-size="22" font-weight="bold" text-anchor="middle" fill="#3d1f0f">
+    L'Arte della Pasticceria
+  </text>
+  <text x="400" y="270" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" fill="#654321">
+    che Emoziona ad Ogni Morso
+  </text>
+  <text x="400" y="310" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#8B4513">
+    Dolci artigianali creati con passione
+  </text>
+  <text x="400" y="330" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#8B4513">
+    e ingredienti selezionati
+  </text>
+  <text x="400" y="370" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#ff6b6b">
+    ✨ Tradizione Napoletana ✨
+  </text>
+</svg>

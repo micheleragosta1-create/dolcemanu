@@ -1,0 +1,24 @@
+import type { Metadata } from 'next'
+import './globals.css'
+import { CartProvider } from '@/components/CartContext'
+
+export const metadata: Metadata = {
+  title: 'Cioccolatini Michele - Artigianato dalla Costiera Amalfitana',
+  description: 'Cioccolatini artigianali di alta qualità dalla Costiera Amalfitana. Esperienza stellata, ingredienti premium.',
+}
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html lang="it">
+      <body>
+        <CartProvider>
+          {children}
+        </CartProvider>
+      </body>
+    </html>
+  )
+}

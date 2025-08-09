@@ -1,0 +1,45 @@
+<svg width="800" height="600" viewBox="0 0 800 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffd700;stop-opacity:0.2" />
+      <stop offset="100%" style="stop-color:#ffed4e;stop-opacity:0.2" />
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="#fffef0"/>
+  <rect width="800" height="600" fill="url(#bg3)"/>
+  
+  <!-- Gift boxes scattered -->
+  <rect x="80" y="80" width="40" height="30" fill="#8B4513" opacity="0.7" rx="3"/>
+  <rect x="85" y="70" width="30" height="5" fill="#ff6b6b" opacity="0.9"/>
+  <rect x="98" y="70" width="4" height="40" fill="#ff6b6b" opacity="0.9"/>
+  
+  <rect x="650" y="120" width="35" height="25" fill="#654321" opacity="0.6" rx="3"/>
+  <rect x="654" y="112" width="27" height="4" fill="#ff6b6b" opacity="0.9"/>
+  <rect x="665" y="112" width="3" height="33" fill="#ff6b6b" opacity="0.9"/>
+  
+  <rect x="100" y="480" width="45" height="35" fill="#3d1f0f" opacity="0.8" rx="3"/>
+  <rect x="105" y="470" width="35" height="5" fill="#ff6b6b" opacity="0.9"/>
+  <rect x="120" y="470" width="5" height="45" fill="#ff6b6b" opacity="0.9"/>
+  
+  <rect x="680" y="450" width="38" height="28" fill="#6b3520" opacity="0.7" rx="3"/>
+  <rect x="684" y="442" width="30" height="4" fill="#ff6b6b" opacity="0.9"/>
+  <rect x="697" y="442" width="4" height="36" fill="#ff6b6b" opacity="0.9"/>
+  
+  <!-- Central gift message -->
+  <rect x="180" y="220" width="440" height="160" fill="rgba(255,255,255,0.95)" rx="15" stroke="#ffd700" stroke-width="2"/>
+  <text x="400" y="255" font-family="Georgia, serif" font-size="20" font-weight="bold" text-anchor="middle" fill="#3d1f0f">
+    Regala Emozioni
+  </text>
+  <text x="400" y="280" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" fill="#654321">
+    con le Nostre Creazioni Esclusive
+  </text>
+  <text x="400" y="315" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#8B4513">
+    Box regalo personalizzati
+  </text>
+  <text x="400" y="335" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#8B4513">
+    per ogni occasione speciale
+  </text>
+  <text x="400" y="365" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#ffd700">
+    🎁 Packaging Elegante Incluso 🎁
+  </text>
+</svg>

@@ -1,0 +1,47 @@
+<svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fff8e7;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ffe4b5;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" fill="url(#bg2)"/>
+  
+  <!-- Elegant box container -->
+  <rect x="70" y="100" width="260" height="200" fill="#2F1B14" rx="12" opacity="0.9"/>
+  <rect x="75" y="105" width="250" height="190" fill="#654321" rx="10" opacity="0.8"/>
+  
+  <!-- Premium chocolates pattern -->
+  <rect x="110" y="140" width="30" height="30" fill="#3d1f0f" rx="3" transform="rotate(45 125 155)"/>
+  <rect x="160" y="140" width="30" height="30" fill="#4a2c17" rx="3" transform="rotate(45 175 155)"/>
+  <rect x="210" y="140" width="30" height="30" fill="#6b3520" rx="3" transform="rotate(45 225 155)"/>
+  <rect x="260" y="140" width="30" height="30" fill="#5a2f1a" rx="3" transform="rotate(45 275 155)"/>
+  
+  <rect x="135" y="190" width="30" height="30" fill="#6b3520" rx="3" transform="rotate(45 150 205)"/>
+  <rect x="185" y="190" width="30" height="30" fill="#3d1f0f" rx="3" transform="rotate(45 200 205)"/>
+  <rect x="235" y="190" width="30" height="30" fill="#4a2c17" rx="3" transform="rotate(45 250 205)"/>
+  
+  <rect x="110" y="240" width="30" height="30" fill="#5a2f1a" rx="3" transform="rotate(45 125 255)"/>
+  <rect x="160" y="240" width="30" height="30" fill="#6b3520" rx="3" transform="rotate(45 175 255)"/>
+  <rect x="210" y="240" width="30" height="30" fill="#3d1f0f" rx="3" transform="rotate(45 225 255)"/>
+  <rect x="260" y="240" width="30" height="30" fill="#4a2c17" rx="3" transform="rotate(45 275 255)"/>
+  
+  <!-- Gold accents -->
+  <rect x="90" y="120" width="220" height="2" fill="#ffd700" opacity="0.8"/>
+  <rect x="90" y="275" width="220" height="2" fill="#ffd700" opacity="0.8"/>
+  
+  <!-- Label -->
+  <rect x="120" y="320" width="160" height="40" fill="rgba(255,255,255,0.95)" rx="5"/>
+  <text x="200" y="335" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#2F1B14">
+    Box Gourmet
+  </text>
+  <text x="200" y="350" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#654321">
+    16 praline premium
+  </text>
+  
+  <!-- Badge -->
+  <rect x="310" y="70" width="70" height="25" fill="#ffd700" rx="12" opacity="0.9"/>
+  <text x="345" y="85" font-family="Arial, sans-serif" font-size="10" font-weight="bold" text-anchor="middle" fill="#2F1B14">
+    PREMIUM
+  </text>
+</svg>
