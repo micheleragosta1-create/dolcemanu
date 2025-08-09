@@ -81,12 +81,20 @@ export default function CheckoutPage() {
                 <div style={{ margin: '1rem 0', color: '#666', textAlign: 'center' }}>oppure</div>
 
                 {paypalClientId ? (
-                  <PayPalScriptProvider options={{ "client-id": paypalClientId, currency: 'EUR' }}>
+                  <PayPalScriptProvider options={{ clientId: paypalClientId, currency: 'EUR' }}>
                     <PayPalButtons
                       style={{ layout: "vertical" }}
                       createOrder={(data, actions) => {
                         return actions.order.create({
-                          purchase_units: [{ amount: { value: totalAmount.toFixed(2) } }]
+                          intent: 'CAPTURE',
+                          purchase_units: [
+                            {
+                              amount: {
+                                currency_code: 'EUR',
+                                value: totalAmount.toFixed(2)
+                              }
+                            }
+                          ]
                         })
                       }}
                       onApprove={async (data, actions) => {
