@@ -11,7 +11,7 @@ export default function Storia() {
         <div className="storia-text-content">
           <h3>La Mia Storia</h3>
           <p>
-            Sono Emanuela Napolitano, pastry chef con una grande passione per l'arte dolciaria. Ho avuto il privilegio di 
+            Sono Emanuela Napolitano, pastry chef con una grande passione per l&apos;arte dolciaria. Ho avuto il privilegio di 
             formarmi e lavorare nella splendida cornice della Costiera Amalfitana, in particolare a Positano.
           </p>
           <p>
@@ -34,9 +34,9 @@ export default function Storia() {
           <div className="storia-beige-box">
             <h4>✨ La Mia Filosofia ✨</h4>
             <p>
-              "Ogni dolce è un'opera d'arte che nasce dal cuore, 
-              dove la tradizione napoletana incontra l'innovazione moderna 
-              per creare emozioni uniche ad ogni morso."
+              &quot;Ogni dolce è un&apos;opera d&apos;arte che nasce dal cuore, 
+              dove la tradizione napoletana incontra l&apos;innovazione moderna 
+              per creare emozioni uniche ad ogni morso.&quot;
             </p>
           </div>
         </div>
