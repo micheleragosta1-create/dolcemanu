@@ -106,9 +106,9 @@ main {
   top: 0;
   width: 100%;
   /* Pattern Vietri ripetuto con leggero velo per aumentare la leggibilità */
-  background-image: linear-gradient(rgba(250, 247, 240, 0.75), rgba(250, 247, 240, 0.75)), url('/images/pattern-vietri-new.jpg');
-  background-repeat: no-repeat, repeat;
-  background-size: cover, 96px 96px;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.6)), url('/images/pattern-vietri-color.jpg');
+  background-repeat: repeat;
+  background-size: 180px;
   background-color: rgba(246, 243, 234, 0.95);
   backdrop-filter: blur(15px);
   border-bottom: 1px solid rgba(0, 71, 171, 0.12);
@@ -118,9 +118,9 @@ main {
 }
 
 .storia-bg {
-  background-image: linear-gradient(rgba(250, 247, 240, 0.75), rgba(250, 247, 240, 0.75)), url('/images/pattern-vietri-new.jpg');
-  background-repeat: no-repeat, repeat;
-  background-size: cover, 96px 96px;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.6)), url('/images/pattern-vietri-color.jpg');
+  background-repeat: repeat;
+  background-size: 180px;
 }
 
 @media (max-width: 768px) {
@@ -396,7 +396,7 @@ main {
   max-width: 1400px;
   margin: 0 auto;
   /* Pattern Vietri anche per la sezione La mia passione */
-  background-image: linear-gradient(rgba(250, 247, 240, 0.88), rgba(250, 247, 240, 0.88)), url('/images/pattern-vietri.svg');
+  background-image: linear-gradient(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.6)), url('/images/pattern-vietri-color.jpg');
   background-repeat: no-repeat, repeat;
   background-size: cover, 96px 96px;
   background-position: center top, left top;
@@ -1588,7 +1588,9 @@ main {
 
 /* Footer */
 .footer {
-  background: #f2f4f6;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.6)), url('/images/pattern-vietri-color.jpg');
+  background-repeat: repeat;
+  background-size: 180px;
   color: #333333;
   padding: 4rem 2rem 2rem;
   border-top: 1px solid #e9ecef;
