@@ -30,7 +30,7 @@ export default function AdminUsers() {
 
   useEffect(() => {
     fetchAllUsers()
-  }, [])
+  }, [fetchAllUsers])
 
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||

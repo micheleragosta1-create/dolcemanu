@@ -47,7 +47,7 @@ export default function ProductPage() {
             const p = (Array.isArray(list) ? list : []).find((x:any) => String(x.id) === String(id))
             if (p) {
               setProduct(p)
-                } else {
+            } else {
               throw new Error('not found')
             }
           } else {
@@ -103,54 +103,53 @@ export default function ProductPage() {
                   productName={product.name}
                   className="product-gallery"
                 />
-              <div className="details">
-                <h1 className="poppins name">{product.name}</h1>
-                <p className="price">€ {product.price.toFixed(2)}</p>
-                <p className="desc">{product.description}</p>
+                <div className="details">
+                  <h1 className="poppins name">{product.name}</h1>
+                  <p className="price">€ {product.price.toFixed(2)}</p>
+                  <p className="desc">{product.description}</p>
 
-                <div className="buy-row">
-                  <input type="number" min={1} value={qty} onChange={e=>setQty(Math.max(1, parseInt(e.target.value||'1',10)))} className="qty" />
-                  <button className="btn btn-primary" onClick={addToCart}>Aggiungi al carrello</button>
-                </div>
+                  <div className="buy-row">
+                    <input type="number" min={1} value={qty} onChange={e=>setQty(Math.max(1, parseInt(e.target.value||'1',10)))} className="qty" />
+                    <button className="btn btn-primary" onClick={addToCart}>Aggiungi al carrello</button>
+                  </div>
 
-                <div className="info-block">
-                  <h3 className="poppins">Ingredienti</h3>
-                  <p>Cacao, zucchero, burro di cacao, latte in polvere, nocciole, pistacchi, aroma naturale di limone.</p>
-                </div>
-                <div className="info-block">
-                  <h3 className="poppins">Allergeni</h3>
-                  <p>Può contenere tracce di latte, frutta a guscio e soia.</p>
-                </div>
-                <div className="info-block">
-                  <h3 className="poppins">Valori nutrizionali (100g)</h3>
-                  <ul className="nutri">
-                    <li>Energia: 2300 kJ / 550 kcal</li>
-                    <li>Grassi: 35 g (di cui saturi 21 g)</li>
-                    <li>Carboidrati: 50 g (di cui zuccheri 45 g)</li>
-                    <li>Proteine: 6 g</li>
-                    <li>Sale: 0.2 g</li>
-                  </ul>
+                  <div className="info-block">
+                    <h3 className="poppins">Ingredienti</h3>
+                    <p>Cacao, zucchero, burro di cacao, latte in polvere, nocciole, pistacchi, aroma naturale di limone.</p>
+                  </div>
+                  <div className="info-block">
+                    <h3 className="poppins">Allergeni</h3>
+                    <p>Può contenere tracce di latte, frutta a guscio e soia.</p>
+                  </div>
+                  <div className="info-block">
+                    <h3 className="poppins">Valori nutrizionali (100g)</h3>
+                    <ul className="nutri">
+                      <li>Energia: 2300 kJ / 550 kcal</li>
+                      <li>Grassi: 35 g (di cui saturi 21 g)</li>
+                      <li>Carboidrati: 50 g (di cui zuccheri 45 g)</li>
+                      <li>Proteine: 6 g</li>
+                      <li>Sale: 0.2 g</li>
+                    </ul>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
 
-          {!loading && related.length > 0 && (
-            <div className="related">
-              <h2 className="poppins">Potrebbero piacerti</h2>
-              <div className="related-grid">
-                {related.map(r => (
-                  <a key={r.id} className="related-card" href={`/product/${r.id}`}>
-                    <div className="img" style={{ backgroundImage: `url(${r.image_url})` }} />
-                    <div className="meta">
-                      <span className="title">{r.name}</span>
-                      <span className="r-price">€ {r.price.toFixed(2)}</span>
-                    </div>
-                  </a>
-                ))}
-              </div>
-            </div>
-          )}
+              {!loading && related.length > 0 && (
+                <div className="related">
+                  <h2 className="poppins">Potrebbero piacerti</h2>
+                  <div className="related-grid">
+                    {related.map(r => (
+                      <a key={r.id} className="related-card" href={`/product/${r.id}`}>
+                        <div className="img" style={{ backgroundImage: `url(${r.image_url})` }} />
+                        <div className="meta">
+                          <span className="title">{r.name}</span>
+                          <span className="r-price">€ {r.price.toFixed(2)}</span>
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
             </>
           )}
         </div>

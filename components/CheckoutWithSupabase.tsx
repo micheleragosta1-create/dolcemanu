@@ -39,7 +39,7 @@ export default function CheckoutWithSupabase() {
 
     try {
       if (!user) {
-        throw new Error('Devi essere autenticato per completare l\'ordine')
+        throw new Error('Devi essere autenticato per completare l&apos;ordine')
       }
 
       // Crea l'ordine principale
@@ -51,7 +51,7 @@ export default function CheckoutWithSupabase() {
       })
 
       if (!orderId) {
-        throw new Error('Errore nella creazione dell\'ordine')
+        throw new Error('Errore nella creazione dell&apos;ordine')
       }
 
       // Qui potresti creare gli item dell'ordine usando createOrderItem
@@ -89,7 +89,7 @@ export default function CheckoutWithSupabase() {
       <div className="text-center py-12">
         <h2 className="text-xl font-semibold mb-4">Accesso richiesto</h2>
         <p className="text-gray-600 mb-4">
-          Devi accedere per completare l'ordine
+          Devi accedere per completare l&apos;ordine
         </p>
         <a
           href="/auth"

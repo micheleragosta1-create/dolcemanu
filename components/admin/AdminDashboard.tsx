@@ -39,7 +39,7 @@ export default function AdminDashboard() {
     fetchAllOrders()
     fetchProducts()
     fetchAllUsers()
-  }, [])
+  }, [fetchAllOrders, fetchProducts, fetchAllUsers])
 
   // Calcola le statistiche quando i dati cambiano
   useEffect(() => {

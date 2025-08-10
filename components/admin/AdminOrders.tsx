@@ -29,7 +29,7 @@ export default function AdminOrders() {
 
   useEffect(() => {
     fetchAllOrders()
-  }, [])
+  }, [fetchAllOrders])
 
   const filteredOrders = orders.filter(order => {
     const matchesSearch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||

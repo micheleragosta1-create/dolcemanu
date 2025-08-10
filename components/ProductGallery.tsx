@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useSwipe } from './useSwipe'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import TouchIndicator, { TouchRipple } from './TouchIndicators'
@@ -23,26 +23,26 @@ export default function ProductGallery({ images, productName, className = '' }: 
     images[0] + '?view=detail', // Simula dettaglio
   ]
 
-  const goToNext = () => {
+  const goToNext = useCallback(() => {
     if (isTransitioning) return
     setIsTransitioning(true)
     setCurrentIndex((prev) => (prev + 1) % galleryImages.length)
     setTimeout(() => setIsTransitioning(false), 300)
-  }
+  }, [isTransitioning, galleryImages.length])
 
-  const goToPrevious = () => {
+  const goToPrevious = useCallback(() => {
     if (isTransitioning) return
     setIsTransitioning(true)
     setCurrentIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length)
     setTimeout(() => setIsTransitioning(false), 300)
-  }
+  }, [isTransitioning, galleryImages.length])
 
-  const goToIndex = (index: number) => {
+  const goToIndex = useCallback((index: number) => {
     if (index === currentIndex || isTransitioning) return
     setIsTransitioning(true)
     setCurrentIndex(index)
     setTimeout(() => setIsTransitioning(false), 300)
-  }
+  }, [currentIndex, isTransitioning])
 
   const swipeHandlers = useSwipe({
     onSwipedLeft: () => {
@@ -65,7 +65,7 @@ export default function ProductGallery({ images, productName, className = '' }: 
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [])
+  }, [goToPrevious, goToNext])
 
   if (galleryImages.length <= 1) {
     return (

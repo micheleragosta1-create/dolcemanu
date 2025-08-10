@@ -81,7 +81,7 @@ export default function SupabaseTest() {
       </div>
 
       <div className="mt-6 text-center text-sm text-gray-600">
-        <p>Questo componente mostra lo stato dell'integrazione Supabase</p>
+        <p>Questo componente mostra lo stato dell&apos;integrazione Supabase</p>
         <p>Rimuovilo quando sei sicuro che tutto funzioni</p>
       </div>
     </div>
