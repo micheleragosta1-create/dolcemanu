@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState, useEffect } from "react"
+import { useMemo, useState } from "react"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import { useCartWithToast } from "@/components/useCartWithToast"
@@ -8,25 +8,13 @@ import { ProductGridSkeleton } from "@/components/Skeleton"
 import MobileFilters from "@/components/MobileFilters"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-
-type Prodotto = {
-  id: string
-  name: string
-  description: string
-  price: number
-  image_url: string
-  category: string
-  stock_quantity: number
-  created_at: string
-  updated_at: string
-}
+import { useProducts } from "@/hooks/useSupabase"
+import type { Product } from "@/lib/supabase"
 
 export default function ShopPage() {
   const router = useRouter()
   const { addItem } = useCartWithToast()
-  const [prodotti, setProdotti] = useState<Prodotto[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { products: prodotti, loading, error } = useProducts()
   const [pagina, setPagina] = useState(1)
   const [perPagina] = useState(8)
   const [categoria, setCategoria] = useState<string>("tutti")
@@ -36,31 +24,6 @@ export default function ShopPage() {
   const [prezzoMax, setPrezzoMax] = useState<number>(1000)
   const [soloDisponibili, setSoloDisponibili] = useState<boolean>(false)
   const [filtersOpen, setFiltersOpen] = useState(false)
-
-  // Fetch products from API
-  useEffect(() => {
-    async function fetchProdotti() {
-      try {
-        setLoading(true)
-        const response = await fetch('/api/products')
-        
-        if (!response.ok) {
-          throw new Error('Errore nel caricamento dei prodotti')
-        }
-        
-        const data = await response.json()
-        setProdotti(data)
-        setError(null)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Errore sconosciuto')
-        console.error('Error fetching products:', err)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchProdotti()
-  }, [])
 
   // Get unique categories
   const categorie = useMemo(() => {

@@ -14,14 +14,15 @@ export default function Header() {
   const [cartPopupVisible, setCartPopupVisible] = useState(false)
   const { totalQty } = useCart()
   const [mounted, setMounted] = useState(false)
-  const { user, logout } = useAuth()
+  const { user, signOut } = useAuth()
   const router = useRouter()
-  const handleLogout = (e?: React.MouseEvent) => {
+  const handleLogout = async (e?: React.MouseEvent) => {
     e?.preventDefault()
-    logout()
-    if (typeof window !== 'undefined') {
-      window.location.href = '/'
-    } else {
+    try {
+      await signOut()
+      router.push('/')
+    } catch (error) {
+      console.error('Errore durante il logout:', error)
       router.push('/')
     }
   }

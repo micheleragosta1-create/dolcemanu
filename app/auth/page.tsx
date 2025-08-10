@@ -135,18 +135,36 @@ export default function AuthPage() {
 }
 
 function LoginForm() {
-  const { login } = useAuth()
+  const { signIn } = useAuth()
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const ok = await login(email, password)
-    if (ok) router.push('/account')
-    else setError('Credenziali non valide')
+    setLoading(true)
+    setError(null)
+    setSuccess(null)
+
+    try {
+      const { error: signInError } = await signIn(email, password)
+      if (signInError) {
+        setError(signInError.message)
+      } else {
+        // Login riuscito
+        setSuccess('Accesso effettuato con successo! Reindirizzamento...')
+        setTimeout(() => router.push('/'), 1500)
+      }
+    } catch (err) {
+      setError('Errore durante l\'accesso')
+    } finally {
+      setLoading(false)
+    }
   }
+
   return (
     <form className="form" onSubmit={handleSubmit}>
       <div className="field">
@@ -166,14 +184,41 @@ function LoginForm() {
       <div className="actions">
         <a href="#" className="link">Password dimenticata?</a>
       </div>
-      <button type="submit" className="btn btn-primary submit">Accedi</button>
-      {error && <p style={{color:'#dc2626', marginTop: '.5rem'}}>{error}</p>}
+      <button type="submit" className="btn btn-primary submit" disabled={loading}>
+        {loading ? 'Accesso...' : 'Accedi'}
+      </button>
+      {error && (
+        <div style={{
+          color: '#dc2626', 
+          marginTop: '.5rem',
+          padding: '.75rem',
+          backgroundColor: '#fef2f2',
+          border: '1px solid #fecaca',
+          borderRadius: '8px',
+          fontSize: '0.875rem'
+        }}>
+          {error}
+        </div>
+      )}
+      {success && (
+        <div style={{
+          color: '#059669', 
+          marginTop: '.5rem',
+          padding: '.75rem',
+          backgroundColor: '#f0fdf4',
+          border: '1px solid #bbf7d0',
+          borderRadius: '8px',
+          fontSize: '0.875rem'
+        }}>
+          {success}
+        </div>
+      )}
     </form>
   )
 }
 
 function RegisterForm() {
-  const { register } = useAuth()
+  const { signUp } = useAuth()
   const router = useRouter()
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
@@ -181,13 +226,31 @@ function RegisterForm() {
   const [password, setPassword] = useState('')
   const [password2, setPassword2] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (password !== password2) { setError('Le password non coincidono'); return }
-    const ok = await register(name, email, password)
-    if (ok) router.push('/account')
-    else setError('Email già registrata')
+    
+    setLoading(true)
+    setError(null)
+    setSuccess(null)
+
+    try {
+      const { error: signUpError } = await signUp(email, password)
+      if (signUpError) {
+        setError(signUpError.message)
+      } else {
+        // Registrazione riuscita
+        setSuccess('Account creato con successo! Reindirizzamento...')
+        setTimeout(() => router.push('/'), 1500)
+      }
+    } catch (err) {
+      setError('Errore durante la registrazione')
+    } finally {
+      setLoading(false)
+    }
   }
   return (
     <form className="form" onSubmit={handleSubmit}>
@@ -231,8 +294,35 @@ function RegisterForm() {
           </div>
         </div>
       </div>
-      <button type="submit" className="btn btn-primary submit">Crea account</button>
-      {error && <p style={{color:'#dc2626', marginTop: '.5rem'}}>{error}</p>}
+      <button type="submit" className="btn btn-primary submit" disabled={loading}>
+        {loading ? 'Registrazione...' : 'Crea account'}
+      </button>
+      {error && (
+        <div style={{
+          color: '#dc2626', 
+          marginTop: '.5rem',
+          padding: '.75rem',
+          backgroundColor: '#fef2f2',
+          border: '1px solid #fecaca',
+          borderRadius: '8px',
+          fontSize: '0.875rem'
+        }}>
+          {error}
+        </div>
+      )}
+      {success && (
+        <div style={{
+          color: '#059669', 
+          marginTop: '.5rem',
+          padding: '.75rem',
+          backgroundColor: '#f0fdf4',
+          border: '1px solid #bbf7d0',
+          borderRadius: '8px',
+          fontSize: '0.875rem'
+        }}>
+          {success}
+        </div>
+      )}
     </form>
   )
 }
