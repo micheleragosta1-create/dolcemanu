@@ -3,14 +3,14 @@
 :root {
   --color-navy: #0b2a42;
   --color-brown: #5e3621;
-  --color-cream: #f6f3ea;
+  --color-cream: #ffffff;
   --color-accent: #0b2a42;
   /* Palette Vietri */
   --vietri-cobalt: #0047ab;
   --vietri-turquoise: #2bb1c9;
   --vietri-ramina: #2e8b57;
   --vietri-lemon: #f7c948;
-  --vietri-ivory: #faf7f0;
+  --vietri-ivory: #ffffff;
 }
 
 * {
@@ -87,6 +87,13 @@ body {
   background-color: var(--color-cream);
   color: var(--color-navy);
   font-family: 'Inter', sans-serif;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+main {
+  flex: 1;
 }
 
 .poppins {
@@ -99,7 +106,7 @@ body {
   top: 0;
   width: 100%;
   /* Pattern Vietri ripetuto con leggero velo per aumentare la leggibilità */
-  background-image: linear-gradient(rgba(250, 247, 240, 0.82), rgba(250, 247, 240, 0.82)), url('/images/pattern-vietri.svg');
+  background-image: linear-gradient(rgba(250, 247, 240, 0.75), rgba(250, 247, 240, 0.75)), url('/images/pattern-vietri-new.jpg');
   background-repeat: no-repeat, repeat;
   background-size: cover, 96px 96px;
   background-color: rgba(246, 243, 234, 0.95);
@@ -108,6 +115,12 @@ body {
   z-index: 1000;
   transition: all 0.3s ease;
   box-shadow: 0 2px 20px rgba(0, 0, 0, 0.02);
+}
+
+.storia-bg {
+  background-image: linear-gradient(rgba(250, 247, 240, 0.75), rgba(250, 247, 240, 0.75)), url('/images/pattern-vietri-new.jpg');
+  background-repeat: no-repeat, repeat;
+  background-size: cover, 96px 96px;
 }
 
 @media (max-width: 768px) {
@@ -990,6 +1003,180 @@ body {
   }
 }
 
+/* Mobile Menu Overlay Styles */
+.mobile-menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  justify-content: flex-end;
+  animation: fadeIn 0.3s ease;
+}
+
+.mobile-menu {
+  background: var(--color-cream);
+  width: 280px;
+  height: 100%;
+  padding: 6rem 2rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
+  animation: slideInRight 0.3s ease;
+}
+
+.mobile-menu a {
+  text-decoration: none;
+  color: var(--color-navy);
+  font-weight: 500;
+  font-size: 1.1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(11, 42, 66, 0.1);
+  transition: color 0.3s ease;
+}
+
+.mobile-menu a:hover {
+  color: var(--color-brown);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+/* Mobile Touch Optimizations */
+@media (max-width: 768px) {
+  /* Touch targets minimum 44px */
+  .btn, button {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+  }
+  
+  .btn.small {
+    min-height: 40px;
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+  }
+  
+  .icon-btn {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.75rem;
+  }
+  
+  .mobile-menu-btn {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.75rem;
+  }
+  
+  /* Better touch feedback */
+  .btn:active, button:active {
+    transform: scale(0.95);
+    transition: transform 0.1s ease;
+  }
+  
+  /* Enhanced touch feedback with haptic-like visual */
+  .btn {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s ease, height 0.3s ease;
+  }
+  
+  .btn:active::after {
+    width: 200px;
+    height: 200px;
+  }
+  
+  /* Larger tap targets for navigation */
+  .nav-menu a {
+    padding: 1rem 1.5rem;
+    font-size: 1.1rem;
+  }
+  
+  /* Improved form controls */
+  input, select, textarea {
+    min-height: 44px;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+  }
+  
+  /* Cart badge positioning */
+  .cart-badge {
+    min-width: 20px;
+    min-height: 20px;
+    line-height: 20px;
+    font-size: 0.75rem;
+  }
+  
+  /* Prevent zoom on inputs */
+  input[type="text"], 
+  input[type="email"], 
+  input[type="number"], 
+  input[type="tel"], 
+  input[type="password"], 
+  select, 
+  textarea {
+    font-size: 16px;
+  }
+  
+  /* Touch-friendly scrolling */
+  .shop-filters {
+    -webkit-overflow-scrolling: touch;
+    overflow-scrolling: touch;
+  }
+  
+  /* Better spacing for touch */
+  .filter-chips .chip {
+    padding: 0.75rem 1.2rem;
+    margin: 0.25rem;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+  
+  /* Product card touch targets */
+  .card {
+    margin-bottom: 1rem;
+  }
+  
+  .card .btn {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+/* High DPI / Retina displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .logo-image {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}
+
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
   50% { transform: translateY(-10px); }
@@ -1512,6 +1699,8 @@ body {
   border: none;
   cursor: pointer;
   padding: 0.5rem;
+  z-index: 1001;
+  position: relative;
 }
 
 @media (max-width: 1024px) {
@@ -1965,11 +2154,7 @@ body {
   z-index: 1000;
 }
 
-.user-dropdown.show {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-}
+.user-menu:hover .user-dropdown { opacity: 1; visibility: visible; transform: translateY(0); }
 
 .dropdown-item {
   display: flex;

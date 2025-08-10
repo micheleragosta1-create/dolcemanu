@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { ShoppingCart, Heart, User, Menu, X } from 'lucide-react'
+import { useAuth } from '@/components/AuthContext'
 import { useCart } from './CartContext'
+import { useRouter } from 'next/navigation'
 import Logo from './Logo'
 import CartPopup from './CartPopup'
 
@@ -12,6 +14,17 @@ export default function Header() {
   const [cartPopupVisible, setCartPopupVisible] = useState(false)
   const { totalQty } = useCart()
   const [mounted, setMounted] = useState(false)
+  const { user, logout } = useAuth()
+  const router = useRouter()
+  const handleLogout = (e?: React.MouseEvent) => {
+    e?.preventDefault()
+    logout()
+    if (typeof window !== 'undefined') {
+      window.location.href = '/'
+    } else {
+      router.push('/')
+    }
+  }
 
   useEffect(() => {
     setMounted(true)
@@ -25,18 +38,41 @@ export default function Header() {
         </a>
         
         <nav className={`nav-menu ${mobileMenuOpen ? 'mobile-open' : ''}`}>
-          <ul className="nav-menu">
-            <li><a href="/shop">Shop</a></li>
-            <li><a href="#storia">Chi Siamo</a></li>
-            <li><a href="#contatti">Contatti</a></li>
-          </ul>
+          <a href="/shop">Shop</a>
+          <a href="#storia">Chi Siamo</a>
+          <a href="#contatti">Contatti</a>
         </nav>
+        
+        {/* Mobile Menu Overlay */}
+        {mobileMenuOpen && (
+          <div className="mobile-menu-overlay" onClick={() => setMobileMenuOpen(false)}>
+            <div className="mobile-menu">
+              <a href="/shop" onClick={() => setMobileMenuOpen(false)}>Shop</a>
+              <a href="#storia" onClick={() => setMobileMenuOpen(false)}>Chi Siamo</a>
+              <a href="#contatti" onClick={() => setMobileMenuOpen(false)}>Contatti</a>
+            </div>
+          </div>
+        )}
 
         <div className="header-actions">
-          <a href="/auth" className="btn btn-secondary">
-            <User size={16} />
-            Login / Registrati
-          </a>
+          {!mounted ? null : user ? (
+            <div className="user-menu">
+              <button className="user-btn" aria-haspopup="menu" aria-expanded="false">
+                <div className="user-avatar">{user.name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}</div>
+                <span className="user-name">{user.name || user.email}</span>
+              </button>
+              <div className="user-dropdown">
+                <a className="dropdown-item" href="/account">Anagrafica</a>
+                <a className="dropdown-item" href="/account#ordini">I miei ordini</a>
+                <button className="dropdown-item logout" onClick={handleLogout}>Logout</button>
+              </div>
+            </div>
+          ) : (
+            <a href="/auth" className="btn btn-secondary">
+              <User size={16} />
+              Login / Registrati
+            </a>
+          )}
           
           <button className="icon-btn" title="Wishlist">
             <Heart size={20} />

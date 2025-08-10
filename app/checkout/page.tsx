@@ -19,10 +19,6 @@ export default function CheckoutPage() {
   const payableAmount = Number.isFinite(totalAmount) && totalAmount > 0 ? totalAmount : 1
 
   const handleStripeCheckout = async () => {
-    if (!stripePromise) {
-      alert("Stripe non è configurato. Aggiungi NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY.")
-      return
-    }
     try {
       const res = await fetch('/api/checkout', {
         method: 'POST',
@@ -49,8 +45,8 @@ export default function CheckoutPage() {
     }
   }
 
-  // Forza sandbox finché richiesto
-  const paypalClientId = 'sb'
+  // Preferisce env, fallback sandbox
+  const paypalClientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || 'sb'
 
   return (
     <main>
@@ -92,7 +88,7 @@ export default function CheckoutPage() {
                 </div>
 
                 <div className="paypal-container">
-                  {mounted && (
+                  {mounted && paypalClientId && (
                   <PayPalScriptProvider options={{ clientId: paypalClientId, currency: 'EUR', intent: 'CAPTURE', components: 'buttons' }}>
                     <PayPalButtons
                         fundingSource={FUNDING.PAYPAL}

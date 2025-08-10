@@ -3,7 +3,11 @@
 import { useMemo, useState, useEffect } from "react"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
-import { useCart } from "@/components/CartContext"
+import { useCartWithToast } from "@/components/useCartWithToast"
+import { ProductGridSkeleton } from "@/components/Skeleton"
+import MobileFilters from "@/components/MobileFilters"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 type Prodotto = {
   id: string
@@ -18,7 +22,8 @@ type Prodotto = {
 }
 
 export default function ShopPage() {
-  const { addItem } = useCart()
+  const router = useRouter()
+  const { addItem } = useCartWithToast()
   const [prodotti, setProdotti] = useState<Prodotto[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -27,6 +32,10 @@ export default function ShopPage() {
   const [categoria, setCategoria] = useState<string>("tutti")
   const [ordine, setOrdine] = useState<"prezzo_asc" | "prezzo_desc" | "nome_asc">("prezzo_asc")
   const [query, setQuery] = useState("")
+  const [prezzoMin, setPrezzoMin] = useState<number>(0)
+  const [prezzoMax, setPrezzoMax] = useState<number>(1000)
+  const [soloDisponibili, setSoloDisponibili] = useState<boolean>(false)
+  const [filtersOpen, setFiltersOpen] = useState(false)
 
   // Fetch products from API
   useEffect(() => {
@@ -62,23 +71,44 @@ export default function ShopPage() {
   const filtrati = useMemo(() => {
     const q = query.trim().toLowerCase()
     let out = [...prodotti]
+    
+    // Filtro testo
     if (q) out = out.filter(p => p.name.toLowerCase().includes(q) || p.description.toLowerCase().includes(q))
+    
+    // Filtro categoria
     if (categoria !== "tutti") out = out.filter(p => p.category === categoria)
+    
+    // Filtro prezzo
+    out = out.filter(p => p.price >= prezzoMin && p.price <= prezzoMax)
+    
+    // Filtro disponibilità
+    if (soloDisponibili) out = out.filter(p => p.stock_quantity > 0)
+    
+    // Ordinamento
     if (ordine === "prezzo_asc") out.sort((a, b) => a.price - b.price)
     if (ordine === "prezzo_desc") out.sort((a, b) => b.price - a.price)
     if (ordine === "nome_asc") out.sort((a, b) => a.name.localeCompare(b.name))
+    
     return out
-  }, [prodotti, query, categoria, ordine])
+  }, [prodotti, query, categoria, ordine, prezzoMin, prezzoMax, soloDisponibili])
 
   const totalePagine = Math.max(1, Math.ceil(filtrati.length / perPagina))
   const paginaSicura = Math.min(Math.max(1, pagina), totalePagine)
   const start = (paginaSicura - 1) * perPagina
   const visibili = filtrati.slice(start, start + perPagina)
 
+  // Check if filters are active
+  const hasActiveFilters = useMemo(() => {
+    return query !== "" || categoria !== "tutti" || prezzoMin !== 0 || prezzoMax !== 1000 || soloDisponibili || ordine !== "prezzo_asc"
+  }, [query, categoria, prezzoMin, prezzoMax, soloDisponibili, ordine])
+
   const onReset = () => {
     setQuery("")
     setCategoria("tutti")
     setOrdine("prezzo_asc")
+    setPrezzoMin(0)
+    setPrezzoMax(1000)
+    setSoloDisponibili(false)
     setPagina(1)
   }
 
@@ -88,9 +118,8 @@ export default function ShopPage() {
         <Header />
         <section className="shop-section">
           <div className="shop-container">
-            <div className="loading-container">
-              <div className="spinner"></div>
-              <p>Caricamento prodotti...</p>
+            <div className="loading-state">
+              <ProductGridSkeleton count={8} />
             </div>
           </div>
         </section>
@@ -119,55 +148,105 @@ export default function ShopPage() {
     )
   }
 
+  // Filter content component
+  const FilterContent = () => (
+    <>
+      <div className="filter-group">
+        <label className="filter-label" htmlFor="search">Cerca prodotti</label>
+        <input
+          id="search"
+          className="search"
+          type="text"
+          placeholder="Cerca per nome o descrizione..."
+          value={query}
+          onChange={(e) => { setQuery(e.target.value); setPagina(1) }}
+        />
+      </div>
+
+      <div className="filter-group">
+        <label className="filter-label">Categoria</label>
+        <div className="filter-chips">
+          {categorie.map((cat) => (
+            <button
+              key={cat}
+              className={`chip ${categoria === cat ? "active" : ""}`}
+              onClick={() => { setCategoria(cat); setPagina(1) }}
+            >
+              {cat === "tutti" ? "Tutte" : cat.charAt(0).toUpperCase() + cat.slice(1)}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="filter-group">
+        <label className="filter-label">Fascia di prezzo</label>
+        <div className="price-range">
+          <input
+            type="number"
+            className="price-input"
+            placeholder="Min"
+            value={prezzoMin}
+            onChange={(e) => { setPrezzoMin(Math.max(0, Number(e.target.value) || 0)); setPagina(1) }}
+          />
+          <span>-</span>
+          <input
+            type="number"
+            className="price-input"
+            placeholder="Max"
+            value={prezzoMax}
+            onChange={(e) => { setPrezzoMax(Math.max(0, Number(e.target.value) || 1000)); setPagina(1) }}
+          />
+          <span>€</span>
+        </div>
+      </div>
+
+      <div className="filter-group">
+        <label className="filter-checkbox">
+          <input
+            type="checkbox"
+            checked={soloDisponibili}
+            onChange={(e) => { setSoloDisponibili(e.target.checked); setPagina(1) }}
+          />
+          Solo prodotti disponibili
+        </label>
+      </div>
+
+      <div className="filter-group">
+        <label className="filter-label">Ordina per</label>
+        <select
+          className="select"
+          value={ordine}
+          onChange={(e) => { setOrdine(e.target.value as any); setPagina(1) }}
+        >
+          <option value="prezzo_asc">Prezzo: crescente</option>
+          <option value="prezzo_desc">Prezzo: decrescente</option>
+          <option value="nome_asc">Nome: A-Z</option>
+        </select>
+      </div>
+
+      <button className="btn btn-secondary desktop-reset-btn" onClick={onReset}>Reset filtri</button>
+    </>
+  )
+
   return (
     <main>
       <Header />
       <section className="shop-section">
         <div className="shop-container">
-          <aside className="shop-filters">
+          {/* Mobile Filters */}
+          <MobileFilters
+            resultsCount={filtrati.length}
+            isOpen={filtersOpen}
+            onToggle={() => setFiltersOpen(!filtersOpen)}
+            onReset={onReset}
+            hasActiveFilters={hasActiveFilters}
+          >
+            <FilterContent />
+          </MobileFilters>
+
+          <aside className="shop-filters desktop-filters">
             <h2 className="poppins">Filtri</h2>
-
-            <div className="filter-group">
-              <label className="filter-label" htmlFor="search">Cerca prodotti</label>
-              <input
-                id="search"
-                className="search"
-                type="text"
-                placeholder="Cerca per nome o descrizione..."
-                value={query}
-                onChange={(e) => { setQuery(e.target.value); setPagina(1) }}
-              />
-            </div>
-
-            <div className="filter-group">
-              <label className="filter-label">Categoria</label>
-              <div className="filter-chips">
-                {categorie.map((cat) => (
-                  <button
-                    key={cat}
-                    className={`chip ${categoria === cat ? "active" : ""}`}
-                    onClick={() => { setCategoria(cat); setPagina(1) }}
-                  >
-                    {cat === "tutti" ? "Tutte" : cat.charAt(0).toUpperCase() + cat.slice(1)}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="filter-group">
-              <label className="filter-label">Ordina per</label>
-              <select
-                className="select"
-                value={ordine}
-                onChange={(e) => { setOrdine(e.target.value as any); setPagina(1) }}
-              >
-                <option value="prezzo_asc">Prezzo: crescente</option>
-                <option value="prezzo_desc">Prezzo: decrescente</option>
-                <option value="nome_asc">Nome: A-Z</option>
-              </select>
-            </div>
-
-            <button className="btn btn-secondary" onClick={onReset}>Reset filtri</button>
+            <FilterContent />
           </aside>
 
           <section className="shop-list">
@@ -178,39 +257,37 @@ export default function ShopPage() {
 
             <div className="grid">
               {visibili.map((p) => (
-                <article key={p.id} className="card">
-                  <div className="thumb" style={{ backgroundImage: `url(${p.image_url})` }} />
-                  <div className="body">
-                    <h3 className="poppins name">{p.name}</h3>
-                    <p className="desc">{p.description}</p>
-                    <div className="meta">
-                      <span className="badge">{p.category}</span>
-                      <span className="stock">
-                        {p.stock_quantity > 0 ? 
-                          `${p.stock_quantity} disponibili` : 
-                          'Esaurito'
-                        }
-                      </span>
+                <Link href={`/product/${p.id}`} key={p.id} style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <article
+                    className="card"
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <div className="thumb" style={{ backgroundImage: `url(${p.image_url})` }} />
+                    <div className="body">
+                      <h3 className="poppins name">{p.name}</h3>
+                      <p className="desc">{p.description}</p>
+                      <div className="meta">
+                        <span className="badge">{p.category}</span>
+                        <span className="stock">
+                          {p.stock_quantity > 0 ? 
+                            `${p.stock_quantity} disponibili` : 
+                            'Esaurito'
+                          }
+                        </span>
+                      </div>
+                      <div className="card-footer">
+                        <span className="price">€ {p.price.toFixed(2)}</span>
+                        <button 
+                          className="btn btn-primary small" 
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); addItem({ id: p.id, nome: p.name, prezzo: p.price, immagine: p.image_url, tipo: p.category, pezzi: 1 }); }}
+                          disabled={p.stock_quantity === 0}
+                        >
+                          {p.stock_quantity > 0 ? 'Aggiungi al carrello' : 'Esaurito'}
+                        </button>
+                      </div>
                     </div>
-                    <div className="card-footer">
-                      <span className="price">€ {p.price.toFixed(2)}</span>
-                      <button 
-                        className="btn btn-primary small" 
-                        disabled={p.stock_quantity === 0}
-                        onClick={() => addItem({ 
-                          id: p.id, 
-                          nome: p.name, 
-                          prezzo: p.price, 
-                          immagine: p.image_url,
-                          tipo: p.category,
-                          pezzi: 1
-                        })}
-                      >
-                        {p.stock_quantity > 0 ? 'Aggiungi al carrello' : 'Esaurito'}
-                      </button>
-                    </div>
-                  </div>
-                </article>
+                  </article>
+                </Link>
               ))}
             </div>
 
@@ -311,6 +388,46 @@ export default function ShopPage() {
         .select:focus, .search:focus {
           outline: none;
           border-color: var(--color-brown);
+        }
+        
+        /* Price Range Styles */
+        .price-range {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+        .price-input {
+          width: 80px;
+          padding: 0.5rem 0.7rem;
+          border: 2px solid #e9ecef;
+          border-radius: 8px;
+          font-size: 0.9rem;
+          text-align: center;
+          transition: border-color 0.3s ease;
+        }
+        .price-input:focus {
+          outline: none;
+          border-color: var(--color-brown);
+        }
+        .price-range span {
+          color: #666;
+          font-weight: 500;
+        }
+        
+        /* Checkbox Styles */
+        .filter-checkbox {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          cursor: pointer;
+          font-weight: 500;
+          font-size: 0.95rem;
+        }
+        .filter-checkbox input[type="checkbox"] {
+          width: 18px;
+          height: 18px;
+          accent-color: var(--color-brown);
+          cursor: pointer;
         }
 
         /* Loading & Error States */
@@ -456,17 +573,29 @@ export default function ShopPage() {
           font-weight: 500;
         }
 
+        .desktop-reset-btn {
+          display: block;
+        }
+
         /* Responsive */
         @media (max-width: 992px) { 
           .shop-container { 
             grid-template-columns: 1fr; 
-            gap: 2rem;
+            gap: 1rem;
           }
-          .shop-filters {
-            order: 2;
+          
+          .desktop-filters {
+            display: none;
           }
+          
           .shop-list {
             order: 1;
+          }
+        }
+        
+        @media (min-width: 993px) {
+          .desktop-reset-btn {
+            display: block;
           }
         }
         

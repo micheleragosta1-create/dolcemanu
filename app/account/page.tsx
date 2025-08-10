@@ -2,6 +2,7 @@
 
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
+import { useEffect, useState } from "react"
 
 interface Order {
   id: string
@@ -16,6 +17,25 @@ interface Order {
 }
 
 export default function AccountPage() {
+  const [email, setEmail] = useState<string>('mario@example.com') // utente simulato
+  const [orders, setOrders] = useState<any[] | null>(null)
+  const [loading, setLoading] = useState<boolean>(true)
+
+  useEffect(() => {
+    const run = async () => {
+      setLoading(true)
+      try {
+        const res = await fetch(`/api/orders/user/${encodeURIComponent(email)}`)
+        const data = await res.json()
+        setOrders(Array.isArray(data) ? data : [])
+      } catch {
+        setOrders([])
+      } finally {
+        setLoading(false)
+      }
+    }
+    run()
+  }, [email])
 
   return (
     <main>
@@ -23,10 +43,63 @@ export default function AccountPage() {
       <section className="account-section">
         <div className="account-container">
           <div className="account-header">
-            <h1 className="poppins">Il Mio Account</h1>
-            <p>Sistema di autenticazione temporaneamente disabilitato.</p>
-            <p>Accedi tramite il pulsante nel menu per utilizzare questa funzionalità.</p>
-            <a href="/auth" className="btn btn-primary">Accedi</a>
+            <div className="user-info">
+              <div className="avatar">{email[0]?.toUpperCase() || 'U'}</div>
+              <div>
+                <h2 className="poppins">{email}</h2>
+                <p>Accesso simulato (demo)</p>
+              </div>
+            </div>
+            <div>
+              <label htmlFor="emailSel" style={{fontSize: '.85rem', color: '#666'}}>Simula utente: </label>
+              <select id="emailSel" value={email} onChange={(e)=>setEmail(e.target.value)} className="form-input" style={{marginLeft: '.5rem'}}>
+                <option value="mario@example.com">mario@example.com</option>
+                <option value="giulia@example.com">giulia@example.com</option>
+                <option value="antonio.bianchi@outlook.it">antonio.bianchi@outlook.it</option>
+                <option value="francesca.ferrari@libero.it">francesca.ferrari@libero.it</option>
+                <option value="luca.marino@yahoo.it">luca.marino@yahoo.it</option>
+                <option value="sara.ricci@tiscali.it">sara.ricci@tiscali.it</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="account-content">
+            <div className="orders-section">
+              <h2 className="poppins">I miei ordini</h2>
+              {loading ? (
+                <div className="loading">Caricamento ordini...</div>
+              ) : orders && orders.length > 0 ? (
+                <div className="orders-list">
+                  {orders.map((o) => (
+                    <div key={o.id} className="order-card">
+                      <div className="order-header">
+                        <div>
+                          <h3>Ordine #{o.id}</h3>
+                          <p className="order-date">{new Date(o.date).toLocaleString('it-IT')}</p>
+                        </div>
+                        <div className="order-status">
+                          <span className="status-badge" style={{background: o.status==='delivered'? '#16a34a': o.status==='shipped'? '#2563eb': o.status==='processing'? '#f59e0b': o.status==='pending'? '#a3a3a3': '#dc2626'}}>
+                            {o.status}
+                          </span>
+                          <span className="order-total">€ {o.total.toFixed(2)}</span>
+                        </div>
+                      </div>
+                      <div className="order-items">
+                        <div className="order-item"><span>Prodotto</span><span>Q.tà</span><span>Prezzo</span></div>
+                        {o.items.map((it:any, idx:number)=> (
+                          <div className="order-item" key={idx}><span>{it.name}</span><span>{it.quantity}</span><span>€ {it.price.toFixed(2)}</span></div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="no-orders">
+                  <p>Nessun ordine trovato per questo utente.</p>
+                  <a href="/shop" className="btn btn-primary">Vai allo shop</a>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </section>

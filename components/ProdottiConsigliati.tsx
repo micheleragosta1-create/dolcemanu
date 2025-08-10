@@ -1,6 +1,8 @@
 "use client"
 
-import { useCart } from './CartContext'
+import Link from "next/link"
+import { useCartWithToast } from "./useCartWithToast"
+import { TouchRipple } from "./TouchIndicators"
 
 const prodotti = [
   {
@@ -30,7 +32,7 @@ const prodotti = [
 ]
 
 export default function ProdottiConsigliati() {
-  const { addItem } = useCart()
+  const { addItem } = useCartWithToast()
   return (
     <section id="shop" className="prodotti-section">
       <div className="prodotti-container">
@@ -44,35 +46,41 @@ export default function ProdottiConsigliati() {
         <div className="prodotti-grid">
           {prodotti.map((prodotto) => (
             <div key={prodotto.id} className="prodotto-card">
-              <div className="prodotto-image-container">
-                <img
-                  src={prodotto.immagine}
-                  alt={prodotto.nome}
-                  className="prodotto-image"
-                />
-                <span className="prodotto-etichetta">{prodotto.etichetta}</span>
-              </div>
+              <Link href={`/product/${prodotto.id}`}>
+                <div className="prodotto-image-container">
+                  <img
+                    src={prodotto.immagine}
+                    alt={prodotto.nome}
+                    className="prodotto-image"
+                  />
+                  <span className="prodotto-etichetta">{prodotto.etichetta}</span>
+                </div>
+              </Link>
               
               <div className="prodotto-content">
-                <h3 className="prodotto-nome">{prodotto.nome}</h3>
+                <Link href={`/product/${prodotto.id}`}>
+                  <h3 className="prodotto-nome">{prodotto.nome}</h3>
+                </Link>
                 <p className="prodotto-descrizione">{prodotto.descrizione}</p>
                 <div className="prodotto-footer">
                   <span className="prodotto-prezzo">€{prodotto.prezzo.toFixed(2)}</span>
-                  <button 
-                    className="btn btn-primary prodotto-btn"
-                    onClick={() => addItem({
-                      id: prodotto.id,
-                      nome: prodotto.nome,
-                      prezzo: prodotto.prezzo,
-                      immagine: prodotto.immagine
-                    })}
-                  >
-                    Aggiungi al Carrello
-                  </button>
+                  <TouchRipple>
+                    <button 
+                      className="btn btn-primary prodotto-btn"
+                      onClick={() => addItem({
+                        id: prodotto.id,
+                        nome: prodotto.nome,
+                        prezzo: prodotto.prezzo,
+                        immagine: prodotto.immagine
+                      })}
+                    >
+                      Aggiungi al Carrello
+                    </button>
+                  </TouchRipple>
                 </div>
               </div>
             </div>
-          ))}
+          ))},
         </div>
       </div>
     </section>

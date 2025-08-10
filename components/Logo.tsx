@@ -11,7 +11,7 @@ export default function Logo({ className = "logo-image" }: { className?: string 
         <style>{`
           .cobalt{fill:#0047ab}
           .choco{fill:#5e3621}
-          .cream{fill:#faf7f0}
+          .cream{fill:#ffffff}
           .turq{fill:#2bb1c9}
           .text{fill:#0b2a42;font-family:'Poppins',sans-serif;font-weight:700;letter-spacing:0.5px}
         `}</style>
