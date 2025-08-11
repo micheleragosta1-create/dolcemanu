@@ -28,10 +28,11 @@ export default function InstagramGallery() {
           {instagramPosts.map((post) => (
             <a
               key={post.id}
-              href="https://instagram.com/_dolcemanu_"
+              href={`https://instagram.com/_dolcemanu_`}
               target="_blank"
               rel="noopener noreferrer"
               className="instagram-post"
+              aria-label={`Apri su Instagram: ${post.alt}`}
             >
               <img src={post.image} alt={post.alt} className="instagram-image" />
               <div className="instagram-overlay">
