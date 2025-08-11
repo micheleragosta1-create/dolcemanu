@@ -84,6 +84,18 @@ export default function AdminOrders() {
     setShowOrderModal(true)
   }
 
+  const formatDateTime = (iso: string) => {
+    try {
+      const d = new Date(iso)
+      return d.toLocaleString('it-IT', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      })
+    } catch {
+      return iso
+    }
+  }
+
   if (ordersLoading) {
     return (
       <div className="p-8">
@@ -134,112 +146,88 @@ export default function AdminOrders() {
         </div>
       </div>
 
-      {/* Lista ordini */}
-      <div className="card">
-        <div className="table-wrap">
-          <table className="admin-table">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  ID Ordine
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Data
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Importo
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Stato
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Indirizzo
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Azioni
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredOrders.map((order) => (
-                <tr key={order.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <Package className="w-4 h-4 mr-2 text-gray-400" />
-                      <span className="text-sm font-medium text-gray-900">
-                        #{order.id.slice(0, 8)}...
-                      </span>
+      {/* Lista ordini - stile card, come la UI mostrata */}
+      <div className="space-y-6">
+        {filteredOrders.map((order) => (
+          <div key={order.id} className="bg-white border border-gray-200 rounded-xl shadow-sm">
+            {/* Header card */}
+            <div className="flex items-start justify-between p-6 border-b border-gray-100">
+              <div>
+                <h4 className="text-xl font-bold text-gray-900">Ordine #{order.id.slice(0, 8)}</h4>
+                <p className="text-sm text-gray-500 flex items-center mt-1">
+                  <Calendar className="w-4 h-4 mr-1 text-gray-400" />
+                  {formatDateTime(order.created_at)}
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(order.status)}`}>
+                  {getStatusLabel(order.status)}
+                </span>
+                <div className="text-right">
+                  <p className="text-sm text-gray-400">Totale</p>
+                  <p className="text-2xl font-extrabold text-orange-700">{formatCurrency(order.total_amount)}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Body: items */}
+            <div className="p-6">
+              <div className="grid grid-cols-12 text-gray-500 text-sm font-semibold mb-2">
+                <div className="col-span-7 sm:col-span-7">Prodotto</div>
+                <div className="col-span-2 text-center">Q.tà</div>
+                <div className="col-span-3 text-right">Prezzo</div>
+              </div>
+              <div className="divide-y divide-gray-100">
+                {(order.order_items && order.order_items.length > 0 ? order.order_items : []).map((item: any, idx: number) => (
+                  <div key={idx} className="grid grid-cols-12 py-2 items-center">
+                    <div className="col-span-7 sm:col-span-7">
+                      <p className="text-gray-800">{item.products?.name || 'Prodotto'}</p>
                     </div>
-                  </td>
-                  
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <Calendar className="w-4 h-4 mr-2 text-gray-400" />
-                      <span className="text-sm text-gray-500">
-                        {new Date(order.created_at).toLocaleDateString('it-IT')}
-                      </span>
+                    <div className="col-span-2 text-center">
+                      <span className="text-gray-700">{item.quantity}</span>
                     </div>
-                  </td>
-                  
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <Euro className="w-4 h-4 mr-1 text-gray-400" />
-                      <span className="text-sm font-semibold text-gray-900">
-                        {formatCurrency(order.total_amount)}
-                      </span>
+                    <div className="col-span-3 text-right">
+                      <span className="text-gray-900">{formatCurrency(item.price)}</span>
                     </div>
-                  </td>
-                  
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <select
-                      value={order.status}
-                      onChange={(e) => handleStatusUpdate(order.id, e.target.value)}
-                      disabled={updatingOrder === order.id}
-                      className={`text-xs font-semibold rounded-full px-3 py-1 border-0 focus:ring-2 focus:ring-pink-500 ${getStatusColor(order.status)}`}
-                    >
-                      <option value="pending">In attesa</option>
-                      <option value="confirmed">Confermato</option>
-                      <option value="shipped">Spedito</option>
-                      <option value="delivered">Consegnato</option>
-                      <option value="cancelled">Annullato</option>
-                    </select>
-                  </td>
-                  
-                  <td className="px-6 py-4">
-                    <div className="flex items-center max-w-xs">
-                      <MapPin className="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" />
-                      <span className="text-sm text-gray-500 truncate">
-                        {order.shipping_address}
-                      </span>
-                    </div>
-                  </td>
-                  
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => openOrderDetails(order)}
-                        className="btn btn-secondary small flex items-center"
-                        title="Visualizza dettagli"
-                      >
-                        <Eye className="w-4 h-4 mr-1" /> Dettagli
-                      </button>
-                      <button
-                        onClick={() => openOrderDetails(order)}
-                        className="btn btn-primary small flex items-center"
-                        title="Modifica ordine"
-                      >
-                        <Edit3 className="w-4 h-4 mr-1" /> Modifica
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        
+                  </div>
+                ))}
+                {(!order.order_items || order.order_items.length === 0) && (
+                  <div className="py-4 text-sm text-gray-500">Nessun dettaglio prodotto disponibile</div>
+                )}
+              </div>
+
+              {/* Footer azioni */}
+              <div className="mt-4 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+                <div className="flex items-center gap-2">
+                  <label className="text-sm text-gray-600">Aggiorna stato:</label>
+                  <select
+                    value={order.status}
+                    onChange={(e) => handleStatusUpdate(order.id, e.target.value)}
+                    disabled={updatingOrder === order.id}
+                    className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-pink-500"
+                  >
+                    <option value="pending">In attesa</option>
+                    <option value="confirmed">Confermato</option>
+                    <option value="shipped">Spedito</option>
+                    <option value="delivered">Consegnato</option>
+                    <option value="cancelled">Annullato</option>
+                  </select>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => openOrderDetails(order)} className="btn btn-secondary small flex items-center">
+                    <Eye className="w-4 h-4 mr-1" /> Dettagli
+                  </button>
+                  <button onClick={() => openOrderDetails(order)} className="btn btn-primary small flex items-center">
+                    <Edit3 className="w-4 h-4 mr-1" /> Modifica
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+
         {filteredOrders.length === 0 && (
-          <div className="text-center py-12 text-gray-500">
+          <div className="text-center py-12 text-gray-500 bg-white border rounded-xl">
             <Package className="w-16 h-16 mx-auto mb-4 text-gray-300" />
             <p className="text-lg font-medium">Nessun ordine trovato</p>
             <p className="text-sm">Prova a modificare i filtri di ricerca</p>
