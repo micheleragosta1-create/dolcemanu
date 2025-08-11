@@ -1,6 +1,7 @@
 'use client'
 
 import { Instagram } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 // Immagini locali dalla cartella public
 const instagramPosts = [
@@ -12,7 +13,29 @@ const instagramPosts = [
   { id: 6, image: '/images/instagram-6.svg', alt: 'Dessert creativi' },
 ]
 
+type ApiPost = { id: string; caption?: string; media_url?: string; thumbnail_url?: string; permalink: string }
+
 export default function InstagramGallery() {
+  const [apiPosts, setApiPosts] = useState<ApiPost[] | null>(null)
+
+  useEffect(() => {
+    let active = true
+    fetch('/api/instagram')
+      .then(r => r.json())
+      .then((payload) => {
+        if (!active) return
+        if (payload?.meta?.ok && Array.isArray(payload?.posts) && payload.posts.length > 0) {
+          setApiPosts(payload.posts)
+        }
+      })
+      .catch(() => {})
+    return () => { active = false }
+  }, [])
+
+  const postsToShow = apiPosts && apiPosts.length > 0
+    ? apiPosts.map(p => ({ id: p.id, image: p.media_url || p.thumbnail_url || '', alt: p.caption || 'Instagram', href: p.permalink }))
+    : instagramPosts.map(p => ({ ...p, href: 'https://instagram.com/_dolcemanu_' }))
+
   return (
     <section className="instagram-section">
       <div className="instagram-container">
@@ -25,10 +48,10 @@ export default function InstagramGallery() {
         </div>
 
         <div className="instagram-grid">
-          {instagramPosts.map((post) => (
+          {postsToShow.map((post) => (
             <a
               key={post.id}
-              href={`https://instagram.com/_dolcemanu_`}
+              href={post.href}
               target="_blank"
               rel="noopener noreferrer"
               className="instagram-post"
