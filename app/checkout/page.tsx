@@ -14,8 +14,18 @@ const stripePromise = typeof window !== 'undefined' && process.env.NEXT_PUBLIC_S
 export default function CheckoutPage() {
   const { items, totalAmount } = useCart()
   const [paypalReady, setPaypalReady] = useState(false)
+  const [paypalError, setPaypalError] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
+  useEffect(() => {
+    if (!mounted) return
+    const timer = window.setTimeout(() => {
+      if (!paypalReady) {
+        setPaypalError('PayPal non si è caricato. Verifica la connessione o ricarica la pagina.')
+      }
+    }, 5000)
+    return () => window.clearTimeout(timer)
+  }, [mounted, paypalReady])
   const payableAmount = Number.isFinite(totalAmount) && totalAmount > 0 ? totalAmount : 1
 
   const handleStripeCheckout = async () => {
@@ -46,7 +56,26 @@ export default function CheckoutPage() {
   }
 
   // Preferisce env, fallback sandbox
-  const paypalClientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || 'sb'
+  // Fallback sandbox ufficiale di PayPal e trim per evitare spazi invisibili
+  const paypalClientId = (process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || 'sb').trim()
+
+  // Evita mismatch SSR/CSR: mostra placeholder fino al mount
+  if (!mounted) {
+    return (
+      <main>
+        <Header />
+        <section className="checkout-section">
+          <div className="checkout-container">
+            <h1 className="poppins">Checkout</h1>
+            <div className="summary" style={{marginTop: '1rem'}}>
+              <p>Caricamento checkout...</p>
+            </div>
+          </div>
+        </section>
+        <Footer />
+      </main>
+    )
+  }
 
   return (
     <main>
@@ -76,8 +105,8 @@ export default function CheckoutPage() {
 
               <div className="payments">
                 <h2 className="poppins">Pagamento</h2>
-                <button className="stripe-btn" onClick={handleStripeCheckout}>
-                  <svg className="stripe-icon" viewBox="0 0 60 25" width="60" height="25">
+                <button className="stripe-btn" onClick={handleStripeCheckout} aria-label="Paga con Stripe">
+                  <svg className="stripe-icon" viewBox="0 0 60 25" width="44" height="18" aria-hidden="true">
                     <path fill="#635bff" d="M59.64 14.28h-8.06c.19 1.93 1.6 2.55 3.2 2.55 1.64 0 2.96-.37 4.05-.95v3.32a8.33 8.33 0 0 1-4.56 1.1c-4.01 0-6.83-2.5-6.83-7.48 0-4.19 2.39-7.52 6.3-7.52 3.92 0 5.96 3.28 5.96 7.5 0 .4-.04 1.26-.06 1.48zm-5.92-5.62c-1.03 0-2.17.73-2.17 2.58h4.25c0-1.85-1.07-2.58-2.08-2.58zM40.95 20.3c-1.44 0-2.32-.6-2.9-1.04l-.02 4.63-4.12.87V5.57h3.76l.08 1.02a4.7 4.7 0 0 1 3.23-1.29c2.9 0 5.62 2.6 5.62 7.4 0 5.23-2.7 7.6-5.65 7.6zM40 8.95c-.95 0-1.54.34-1.97.81l.02 6.12c.4.44.98.78 1.95.78 1.52 0 2.54-1.65 2.54-3.87 0-2.15-1.04-3.84-2.54-3.84zM28.24 5.57h4.13v14.44h-4.13V5.57zm0-4.7L32.37 0v3.36l-4.13.88V.88zm-4.32 9.35v9.79H19.8V5.57h3.7l.12 1.22c1-1.77 3.07-1.41 3.62-1.22v3.79c-.52-.17-2.29-.43-3.32.86zm-8.55 4.72c0 2.43 2.6 1.68 3.12 1.46v3.36c-.55.3-1.54.54-2.89.54a4.15 4.15 0 0 1-4.27-4.24l.01-13.17L15.8 6.6v3.47h3.12v3.5h-3.12v.47zM6.16 20.3C1.65 20.3 0 16.5 0 12.26 0 8.27 1.67 4.3 6.16 4.3c4.48 0 6.16 3.97 6.16 7.96 0 4.24-1.68 8.04-6.16 8.04zM6.16 7.73c-1.77 0-2.07 2.5-2.07 4.54 0 2.04.3 4.51 2.07 4.51 1.77 0 2.07-2.47 2.07-4.51 0-2.04-.3-4.54-2.07-4.54z"/>
                   </svg>
                   Paga con Carta di Credito
@@ -89,52 +118,70 @@ export default function CheckoutPage() {
 
                 <div className="paypal-container">
                   {mounted && paypalClientId && (
-                  <PayPalScriptProvider options={{ clientId: paypalClientId, currency: 'EUR', intent: 'CAPTURE', components: 'buttons' }}>
-                    <PayPalButtons
-                        fundingSource={FUNDING.PAYPAL}
+                  <PayPalScriptProvider options={{ 'client-id': paypalClientId, currency: 'EUR', intent: 'capture', components: 'buttons', locale: 'it_IT', debug: true }}>
+                     <PayPalButtons
+                        // Lasciamo che la SDK scelga il funding idoneo
                         style={{ 
                           layout: "vertical", 
-                          color: "gold", 
+                          color: "gold", // Gold ufficiale per alta visibilità
                           shape: "rect", 
                           label: "paypal", 
                           tagline: false,
                           height: 50
                         }}
-                        forceReRender={[paypalClientId, 'EUR', payableAmount]}
+                        forceReRender={[paypalClientId, 'EUR', payableAmount, items.length]}
                         onInit={() => setPaypalReady(true)}
+                        onClick={(_, actions) => {
+                          if (!items.length || payableAmount <= 0) return actions.reject()
+                          return actions.resolve()
+                        }}
                         createOrder={(data, actions) => {
+                        const paypalItems = items.map(i => ({
+                          name: i.nome,
+                          quantity: String(i.qty),
+                          unit_amount: { currency_code: 'EUR', value: i.prezzo.toFixed(2) }
+                        }))
+                        const total = items.reduce((sum, i) => sum + i.prezzo * i.qty, 0)
                         return actions.order.create({
                           intent: 'CAPTURE',
                           purchase_units: [
                             {
+                              description: 'Acquisto dolci artigianali',
+                              items: paypalItems,
                               amount: {
                                 currency_code: 'EUR',
-                                value: payableAmount.toFixed(2)
+                                value: total.toFixed(2),
+                                breakdown: {
+                                  item_total: { currency_code: 'EUR', value: total.toFixed(2) }
+                                }
                               }
                             }
-                          ]
+                          ],
+                          application_context: {
+                            shipping_preference: 'NO_SHIPPING',
+                          }
                         })
                       }}
                       onApprove={async (data, actions) => {
-                        await actions.order?.capture()
-                        alert('Pagamento PayPal completato!')
+                        const details = await actions.order?.capture()
+                        const payerName = details?.payer?.name?.given_name || 'Cliente'
+                        alert(`Grazie ${payerName}! Pagamento PayPal completato.`)
                         window.location.href = '/?checkout=success'
                       }}
                       onError={(err) => {
                         console.error('PayPal error', err)
-                        alert('PayPal non disponibile al momento. Riprova o usa la carta.')
+                        setPaypalError('PayPal non disponibile al momento. Riprova o usa la carta.')
                       }}
                       />
                   </PayPalScriptProvider>
                   )}
-                  {!paypalReady && (
-                    <div className="paypal-skeleton">
-                      <div className="paypal-skeleton-bar" />
-                    </div>
-                  )}
-                  <div className="note" style={{marginTop: 8, textAlign: 'center'}}>
-                    {paypalClientId === 'sb' ? 'Modalità sandbox PayPal attiva (configura NEXT_PUBLIC_PAYPAL_CLIENT_ID per la modalità live).' : ''}
-                  </div>
+                   <div className="note" style={{marginTop: 8, textAlign: 'center'}}>
+                    {paypalError
+                      ? paypalError
+                      : (!paypalReady
+                          ? 'Caricamento PayPal…'
+                          : (paypalClientId === 'sb' ? 'Modalità sandbox PayPal attiva (configura NEXT_PUBLIC_PAYPAL_CLIENT_ID per la modalità live).' : ''))}
+                   </div>
                 </div>
               </div>
             </div>
@@ -183,9 +230,7 @@ export default function CheckoutPage() {
 
         /* Effetto rimosso */
         
-        .stripe-icon {
-          filter: brightness(0) invert(1);
-        }
+        .stripe-icon { filter: brightness(0) invert(1); width: 44px; height: 18px; flex-shrink: 0; display: block; }
         
         /* Divider */
         .divider {
