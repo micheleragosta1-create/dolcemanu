@@ -137,101 +137,126 @@ export default function AdminProducts() {
     )
   }
 
+  // Sottocomponente per la card prodotto con descrizione espandibile
+  const ProductCard = ({ product }: { product: any }) => {
+    const [isExpanded, setIsExpanded] = useState(false)
+
+    return (
+      <div className="card overflow-hidden hover:shadow-lg transition-shadow">
+        {/* Immagine prodotto */}
+        <div className="h-48 bg-gray-100 flex items-center justify-center">
+          {product.image_url ? (
+            <img
+              src={product.image_url}
+              alt={product.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="text-center text-gray-400">
+              <ImageIcon className="w-12 h-12 mx-auto mb-2" />
+              <p className="text-sm">Nessuna immagine</p>
+            </div>
+          )}
+        </div>
+
+        {/* Informazioni prodotto */}
+        <div className="p-4">
+          <div className="flex justify-between items-start mb-2">
+            <h3 className="text-lg font-semibold text-gray-800 line-clamp-2">
+              {product.name}
+            </h3>
+            <span className="text-lg font-bold text-pink-600">
+              {formatCurrency(product.price)}
+            </span>
+          </div>
+
+          {/* Descrizione con toggle */}
+          <div className="relative mb-3">
+            <p
+              className={
+                `text-gray-700 text-sm whitespace-pre-line ` +
+                (isExpanded ? '' : 'line-clamp-3 pr-6')
+              }
+            >
+              {product.description}
+            </p>
+            {!isExpanded && (
+              <div className="absolute right-0 top-0 h-full w-6 bg-gradient-to-l from-white to-transparent pointer-events-none" />
+            )}
+            <button
+              type="button"
+              aria-expanded={isExpanded}
+              onClick={() => setIsExpanded((v) => !v)}
+              className="mt-1 text-xs font-medium text-pink-600 hover:text-pink-700 focus:outline-none"
+            >
+              {isExpanded ? 'Chiudi' : 'Mostra tutto'}
+            </button>
+          </div>
+
+          <div className="flex justify-between items-center mb-4">
+            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStockColor(product.stock)}`}>
+              {getStockLabel(product.stock)}
+            </span>
+            <span className="text-sm text-gray-500">
+              Stock: {product.stock}
+            </span>
+          </div>
+
+          {product.category && (
+            <p className="text-xs text-gray-500 mb-4">
+              Categoria: <span className="inline-block px-2 py-0.5 bg-gray-100 border border-gray-200 rounded-md text-gray-700">{product.category}</span>
+            </p>
+          )}
+
+          {/* Azioni */}
+          <div className="flex space-x-2">
+            <button
+              onClick={() => openEditProduct(product)}
+              className="btn btn-secondary small flex-1 flex items-center justify-center"
+            >
+              <Edit3 className="w-4 h-4 mr-1" />
+              Modifica
+            </button>
+            <button
+              onClick={() => handleDelete(product.id)}
+              className="btn btn-primary small flex items-center justify-center"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="p-8">
+    <div className="admin-container">
       {/* Header e filtri */}
-      <div className="mb-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold text-gray-800">Gestione Prodotti</h2>
-          <button
-            onClick={openAddProduct}
-            className="bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700 flex items-center"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Nuovo Prodotto
+      <div className="card" style={{marginBottom:'1.5rem'}}>
+        <div className="card-head">
+          <h3>Gestione Prodotti</h3>
+          <button onClick={openAddProduct} className="btn btn-primary flex items-center">
+            <Plus className="w-4 h-4 mr-2" /> Nuovo Prodotto
           </button>
         </div>
-        
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-          <input
-            type="text"
-            placeholder="Cerca prodotti per nome, descrizione o categoria..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-          />
+        <div className="card-body">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <input
+              type="text"
+              placeholder="Cerca prodotti per nome, descrizione o categoria..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent shadow-sm"
+            />
+          </div>
         </div>
       </div>
 
       {/* Lista prodotti */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredProducts.map((product) => (
-          <div key={product.id} className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
-            {/* Immagine prodotto */}
-            <div className="h-48 bg-gray-100 flex items-center justify-center">
-              {product.image_url ? (
-                <img
-                  src={product.image_url}
-                  alt={product.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="text-center text-gray-400">
-                  <ImageIcon className="w-12 h-12 mx-auto mb-2" />
-                  <p className="text-sm">Nessuna immagine</p>
-                </div>
-              )}
-            </div>
-
-            {/* Informazioni prodotto */}
-            <div className="p-4">
-              <div className="flex justify-between items-start mb-2">
-                <h3 className="text-lg font-semibold text-gray-800 line-clamp-2">
-                  {product.name}
-                </h3>
-                <span className="text-lg font-bold text-pink-600">
-                  {formatCurrency(product.price)}
-                </span>
-              </div>
-
-              <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                {product.description}
-              </p>
-
-              <div className="flex justify-between items-center mb-4">
-                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStockColor(product.stock)}`}>
-                  {getStockLabel(product.stock)}
-                </span>
-                <span className="text-sm text-gray-500">
-                  Stock: {product.stock}
-                </span>
-              </div>
-
-              {product.category && (
-                <p className="text-xs text-gray-500 mb-4">
-                  Categoria: {product.category}
-                </p>
-              )}
-
-              {/* Azioni */}
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => openEditProduct(product)}
-                  className="flex-1 bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700 flex items-center justify-center"
-                >
-                  <Edit3 className="w-4 h-4 mr-1" />
-                  Modifica
-                </button>
-                <button
-                  onClick={() => handleDelete(product.id)}
-                  className="bg-red-600 text-white px-3 py-2 rounded text-sm hover:bg-red-700 flex items-center justify-center"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          </div>
+          <ProductCard key={product.id} product={product} />
         ))}
       </div>
 
@@ -352,13 +377,13 @@ export default function AdminProducts() {
                   <button
                     type="button"
                     onClick={() => setShowProductModal(false)}
-                    className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300"
+                    className="btn btn-secondary"
                   >
                     Annulla
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700"
+                    className="btn btn-primary"
                   >
                     {editingProduct ? 'Aggiorna' : 'Crea'} Prodotto
                   </button>

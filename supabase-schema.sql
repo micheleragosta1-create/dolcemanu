@@ -24,6 +24,7 @@ CREATE TABLE orders (
   total_amount DECIMAL(10,2) NOT NULL,
   status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'shipped', 'delivered', 'cancelled')),
   shipping_address TEXT NOT NULL,
+  admin_note TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -101,3 +102,65 @@ CREATE TRIGGER update_products_updated_at BEFORE UPDATE ON products
 
 CREATE TRIGGER update_orders_updated_at BEFORE UPDATE ON orders
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Function to decrease stock quantity safely
+CREATE OR REPLACE FUNCTION decrease_stock(product_id UUID, quantity INTEGER)
+RETURNS INTEGER AS $$
+DECLARE
+    current_stock INTEGER;
+    new_stock INTEGER;
+BEGIN
+    -- Get current stock
+    SELECT stock_quantity INTO current_stock 
+    FROM products 
+    WHERE id = product_id;
+    
+    -- Check if enough stock
+    IF current_stock IS NULL THEN
+        RAISE EXCEPTION 'Product not found';
+    END IF;
+    
+    IF current_stock < quantity THEN
+        RAISE EXCEPTION 'Insufficient stock';
+    END IF;
+    
+    -- Calculate new stock
+    new_stock := current_stock - quantity;
+    
+    -- Update stock
+    UPDATE products 
+    SET stock_quantity = new_stock 
+    WHERE id = product_id;
+    
+    RETURN new_stock;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to increase stock quantity safely
+CREATE OR REPLACE FUNCTION increase_stock(product_id UUID, quantity INTEGER)
+RETURNS INTEGER AS $$
+DECLARE
+    current_stock INTEGER;
+    new_stock INTEGER;
+BEGIN
+    -- Get current stock
+    SELECT stock_quantity INTO current_stock 
+    FROM products 
+    WHERE id = product_id;
+    
+    -- Check if product exists
+    IF current_stock IS NULL THEN
+        RAISE EXCEPTION 'Product not found';
+    END IF;
+    
+    -- Calculate new stock
+    new_stock := current_stock + quantity;
+    
+    -- Update stock
+    UPDATE products 
+    SET stock_quantity = new_stock 
+    WHERE id = product_id;
+    
+    RETURN new_stock;
+END;
+$$ LANGUAGE plpgsql;

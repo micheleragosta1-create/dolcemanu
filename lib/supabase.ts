@@ -36,7 +36,7 @@ export function getSupabaseClient(): SupabaseClient {
   return client
 }
 
-// Types for our ecommerce data
+// Types for our ecommerce data - Allineati con lo schema del database
 export interface Product {
   id: string
   name: string
@@ -44,17 +44,18 @@ export interface Product {
   price: number
   image_url: string
   category: string
-  stock: number
+  stock_quantity: number
   created_at: string
   updated_at: string
 }
 
 export interface Order {
   id: string
-  user_id: string
+  user_email: string
   total_amount: number
-  status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled'
+  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
   shipping_address: string
+  admin_note?: string
   created_at: string
   updated_at: string
 }
@@ -170,13 +171,13 @@ export async function createOrderItem(orderItemData: Omit<OrderItem, 'id' | 'cre
   }
 }
 
-export async function getUserOrders(userId: string): Promise<Order[]> {
+export async function getUserOrders(userEmail: string): Promise<Order[]> {
   try {
     const supabase = getSupabaseClient()
     const { data, error } = await supabase
       .from('orders')
       .select('*')
-      .eq('user_id', userId)
+      .eq('user_email', userEmail)
       .order('created_at', { ascending: false })
     
     if (error) throw error
@@ -242,6 +243,20 @@ export async function deleteProduct(productId: string): Promise<{ data: any, err
 export async function getAllUsers(): Promise<{ data: any, error: any }> {
   const supabase = getSupabaseClient()
   return await supabase.rpc('get_all_users')
+}
+
+// Conta utenti (solo admin) tramite RPC semplificata
+export async function getUsersCountAdmin(): Promise<{ data: number | null, error: any }> {
+  try {
+    const supabase = getSupabaseClient()
+    const { data, error } = await supabase.rpc('admin_count_users')
+    if (error) return { data: null, error }
+    // data può essere number oppure un oggetto { count: number }
+    const count = typeof data === 'number' ? data : (data && (data as any).count)
+    return { data: count ?? null, error: null }
+  } catch (error: any) {
+    return { data: null, error }
+  }
 }
 
 export async function updateUserRole(userId: string, role: UserRole['role']): Promise<{ data: any, error: any }> {

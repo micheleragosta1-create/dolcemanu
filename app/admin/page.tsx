@@ -18,12 +18,10 @@ export default function AdminPage() {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<'dashboard' | 'orders' | 'products' | 'users'>('dashboard')
 
-  // Reindirizza se non è admin
+  // Opzione: non reindirizzare automaticamente per facilitare debug/whitelisting
   useEffect(() => {
-    if (!roleLoading && !isAdmin) {
-      router.push('/')
-    }
-  }, [isAdmin, roleLoading, router])
+    // Manteniamo la pagina accessibile; la UI sotto gestisce accesso negato
+  }, [isAdmin, roleLoading])
 
   // Mostra loading mentre verifica i permessi
   if (roleLoading) {
@@ -41,9 +39,21 @@ export default function AdminPage() {
     )
   }
 
-  // Accesso negato
-  if (!isAdmin) {
-    return null // Il redirect è gestito dall'useEffect
+  // Accesso negato: mostra messaggio invece di redirect
+  if (!roleLoading && !isAdmin) {
+    return (
+      <main>
+        <Header />
+        <div className="min-h-screen flex items-center justify-center p-8">
+          <div className="text-center max-w-md">
+            <h1 className="text-2xl font-bold mb-2">Accesso negato</h1>
+            <p className="text-gray-600 mb-4">Questa sezione è riservata agli amministratori.</p>
+            <a href="/" className="btn btn-secondary">Torna alla Home</a>
+          </div>
+        </div>
+        <Footer />
+      </main>
+    )
   }
 
   return (

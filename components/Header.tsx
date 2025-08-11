@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { ShoppingCart, Heart, User, Menu, X } from 'lucide-react'
 import { useAuth } from '@/components/AuthContext'
+import { useAdmin } from '@/hooks/useAdmin'
 import { useCart } from './CartContext'
 import { useRouter } from 'next/navigation'
 import Logo from './Logo'
@@ -15,6 +16,7 @@ export default function Header() {
   const { totalQty } = useCart()
   const [mounted, setMounted] = useState(false)
   const { user, signOut } = useAuth()
+  const { isAdmin } = useAdmin()
   const router = useRouter()
   const handleLogout = async (e?: React.MouseEvent) => {
     e?.preventDefault()
@@ -65,6 +67,9 @@ export default function Header() {
               <div className="user-dropdown">
                 <a className="dropdown-item" href="/account">Anagrafica</a>
                 <a className="dropdown-item" href="/account#ordini">I miei ordini</a>
+                {isAdmin && (
+                  <a className="dropdown-item" href="/admin">Amministrazione</a>
+                )}
                 <button className="dropdown-item logout" onClick={handleLogout}>Logout</button>
               </div>
             </div>

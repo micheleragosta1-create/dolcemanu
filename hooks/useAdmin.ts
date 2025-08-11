@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '@/components/AuthContext'
 import { 
   getAllOrders, 
@@ -11,6 +11,7 @@ import {
   getAllUsers,
   updateUserRole,
   getUserRole,
+  getUsersCountAdmin,
   Product,
   Order
 } from '@/lib/supabase'
@@ -25,6 +26,13 @@ export function useAdmin() {
     async function checkUserRole() {
       if (!user) {
         setUserRole(null)
+        setLoading(false)
+        return
+      }
+
+      // Override locale: email admin nota
+      if (user.email === 'michele.ragosta1@gmail.com') {
+        setUserRole('super_admin')
         setLoading(false)
         return
       }
@@ -55,9 +63,8 @@ export function useAdmin() {
   const [orders, setOrders] = useState<Order[]>([])
   const [ordersLoading, setOrdersLoading] = useState(false)
 
-  const fetchAllOrders = async () => {
+  const fetchAllOrders = useCallback(async () => {
     if (!isAdmin) return
-    
     setOrdersLoading(true)
     try {
       const { data, error } = await getAllOrders()
@@ -68,9 +75,9 @@ export function useAdmin() {
     } finally {
       setOrdersLoading(false)
     }
-  }
+  }, [isAdmin])
 
-  const updateOrder = async (orderId: string, status: Order['status']) => {
+  const updateOrder = useCallback(async (orderId: string, status: Order['status']) => {
     if (!isAdmin) return { error: 'Accesso negato' }
     
     try {
@@ -86,28 +93,35 @@ export function useAdmin() {
     } catch (error: any) {
       return { error: error.message }
     }
-  }
+  }, [isAdmin])
 
   // Gestione prodotti
   const [products, setProducts] = useState<Product[]>([])
   const [productsLoading, setProductsLoading] = useState(false)
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     if (!isAdmin) return
-    
     setProductsLoading(true)
     try {
-      const { data, error } = await getAllOrders() // Usiamo getAllOrders per ora
-      if (error) throw error
-      setProducts(data || [])
+      // Usa l'helper prodotti corretto
+      const productsList = await (async () => {
+        try {
+          // import lazy per evitare cicli
+          const mod = await import('@/lib/supabase')
+          return await mod.getProducts()
+        } catch {
+          return [] as Product[]
+        }
+      })()
+      setProducts(productsList || [])
     } catch (error) {
       console.error('Errore nel recupero prodotti:', error)
     } finally {
       setProductsLoading(false)
     }
-  }
+  }, [isAdmin])
 
-  const addProduct = async (productData: Omit<Product, 'id' | 'created_at' | 'updated_at'>) => {
+  const addProduct = useCallback(async (productData: Omit<Product, 'id' | 'created_at' | 'updated_at'>) => {
     if (!isAdmin) return { error: 'Accesso negato' }
     
     try {
@@ -121,9 +135,9 @@ export function useAdmin() {
     } catch (error: any) {
       return { error: error.message }
     }
-  }
+  }, [isAdmin])
 
-  const editProduct = async (productId: string, productData: Partial<Product>) => {
+  const editProduct = useCallback(async (productId: string, productData: Partial<Product>) => {
     if (!isAdmin) return { error: 'Accesso negato' }
     
     try {
@@ -139,9 +153,9 @@ export function useAdmin() {
     } catch (error: any) {
       return { error: error.message }
     }
-  }
+  }, [isAdmin])
 
-  const removeProduct = async (productId: string) => {
+  const removeProduct = useCallback(async (productId: string) => {
     if (!isSuperAdmin) return { error: 'Solo i super admin possono eliminare prodotti' }
     
     try {
@@ -155,28 +169,33 @@ export function useAdmin() {
     } catch (error: any) {
       return { error: error.message }
     }
-  }
+  }, [isSuperAdmin])
 
   // Gestione utenti (solo super admin)
   const [users, setUsers] = useState<any[]>([])
   const [usersLoading, setUsersLoading] = useState(false)
+  const [usersCount, setUsersCount] = useState<number | null>(null)
 
-  const fetchAllUsers = async () => {
+  const fetchAllUsers = useCallback(async () => {
     if (!isSuperAdmin) return
-    
     setUsersLoading(true)
     try {
       const { data, error } = await getAllUsers()
       if (error) throw error
       setUsers(data || [])
+      // Recupera anche il count con RPC semplificata (se l'utente è admin)
+      try {
+        const { data: count } = await getUsersCountAdmin()
+        if (typeof count === 'number') setUsersCount(count)
+      } catch {}
     } catch (error) {
       console.error('Errore nel recupero utenti:', error)
     } finally {
       setUsersLoading(false)
     }
-  }
+  }, [isSuperAdmin])
 
-  const changeUserRole = async (userId: string, newRole: 'user' | 'admin' | 'super_admin') => {
+  const changeUserRole = useCallback(async (userId: string, newRole: 'user' | 'admin' | 'super_admin') => {
     if (!isSuperAdmin) return { error: 'Solo i super admin possono modificare i ruoli' }
     
     try {
@@ -192,7 +211,7 @@ export function useAdmin() {
     } catch (error: any) {
       return { error: error.message }
     }
-  }
+  }, [isSuperAdmin])
 
   return {
     // Stato utente
@@ -218,6 +237,7 @@ export function useAdmin() {
     // Gestione utenti
     users,
     usersLoading,
+    usersCount,
     fetchAllUsers,
     changeUserRole
   }

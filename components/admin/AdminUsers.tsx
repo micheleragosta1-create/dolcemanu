@@ -106,44 +106,45 @@ export default function AdminUsers() {
   }
 
   return (
-    <div className="p-8">
+    <div className="admin-container">
       {/* Header e filtri */}
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">Gestione Utenti</h2>
-        
-        <div className="flex flex-col sm:flex-row gap-4">
-          {/* Ricerca */}
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="Cerca utenti per email o ID..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-            />
-          </div>
+      <div className="card" style={{marginBottom:'1.5rem'}}>
+        <div className="card-head"><h3>Gestione Utenti</h3></div>
+        <div className="card-body">
+          <div className="flex flex-col sm:flex-row gap-4">
+            {/* Ricerca */}
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type="text"
+                placeholder="Cerca utenti per email o ID..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent shadow-sm"
+              />
+            </div>
 
-          {/* Filtro per ruolo */}
-          <div className="relative">
-            <Shield className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <select
-              value={roleFilter}
-              onChange={(e) => setRoleFilter(e.target.value)}
-              className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent appearance-none bg-white"
-            >
-              <option value="all">Tutti i ruoli</option>
-              <option value="user">Utenti</option>
-              <option value="admin">Admin</option>
-              <option value="super_admin">Super Admin</option>
-            </select>
+            {/* Filtro per ruolo */}
+            <div className="relative">
+              <Shield className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <select
+                value={roleFilter}
+                onChange={(e) => setRoleFilter(e.target.value)}
+                className="pl-10 pr-8 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent appearance-none bg-white shadow-sm"
+              >
+                <option value="all">Tutti i ruoli</option>
+                <option value="user">Utenti</option>
+                <option value="admin">Admin</option>
+                <option value="super_admin">Super Admin</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Statistiche ruoli */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white p-6 rounded-lg border border-gray-200">
+      <div className="admin-grid-3">
+        <div className="card">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center">
               <User className="w-8 h-8 text-gray-500 mr-3" />
@@ -158,7 +159,7 @@ export default function AdminUsers() {
           <p className="text-xs text-gray-500">Utenti standard del negozio</p>
         </div>
 
-        <div className="bg-white p-6 rounded-lg border border-gray-200">
+        <div className="card">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center">
               <Shield className="w-8 h-8 text-blue-500 mr-3" />
@@ -173,7 +174,7 @@ export default function AdminUsers() {
           <p className="text-xs text-gray-500">Gestione prodotti e ordini</p>
         </div>
 
-        <div className="bg-white p-6 rounded-lg border border-gray-200">
+        <div className="card">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center">
               <Crown className="w-8 h-8 text-yellow-500 mr-3" />
@@ -190,9 +191,9 @@ export default function AdminUsers() {
       </div>
 
       {/* Lista utenti */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
+      <div className="card">
+        <div className="table-wrap">
+          <table className="admin-table">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -251,7 +252,7 @@ export default function AdminUsers() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <button
                       onClick={() => openRoleModal(user)}
-                      className="text-blue-600 hover:text-blue-900 p-1 rounded flex items-center"
+                      className="btn btn-secondary small flex items-center"
                       title="Modifica ruolo"
                     >
                       <Edit3 className="w-4 h-4 mr-1" />
@@ -274,7 +275,7 @@ export default function AdminUsers() {
       </div>
 
       {/* Modal modifica ruolo */}
-      {showRoleModal && editingUser && (
+        {showRoleModal && editingUser && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-md w-full">
             <div className="p-6">
@@ -336,14 +337,14 @@ export default function AdminUsers() {
               <div className="flex justify-end space-x-3">
                 <button
                   onClick={() => setShowRoleModal(false)}
-                  className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300"
+                  className="btn btn-secondary"
                 >
                   Annulla
                 </button>
                 <button
                   onClick={handleRoleChange}
                   disabled={updatingUser === editingUser.id || newRole === (editingUser.role || 'user')}
-                  className="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {updatingUser === editingUser.id ? 'Aggiornamento...' : 'Aggiorna Ruolo'}
                 </button>

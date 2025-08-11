@@ -1,15 +1,14 @@
 import { NextResponse } from 'next/server'
-import { mockProducts } from '@/lib/mock-data'
-// import { supabase } from '@/lib/supabase'
+import { createClient } from '@supabase/supabase-js'
 
-// GET /api/products - Fetch all products (using mock data for testing)
+// GET /api/products - Fetch all products from Supabase
 export async function GET() {
   try {
-    // For testing, return mock data
-    return NextResponse.json(mockProducts)
-    
-    // Uncomment below when Supabase is set up:
-    /*
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+
     const { data: products, error } = await supabase
       .from('products')
       .select('*')
@@ -20,7 +19,6 @@ export async function GET() {
     }
 
     return NextResponse.json(products)
-    */
   } catch (error) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }

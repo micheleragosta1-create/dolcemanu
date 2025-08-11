@@ -96,47 +96,48 @@ export default function AdminOrders() {
   }
 
   return (
-    <div className="p-8">
+    <div className="admin-container">
       {/* Header e filtri */}
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">Gestione Ordini</h2>
-        
-        <div className="flex flex-col sm:flex-row gap-4">
-          {/* Ricerca */}
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="Cerca per ID ordine o indirizzo..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-            />
-          </div>
+      <div className="card" style={{marginBottom:'1.5rem'}}>
+        <div className="card-head"><h3>Gestione Ordini</h3></div>
+        <div className="card-body">
+          <div className="flex flex-col sm:flex-row gap-4">
+            {/* Ricerca */}
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type="text"
+                placeholder="Cerca per ID ordine o indirizzo..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent shadow-sm"
+              />
+            </div>
 
-          {/* Filtro per stato */}
-          <div className="relative">
-            <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent appearance-none bg-white"
-            >
-              <option value="all">Tutti gli stati</option>
-              <option value="pending">In attesa</option>
-              <option value="confirmed">Confermato</option>
-              <option value="shipped">Spedito</option>
-              <option value="delivered">Consegnato</option>
-              <option value="cancelled">Annullato</option>
-            </select>
+            {/* Filtro per stato */}
+            <div className="relative">
+              <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="pl-10 pr-8 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent appearance-none bg-white shadow-sm"
+              >
+                <option value="all">Tutti gli stati</option>
+                <option value="pending">In attesa</option>
+                <option value="confirmed">Confermato</option>
+                <option value="shipped">Spedito</option>
+                <option value="delivered">Consegnato</option>
+                <option value="cancelled">Annullato</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Lista ordini */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
+      <div className="card">
+        <div className="table-wrap">
+          <table className="admin-table">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -217,17 +218,17 @@ export default function AdminOrders() {
                     <div className="flex space-x-2">
                       <button
                         onClick={() => openOrderDetails(order)}
-                        className="text-blue-600 hover:text-blue-900 p-1 rounded"
+                        className="btn btn-secondary small flex items-center"
                         title="Visualizza dettagli"
                       >
-                        <Eye className="w-4 h-4" />
+                        <Eye className="w-4 h-4 mr-1" /> Dettagli
                       </button>
                       <button
                         onClick={() => openOrderDetails(order)}
-                        className="text-green-600 hover:text-green-900 p-1 rounded"
+                        className="btn btn-primary small flex items-center"
                         title="Modifica ordine"
                       >
-                        <Edit3 className="w-4 h-4" />
+                        <Edit3 className="w-4 h-4 mr-1" /> Modifica
                       </button>
                     </div>
                   </td>
@@ -309,10 +310,10 @@ export default function AdminOrders() {
                 )}
               </div>
 
-              <div className="mt-6 flex justify-end space-x-3">
+                <div className="mt-6 flex justify-end space-x-3">
                 <button
                   onClick={() => setShowOrderModal(false)}
-                  className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300"
+                  className="btn btn-secondary"
                 >
                   Chiudi
                 </button>
