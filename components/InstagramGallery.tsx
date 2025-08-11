@@ -17,6 +17,7 @@ type ApiPost = { id: string; caption?: string; media_url?: string; thumbnail_url
 
 export default function InstagramGallery() {
   const [apiPosts, setApiPosts] = useState<ApiPost[] | null>(null)
+  const username = '_dolcemanu_'
 
   useEffect(() => {
     let active = true
@@ -34,7 +35,24 @@ export default function InstagramGallery() {
 
   const postsToShow = apiPosts && apiPosts.length > 0
     ? apiPosts.map(p => ({ id: p.id, image: p.media_url || p.thumbnail_url || '', alt: p.caption || 'Instagram', href: p.permalink }))
-    : instagramPosts.map(p => ({ ...p, href: 'https://instagram.com/_dolcemanu_' }))
+    : instagramPosts.map(p => ({ ...p, href: `https://instagram.com/${username}` }))
+
+  const openInstagramProfile = (e: React.MouseEvent) => {
+    e.preventDefault()
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+    const webUrl = `https://instagram.com/${username}`
+    if (!isMobile) {
+      window.open(webUrl, '_blank', 'noopener,noreferrer')
+      return
+    }
+    const appUrl = `instagram://user?username=${username}`
+    const timer = setTimeout(() => {
+      window.open(webUrl, '_blank', 'noopener,noreferrer')
+    }, 700)
+    // tenta apertura app
+    window.location.href = appUrl
+    window.addEventListener('pagehide', () => clearTimeout(timer), { once: true })
+  }
 
   return (
     <section className="instagram-section">
@@ -67,9 +85,8 @@ export default function InstagramGallery() {
 
         <div className="instagram-cta">
           <a
-            href="https://instagram.com/_dolcemanu_"
-            target="_blank"
-            rel="noopener noreferrer"
+            href={`https://instagram.com/${username}`}
+            onClick={openInstagramProfile}
             className="btn btn-primary instagram-button"
           >
             <Instagram size={20} />
