@@ -27,6 +27,10 @@ export default function AdminUsers() {
   const [showRoleModal, setShowRoleModal] = useState(false)
   const [newRole, setNewRole] = useState<string>('user')
   const [updatingUser, setUpdatingUser] = useState<string | null>(null)
+  const [sortKey, setSortKey] = useState<'email' | 'role' | 'created_at'>('created_at')
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
+  const [page, setPage] = useState<number>(1)
+  const [pageSize, setPageSize] = useState<number>(10)
 
   useEffect(() => {
     fetchAllUsers()
@@ -38,6 +42,42 @@ export default function AdminUsers() {
     const matchesRole = roleFilter === 'all' || user.role === roleFilter
     return matchesSearch && matchesRole
   })
+
+  const handleSort = (key: typeof sortKey) => {
+    if (sortKey === key) {
+      setSortDir(prev => (prev === 'asc' ? 'desc' : 'asc'))
+    } else {
+      setSortKey(key)
+      setSortDir('asc')
+    }
+    setPage(1)
+  }
+
+  const sortedUsers = [...filteredUsers].sort((a, b) => {
+    const dir = sortDir === 'asc' ? 1 : -1
+    const va = ((): any => {
+      switch (sortKey) {
+        case 'email': return (a.email||'').toLowerCase()
+        case 'role': return (a.role||'user').toLowerCase()
+        case 'created_at': return new Date(a.created_at).getTime()
+      }
+    })()
+    const vb = ((): any => {
+      switch (sortKey) {
+        case 'email': return (b.email||'').toLowerCase()
+        case 'role': return (b.role||'user').toLowerCase()
+        case 'created_at': return new Date(b.created_at).getTime()
+      }
+    })()
+    if (va < vb) return -1 * dir
+    if (va > vb) return 1 * dir
+    return 0
+  })
+
+  const totalPages = Math.max(1, Math.ceil(sortedUsers.length / pageSize))
+  const currentPage = Math.min(page, totalPages)
+  const pageStart = (currentPage - 1) * pageSize
+  const paginatedUsers = sortedUsers.slice(pageStart, pageStart + pageSize)
 
   const openRoleModal = (user: any) => {
     setEditingUser(user)
@@ -106,7 +146,7 @@ export default function AdminUsers() {
   }
 
   return (
-    <div className="admin-container">
+    <div className="admin-container" style={{ padding: '2rem' }}>
       {/* Header e filtri */}
       <div className="card" style={{marginBottom:'1.5rem'}}>
         <div className="card-head"><h3>Gestione Utenti</h3></div>
@@ -190,48 +230,28 @@ export default function AdminUsers() {
         </div>
       </div>
 
-      {/* Lista utenti */}
+      {/* Lista utenti in tabella: una riga per utente */}
       <div className="card">
+        <div className="card-head"><h3>Utenti</h3></div>
         <div className="table-wrap">
           <table className="admin-table">
-            <thead className="bg-gray-50">
+            <thead>
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Utente
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Ruolo
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Data Registrazione
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Azioni
-                </th>
+                <th style={{cursor:'pointer'}} onClick={()=>handleSort('email')}>Utente {sortKey==='email' ? (sortDir==='asc'?'↑':'↓') : ''}</th>
+                <th style={{cursor:'pointer'}} onClick={()=>handleSort('role')}>Ruolo {sortKey==='role' ? (sortDir==='asc'?'↑':'↓') : ''}</th>
+                <th style={{cursor:'pointer'}} onClick={()=>handleSort('created_at')}>Data Registrazione {sortKey==='created_at' ? (sortDir==='asc'?'↑':'↓') : ''}</th>
+                <th>Azioni</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredUsers.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-10 w-10">
-                        <div className="h-10 w-10 rounded-full bg-pink-100 flex items-center justify-center">
-                          <Mail className="w-5 h-5 text-pink-600" />
-                        </div>
-                      </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">
-                          {user.email}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          ID: {user.id.slice(0, 8)}...
-                        </div>
-                      </div>
-                    </div>
+            <tbody>
+              {paginatedUsers.map((user) => (
+                <tr key={user.id}>
+                  <td>
+                    <span className="row-with-icon"><Mail className="row-icon" />{user.email}</span>
+                    <div className="text-xs text-gray-500">ID: {user.id.slice(0,8)}...</div>
                   </td>
                   
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td>
                     <div className="flex items-center">
                       {getRoleIcon(user.role || 'user')}
                       <span className={`ml-2 inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(user.role || 'user')}`}>
@@ -240,16 +260,11 @@ export default function AdminUsers() {
                     </div>
                   </td>
                   
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <Calendar className="w-4 h-4 mr-2 text-gray-400" />
-                      <span className="text-sm text-gray-500">
-                        {new Date(user.created_at).toLocaleDateString('it-IT')}
-                      </span>
-                    </div>
+                  <td>
+                    <span className="row-with-icon"><Calendar className="row-icon" />{new Date(user.created_at).toLocaleDateString('it-IT')}</span>
                   </td>
                   
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td>
                     <button
                       onClick={() => openRoleModal(user)}
                       className="btn btn-secondary small flex items-center"
@@ -264,9 +279,23 @@ export default function AdminUsers() {
             </tbody>
           </table>
         </div>
+        {/* Pagination */}
+        <div className="card-body" style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:'1rem'}}>
+          <div>
+            <label style={{marginRight:8}}>Righe per pagina</label>
+            <select value={pageSize} onChange={(e)=>{setPageSize(parseInt(e.target.value)); setPage(1)}} className="px-2 py-1 border border-gray-200 rounded-lg">
+              {[5,10,20,50].map(n => <option key={n} value={n}>{n}</option>)}
+            </select>
+          </div>
+          <div style={{display:'flex',alignItems:'center',gap:12}}>
+            <button className="btn btn-secondary small" onClick={()=>setPage(p=>Math.max(1,p-1))} disabled={currentPage===1}>Precedente</button>
+            <span>Pagina {currentPage} di {totalPages}</span>
+            <button className="btn btn-primary small" onClick={()=>setPage(p=>Math.min(totalPages,p+1))} disabled={currentPage===totalPages}>Successiva</button>
+          </div>
+        </div>
         
         {filteredUsers.length === 0 && (
-          <div className="text-center py-12 text-gray-500">
+          <div className="card-body center text-gray-500">
             <User className="w-16 h-16 mx-auto mb-4 text-gray-300" />
             <p className="text-lg font-medium">Nessun utente trovato</p>
             <p className="text-sm">Prova a modificare i filtri di ricerca</p>

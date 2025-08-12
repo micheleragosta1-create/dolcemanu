@@ -26,6 +26,10 @@ export default function AdminProducts() {
   const [searchTerm, setSearchTerm] = useState('')
   const [showProductModal, setShowProductModal] = useState(false)
   const [editingProduct, setEditingProduct] = useState<any>(null)
+  const [sortKey, setSortKey] = useState<'name' | 'price' | 'stock' | 'category'>('name')
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
+  const [page, setPage] = useState<number>(1)
+  const [pageSize, setPageSize] = useState<number>(10)
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -44,6 +48,36 @@ export default function AdminProducts() {
     product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
     product.category.toLowerCase().includes(searchTerm.toLowerCase())
   )
+
+  const handleSort = (key: typeof sortKey) => {
+    if (sortKey === key) {
+      setSortDir(prev => (prev === 'asc' ? 'desc' : 'asc'))
+    } else {
+      setSortKey(key)
+      setSortDir('asc')
+    }
+    setPage(1)
+  }
+
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    const dir = sortDir === 'asc' ? 1 : -1
+    let va: any = ''
+    let vb: any = ''
+    switch (sortKey) {
+      case 'name': va = (a.name||'').toLowerCase(); vb = (b.name||'').toLowerCase(); break
+      case 'price': va = a.price||0; vb = b.price||0; break
+      case 'stock': va = (a as any).stock_quantity||0; vb = (b as any).stock_quantity||0; break
+      case 'category': va = (a.category||'').toLowerCase(); vb = (b.category||'').toLowerCase(); break
+    }
+    if (va < vb) return -1 * dir
+    if (va > vb) return 1 * dir
+    return 0
+  })
+
+  const totalPages = Math.max(1, Math.ceil(sortedProducts.length / pageSize))
+  const currentPage = Math.min(page, totalPages)
+  const pageStart = (currentPage - 1) * pageSize
+  const paginatedProducts = sortedProducts.slice(pageStart, pageStart + pageSize)
 
   const openAddProduct = () => {
     setEditingProduct(null)
@@ -64,7 +98,7 @@ export default function AdminProducts() {
       name: product.name,
       description: product.description,
       price: product.price.toString(),
-      stock: product.stock.toString(),
+      stock: (product.stock_quantity ?? 0).toString(),
       image_url: product.image_url || '',
       category: product.category || ''
     })
@@ -78,9 +112,9 @@ export default function AdminProducts() {
       name: formData.name,
       description: formData.description,
       price: parseFloat(formData.price),
-      stock: parseInt(formData.stock),
-      image_url: formData.image_url || null,
-      category: formData.category || null
+      stock_quantity: parseInt(formData.stock),
+      image_url: formData.image_url || '',
+      category: formData.category || ''
     }
 
     try {
@@ -194,11 +228,11 @@ export default function AdminProducts() {
           </div>
 
           <div className="flex justify-between items-center mb-4">
-            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStockColor(product.stock)}`}>
-              {getStockLabel(product.stock)}
+            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStockColor(product.stock_quantity)}`}>
+              {getStockLabel(product.stock_quantity)}
             </span>
             <span className="text-sm text-gray-500">
-              Stock: {product.stock}
+              Stock: {product.stock_quantity}
             </span>
           </div>
 
@@ -230,7 +264,7 @@ export default function AdminProducts() {
   }
 
   return (
-    <div className="admin-container">
+    <div className="admin-container" style={{ padding: '2rem' }}>
       {/* Header e filtri */}
       <div className="card" style={{marginBottom:'1.5rem'}}>
         <div className="card-head">
@@ -253,15 +287,75 @@ export default function AdminProducts() {
         </div>
       </div>
 
-      {/* Lista prodotti */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredProducts.map((product) => (
-          <ProductCard key={product.id} product={product} />
-        ))}
+      {/* Lista prodotti in tabella: una riga per prodotto */}
+      <div className="card">
+        <div className="card-head"><h3>Prodotti</h3></div>
+        <div className="table-wrap">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th style={{cursor:'pointer'}} onClick={()=>handleSort('name')}>Nome {sortKey==='name' ? (sortDir==='asc'?'↑':'↓') : ''}</th>
+                <th style={{cursor:'pointer'}} onClick={()=>handleSort('price')}>Prezzo {sortKey==='price' ? (sortDir==='asc'?'↑':'↓') : ''}</th>
+                <th style={{cursor:'pointer'}} onClick={()=>handleSort('stock')}>Stock {sortKey==='stock' ? (sortDir==='asc'?'↑':'↓') : ''}</th>
+                <th style={{cursor:'pointer'}} onClick={()=>handleSort('category')}>Categoria {sortKey==='category' ? (sortDir==='asc'?'↑':'↓') : ''}</th>
+                <th>Immagine</th>
+                <th>Stato</th>
+                <th>Azioni</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedProducts.map(product => (
+                <tr key={product.id}>
+                  <td className="semibold">{product.name}</td>
+                  <td>{formatCurrency(product.price)}</td>
+                  <td>{product.stock_quantity}</td>
+                  <td>{product.category || '-'}</td>
+                  <td>
+                    {product.image_url ? (
+                      <img src={product.image_url} alt={product.name} style={{width:48,height:36,objectFit:'cover',borderRadius:6}} />
+                    ) : (
+                      <span className="text-gray-400">N/D</span>
+                    )}
+                  </td>
+                  <td>
+                    <span className={`status-badge ${product.stock_quantity === 0 ? 'cancelled' : product.stock_quantity < 10 ? 'pending' : 'delivered'}`}>
+                      {getStockLabel(product.stock_quantity)}
+                    </span>
+                  </td>
+                  <td>
+                    <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+                      <button onClick={() => openEditProduct(product)} className="btn btn-secondary small">
+                        <Edit3 className="w-4 h-4 mr-1" /> Modifica
+                      </button>
+                      <button onClick={() => handleDelete(product.id)} className="btn btn-primary small">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Pagination */}
+        <div className="card-body" style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:'1rem'}}>
+          <div>
+            <label style={{marginRight:8}}>Righe per pagina</label>
+            <select value={pageSize} onChange={(e)=>{setPageSize(parseInt(e.target.value)); setPage(1)}} className="px-2 py-1 border border-gray-200 rounded-lg">
+              {[5,10,20,50].map(n => <option key={n} value={n}>{n}</option>)}
+            </select>
+          </div>
+          <div style={{display:'flex',alignItems:'center',gap:12}}>
+            <button className="btn btn-secondary small" onClick={()=>setPage(p=>Math.max(1,p-1))} disabled={currentPage===1}>Precedente</button>
+            <span>Pagina {currentPage} di {totalPages}</span>
+            <button className="btn btn-primary small" onClick={()=>setPage(p=>Math.min(totalPages,p+1))} disabled={currentPage===totalPages}>Successiva</button>
+          </div>
+        </div>
       </div>
 
       {filteredProducts.length === 0 && (
-        <div className="text-center py-12 text-gray-500">
+        <div className="card text-center py-12 text-gray-500">
           <Package className="w-16 h-16 mx-auto mb-4 text-gray-300" />
           <p className="text-lg font-medium">Nessun prodotto trovato</p>
           <p className="text-sm">Prova a modificare i filtri di ricerca o aggiungi un nuovo prodotto</p>

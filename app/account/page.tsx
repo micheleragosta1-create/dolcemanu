@@ -2,7 +2,9 @@
 
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
+import { useAuth } from '@/components/AuthContext'
+import { useOrders } from '@/hooks/useSupabase'
 
 interface Order {
   id: string
@@ -17,25 +19,21 @@ interface Order {
 }
 
 export default function AccountPage() {
-  const [email, setEmail] = useState<string>('mario@example.com') // utente simulato
-  const [orders, setOrders] = useState<any[] | null>(null)
-  const [loading, setLoading] = useState<boolean>(true)
+  const { user, loading: authLoading } = useAuth()
+  const userEmail = user?.email ?? ''
+  const { orders, loading: ordersLoading, refetch } = useOrders(userEmail)
+  const loading = authLoading || ordersLoading
+  const email = userEmail
 
-  useEffect(() => {
-    const run = async () => {
-      setLoading(true)
-      try {
-        const res = await fetch(`/api/orders/user/${encodeURIComponent(email)}`)
-        const data = await res.json()
-        setOrders(Array.isArray(data) ? data : [])
-      } catch {
-        setOrders([])
-      } finally {
-        setLoading(false)
-      }
-    }
-    run()
-  }, [email])
+  // Stato anagrafica locale (mock semplice, espandibile verso Supabase se previsto dallo schema)
+  const [profile, setProfile] = useState({
+    firstName: '',
+    lastName: '',
+    phone: '',
+    address: '',
+    city: '',
+    zip: ''
+  })
 
   return (
     <main>
@@ -44,61 +42,90 @@ export default function AccountPage() {
         <div className="account-container">
           <div className="account-header">
             <div className="user-info">
-              <div className="avatar">{email[0]?.toUpperCase() || 'U'}</div>
+              <div className="avatar">{email?.[0]?.toUpperCase() || 'U'}</div>
               <div>
                 <h2 className="poppins">{email}</h2>
-                <p>Accesso simulato (demo)</p>
+                <p>Area personale</p>
               </div>
             </div>
-            <div>
-              <label htmlFor="emailSel" style={{fontSize: '.85rem', color: '#666'}}>Simula utente: </label>
-              <select id="emailSel" value={email} onChange={(e)=>setEmail(e.target.value)} className="form-input" style={{marginLeft: '.5rem'}}>
-                <option value="mario@example.com">mario@example.com</option>
-                <option value="giulia@example.com">giulia@example.com</option>
-                <option value="antonio.bianchi@outlook.it">antonio.bianchi@outlook.it</option>
-                <option value="francesca.ferrari@libero.it">francesca.ferrari@libero.it</option>
-                <option value="luca.marino@yahoo.it">luca.marino@yahoo.it</option>
-                <option value="sara.ricci@tiscali.it">sara.ricci@tiscali.it</option>
-              </select>
-            </div>
+            <div></div>
           </div>
 
           <div className="account-content">
-            <div className="orders-section">
-              <h2 className="poppins">I miei ordini</h2>
-              {loading ? (
-                <div className="loading">Caricamento ordini...</div>
-              ) : orders && orders.length > 0 ? (
-                <div className="orders-list">
-                  {orders.map((o) => (
-                    <div key={o.id} className="order-card">
-                      <div className="order-header">
-                        <div>
-                          <h3>Ordine #{o.id}</h3>
-                          <p className="order-date">{new Date(o.date).toLocaleString('it-IT')}</p>
+            {/* Anagrafica */}
+            <div className="card">
+              <div className="card-head"><h3>Le mie informazioni</h3></div>
+              <div className="card-body">
+                <form className="grid grid-cols-1 md:grid-cols-2 gap-4" onSubmit={(e)=>e.preventDefault()}>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Nome</label>
+                    <input className="form-input" value={profile.firstName} onChange={(e)=>setProfile({...profile, firstName: e.target.value})} placeholder="Nome" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Cognome</label>
+                    <input className="form-input" value={profile.lastName} onChange={(e)=>setProfile({...profile, lastName: e.target.value})} placeholder="Cognome" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Telefono</label>
+                    <input className="form-input" value={profile.phone} onChange={(e)=>setProfile({...profile, phone: e.target.value})} placeholder="Telefono" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Indirizzo</label>
+                    <input className="form-input" value={profile.address} onChange={(e)=>setProfile({...profile, address: e.target.value})} placeholder="Via/Piazza" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Città</label>
+                    <input className="form-input" value={profile.city} onChange={(e)=>setProfile({...profile, city: e.target.value})} placeholder="Città" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">CAP</label>
+                    <input className="form-input" value={profile.zip} onChange={(e)=>setProfile({...profile, zip: e.target.value})} placeholder="CAP" />
+                  </div>
+                  <div className="md:col-span-2" style={{display:'flex',gap:12}}>
+                    <button className="btn btn-primary" type="button" onClick={()=>alert('Dati salvati (mock). Integrare salvataggio su Supabase se desiderato).')}>Salva</button>
+                    <button className="btn btn-secondary" type="button" onClick={()=>setProfile({firstName:'',lastName:'',phone:'',address:'',city:'',zip:''})}>Reset</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+            {/* Ordini */}
+            <div className="card">
+              <div className="card-head"><h3>I miei ordini</h3></div>
+              <div className="card-body">
+                {loading ? (
+                  <div className="loading">Caricamento ordini...</div>
+                ) : orders && orders.length > 0 ? (
+                  <div className="orders-list">
+                    {orders.map((o) => (
+                      <div key={o.id} className="order-card">
+                        <div className="order-header">
+                          <div>
+                            <h3>Ordine #{o.id}</h3>
+                            <p className="order-date">{new Date(o.created_at).toLocaleString('it-IT')}</p>
+                          </div>
+                          <div className="order-status">
+                            <span className="status-badge" style={{background: o.status==='delivered'? '#16a34a': o.status==='shipped'? '#2563eb': o.status==='processing'? '#f59e0b': o.status==='pending'? '#a3a3a3': '#dc2626'}}>
+                              {o.status}
+                            </span>
+                            <span className="order-total">€ {Number(o.total_amount ?? 0).toFixed(2)}</span>
+                          </div>
                         </div>
-                        <div className="order-status">
-                          <span className="status-badge" style={{background: o.status==='delivered'? '#16a34a': o.status==='shipped'? '#2563eb': o.status==='processing'? '#f59e0b': o.status==='pending'? '#a3a3a3': '#dc2626'}}>
-                            {o.status}
-                          </span>
-                          <span className="order-total">€ {o.total.toFixed(2)}</span>
+                        <div className="order-items">
+                          <div className="order-item"><span>Prodotto</span><span>Q.tà</span><span>Prezzo</span></div>
+                          {(o.order_items || []).map((it:any, idx:number)=> (
+                            <div className="order-item" key={idx}><span>{it.products?.name || 'Prodotto'}</span><span>{it.quantity}</span><span>€ {Number(it.price).toFixed(2)}</span></div>
+                          ))}
                         </div>
                       </div>
-                      <div className="order-items">
-                        <div className="order-item"><span>Prodotto</span><span>Q.tà</span><span>Prezzo</span></div>
-                        {o.items.map((it:any, idx:number)=> (
-                          <div className="order-item" key={idx}><span>{it.name}</span><span>{it.quantity}</span><span>€ {it.price.toFixed(2)}</span></div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="no-orders">
-                  <p>Nessun ordine trovato per questo utente.</p>
-                  <a href="/shop" className="btn btn-primary">Vai allo shop</a>
-                </div>
-              )}
+                    ))}
+                  </div>
+                ) : (
+                  <div className="no-orders">
+                    <p>Nessun ordine trovato per questo utente.</p>
+                    <a href="/shop" className="btn btn-primary">Vai allo shop</a>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

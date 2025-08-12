@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { ShoppingCart, Heart, User, Menu, X } from 'lucide-react'
 import { useAuth } from '@/components/AuthContext'
 import { useAdmin } from '@/hooks/useAdmin'
@@ -33,31 +34,39 @@ export default function Header() {
     setMounted(true)
   }, [])
 
+  useEffect(() => {
+    if (!mounted) return
+    if (mobileMenuOpen) {
+      document.body.classList.add('no-scroll')
+    } else {
+      document.body.classList.remove('no-scroll')
+    }
+    return () => document.body.classList.remove('no-scroll')
+  }, [mobileMenuOpen, mounted])
+
   return (
+    <>
     <header className="header">
       <div className="header-content">
-        <a href="/" className="logo" aria-label="Vai alla home">
-          <Logo />
-        </a>
-        
-        <nav className={`nav-menu ${mobileMenuOpen ? 'mobile-open' : ''}`}>
-          <a href="/shop">Shop</a>
-          <a href="#storia">Chi Siamo</a>
-          <a href="#contatti">Contatti</a>
-        </nav>
-        
-        {/* Mobile Menu Overlay */}
-        {mobileMenuOpen && (
-          <div className="mobile-menu-overlay" onClick={() => setMobileMenuOpen(false)}>
-            <div className="mobile-menu">
-              <a href="/shop" onClick={() => setMobileMenuOpen(false)}>Shop</a>
-              <a href="#storia" onClick={() => setMobileMenuOpen(false)}>Chi Siamo</a>
-              <a href="#contatti" onClick={() => setMobileMenuOpen(false)}>Contatti</a>
-            </div>
-          </div>
-        )}
+        <div className="header-left">
+          <button 
+            className="mobile-menu-btn"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label={mobileMenuOpen ? 'Chiudi menu' : 'Apri menu'}
+          >
+            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
 
-        <div className="header-actions">
+        <div className="header-center">
+          <a href="/" className="logo" aria-label="Vai alla home">
+            <Logo />
+          </a>
+        </div>
+
+        {/* Menu a scomparsa gestito via Portal fuori dall'header */}
+
+        <div className="header-right header-actions">
           {!mounted ? null : user ? (
             <div className="user-menu">
               <button className="user-btn" aria-haspopup="menu" aria-expanded="false">
@@ -99,15 +108,20 @@ export default function Header() {
               onClose={() => setCartPopupVisible(false)} 
             />
           </div>
-
-          <button 
-            className="mobile-menu-btn"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
         </div>
       </div>
     </header>
+    {mounted && mobileMenuOpen && typeof window !== 'undefined'
+      ? createPortal(
+          <div className="mobile-menu-overlay" onClick={() => setMobileMenuOpen(false)}>
+            <div className="mobile-menu" onClick={(e) => e.stopPropagation()}>
+              <a href="/shop" onClick={() => setMobileMenuOpen(false)}>Shop</a>
+              <a href="/auth" onClick={() => setMobileMenuOpen(false)}>Accedi</a>
+            </div>
+          </div>,
+          document.body
+        )
+      : null}
+    </>
   )
 }

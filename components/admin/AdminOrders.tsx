@@ -26,6 +26,10 @@ export default function AdminOrders() {
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
   const [showOrderModal, setShowOrderModal] = useState(false)
   const [updatingOrder, setUpdatingOrder] = useState<string | null>(null)
+  const [sortKey, setSortKey] = useState<'created_at' | 'user_email' | 'shipping_address' | 'total_amount' | 'status' | 'id'>('created_at')
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
+  const [page, setPage] = useState<number>(1)
+  const [pageSize, setPageSize] = useState<number>(10)
 
   useEffect(() => {
     fetchAllOrders()
@@ -37,6 +41,41 @@ export default function AdminOrders() {
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter
     return matchesSearch && matchesStatus
   })
+
+  const handleSort = (key: typeof sortKey) => {
+    if (sortKey === key) {
+      setSortDir(prev => (prev === 'asc' ? 'desc' : 'asc'))
+    } else {
+      setSortKey(key)
+      setSortDir('asc')
+    }
+    setPage(1)
+  }
+
+  const sortedOrders = [...filteredOrders].sort((a, b) => {
+    const dir = sortDir === 'asc' ? 1 : -1
+    const getVal = (o: any) => {
+      switch (sortKey) {
+        case 'total_amount': return o.total_amount ?? 0
+        case 'created_at': return new Date(o.created_at).getTime()
+        case 'user_email': return (o.user_email || '').toLowerCase()
+        case 'shipping_address': return (o.shipping_address || '').toLowerCase()
+        case 'status': return (o.status || '').toLowerCase()
+        case 'id': return (o.id || '').toLowerCase()
+        default: return ''
+      }
+    }
+    const va = getVal(a)
+    const vb = getVal(b)
+    if (va < vb) return -1 * dir
+    if (va > vb) return 1 * dir
+    return 0
+  })
+
+  const totalPages = Math.max(1, Math.ceil(sortedOrders.length / pageSize))
+  const currentPage = Math.min(page, totalPages)
+  const pageStart = (currentPage - 1) * pageSize
+  const paginatedOrders = sortedOrders.slice(pageStart, pageStart + pageSize)
 
   const handleStatusUpdate = async (orderId: string, newStatus: string) => {
     setUpdatingOrder(orderId)
@@ -108,7 +147,7 @@ export default function AdminOrders() {
   }
 
   return (
-    <div className="admin-container">
+    <div className="admin-container" style={{ padding: '2rem' }}>
       {/* Header e filtri */}
       <div className="card" style={{marginBottom:'1.5rem'}}>
         <div className="card-head"><h3>Gestione Ordini</h3></div>
@@ -146,88 +185,78 @@ export default function AdminOrders() {
         </div>
       </div>
 
-      {/* Lista ordini - stile card, come la UI mostrata */}
-      <div className="space-y-6">
-        {filteredOrders.map((order) => (
-          <div key={order.id} className="bg-white border border-gray-200 rounded-xl shadow-sm">
-            {/* Header card */}
-            <div className="flex items-start justify-between p-6 border-b border-gray-100">
-              <div>
-                <h4 className="text-xl font-bold text-gray-900">Ordine #{order.id.slice(0, 8)}</h4>
-                <p className="text-sm text-gray-500 flex items-center mt-1">
-                  <Calendar className="w-4 h-4 mr-1 text-gray-400" />
-                  {formatDateTime(order.created_at)}
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(order.status)}`}>
-                  {getStatusLabel(order.status)}
-                </span>
-                <div className="text-right">
-                  <p className="text-sm text-gray-400">Totale</p>
-                  <p className="text-2xl font-extrabold text-orange-700">{formatCurrency(order.total_amount)}</p>
-                </div>
-              </div>
-            </div>
+      {/* Lista ordini in tabella: una riga per ordine */}
+      <div className="card">
+        <div className="card-head"><h3>Ordini</h3></div>
+        <div className="table-wrap">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th style={{cursor:'pointer'}} onClick={() => handleSort('id')}>ID {sortKey==='id' ? (sortDir==='asc'?'↑':'↓') : ''}</th>
+                <th style={{cursor:'pointer'}} onClick={() => handleSort('created_at')}>Data {sortKey==='created_at' ? (sortDir==='asc'?'↑':'↓') : ''}</th>
+                <th style={{cursor:'pointer'}} onClick={() => handleSort('user_email')}>Email {sortKey==='user_email' ? (sortDir==='asc'?'↑':'↓') : ''}</th>
+                <th style={{cursor:'pointer'}} onClick={() => handleSort('shipping_address')}>Indirizzo {sortKey==='shipping_address' ? (sortDir==='asc'?'↑':'↓') : ''}</th>
+                <th style={{cursor:'pointer'}} onClick={() => handleSort('total_amount')}>Totale {sortKey==='total_amount' ? (sortDir==='asc'?'↑':'↓') : ''}</th>
+                <th style={{cursor:'pointer'}} onClick={() => handleSort('status')}>Stato {sortKey==='status' ? (sortDir==='asc'?'↑':'↓') : ''}</th>
+                <th>Azioni</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedOrders.map(order => (
+                <tr key={order.id}>
+                  <td>#{order.id.slice(0,8)}...</td>
+                  <td>
+                    <span className="row-with-icon"><Calendar className="row-icon" />{formatDateTime(order.created_at)}</span>
+                  </td>
+                  <td>{order.user_email}</td>
+                  <td className="truncate" title={order.shipping_address}>{order.shipping_address}</td>
+                  <td className="semibold">{formatCurrency(order.total_amount)}</td>
+                  <td>
+                    <span className={`status-badge ${order.status}`}>{getStatusLabel(order.status)}</span>
+                  </td>
+                  <td>
+                    <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+                      <button onClick={() => openOrderDetails(order)} className="btn btn-secondary small" title="Dettagli">
+                        <Eye className="w-4 h-4" />
+                      </button>
+                      <select
+                        value={order.status}
+                        onChange={(e) => handleStatusUpdate(order.id, e.target.value)}
+                        disabled={updatingOrder === order.id}
+                        className="px-2 py-1 border border-gray-200 rounded-lg text-sm"
+                        aria-label="Aggiorna stato"
+                      >
+                        <option value="pending">In attesa</option>
+                        <option value="confirmed">Confermato</option>
+                        <option value="shipped">Spedito</option>
+                        <option value="delivered">Consegnato</option>
+                        <option value="cancelled">Annullato</option>
+                      </select>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
-            {/* Body: items */}
-            <div className="p-6">
-              <div className="grid grid-cols-12 text-gray-500 text-sm font-semibold mb-2">
-                <div className="col-span-7 sm:col-span-7">Prodotto</div>
-                <div className="col-span-2 text-center">Q.tà</div>
-                <div className="col-span-3 text-right">Prezzo</div>
-              </div>
-              <div className="divide-y divide-gray-100">
-                {(order.order_items && order.order_items.length > 0 ? order.order_items : []).map((item: any, idx: number) => (
-                  <div key={idx} className="grid grid-cols-12 py-2 items-center">
-                    <div className="col-span-7 sm:col-span-7">
-                      <p className="text-gray-800">{item.products?.name || 'Prodotto'}</p>
-                    </div>
-                    <div className="col-span-2 text-center">
-                      <span className="text-gray-700">{item.quantity}</span>
-                    </div>
-                    <div className="col-span-3 text-right">
-                      <span className="text-gray-900">{formatCurrency(item.price)}</span>
-                    </div>
-                  </div>
-                ))}
-                {(!order.order_items || order.order_items.length === 0) && (
-                  <div className="py-4 text-sm text-gray-500">Nessun dettaglio prodotto disponibile</div>
-                )}
-              </div>
-
-              {/* Footer azioni */}
-              <div className="mt-4 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
-                <div className="flex items-center gap-2">
-                  <label className="text-sm text-gray-600">Aggiorna stato:</label>
-                  <select
-                    value={order.status}
-                    onChange={(e) => handleStatusUpdate(order.id, e.target.value)}
-                    disabled={updatingOrder === order.id}
-                    className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-pink-500"
-                  >
-                    <option value="pending">In attesa</option>
-                    <option value="confirmed">Confermato</option>
-                    <option value="shipped">Spedito</option>
-                    <option value="delivered">Consegnato</option>
-                    <option value="cancelled">Annullato</option>
-                  </select>
-                </div>
-                <div className="flex gap-2">
-                  <button onClick={() => openOrderDetails(order)} className="btn btn-secondary small flex items-center">
-                    <Eye className="w-4 h-4 mr-1" /> Dettagli
-                  </button>
-                  <button onClick={() => openOrderDetails(order)} className="btn btn-primary small flex items-center">
-                    <Edit3 className="w-4 h-4 mr-1" /> Modifica
-                  </button>
-                </div>
-              </div>
-            </div>
+        {/* Pagination */}
+        <div className="card-body" style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:'1rem'}}>
+          <div>
+            <label style={{marginRight:8}}>Righe per pagina</label>
+            <select value={pageSize} onChange={(e)=>{setPageSize(parseInt(e.target.value)); setPage(1)}} className="px-2 py-1 border border-gray-200 rounded-lg">
+              {[5,10,20,50].map(n => <option key={n} value={n}>{n}</option>)}
+            </select>
           </div>
-        ))}
+          <div style={{display:'flex',alignItems:'center',gap:12}}>
+            <button className="btn btn-secondary small" onClick={()=>setPage(p=>Math.max(1,p-1))} disabled={currentPage===1}>Precedente</button>
+            <span>Pagina {currentPage} di {totalPages}</span>
+            <button className="btn btn-primary small" onClick={()=>setPage(p=>Math.min(totalPages,p+1))} disabled={currentPage===totalPages}>Successiva</button>
+          </div>
+        </div>
 
         {filteredOrders.length === 0 && (
-          <div className="text-center py-12 text-gray-500 bg-white border rounded-xl">
+          <div className="card-body center">
             <Package className="w-16 h-16 mx-auto mb-4 text-gray-300" />
             <p className="text-lg font-medium">Nessun ordine trovato</p>
             <p className="text-sm">Prova a modificare i filtri di ricerca</p>
