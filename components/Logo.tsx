@@ -1,11 +1,14 @@
+import Image from 'next/image'
+
 export default function Logo({ className = "logo-image" }: { className?: string }) {
   return (
-    <img
+    <Image
       src="/images/ondedicacao.png"
       alt="Onde di Cacao"
       className={className}
-      loading="lazy"
-      decoding="async"
+      width={180}
+      height={60}
+      priority={false}
     />
   )
 }

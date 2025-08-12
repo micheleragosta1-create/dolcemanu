@@ -2,6 +2,7 @@
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
+import type { Metadata } from 'next'
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import { useEffect, useMemo, useState } from "react"
@@ -69,6 +70,14 @@ export default function ProductPage() {
   const addToCart = () => {
     if (!product) return
     addItem({ id: String(product.id), nome: product.name, prezzo: product.price, immagine: product.image_url }, qty)
+    if (typeof window !== 'undefined') {
+      // GA4 event
+      // @ts-ignore
+      window.gtag && window.gtag('event','add_to_cart',{currency:'EUR', value: product.price*qty, items:[{item_id:String(product.id), item_name:product.name, price:product.price, quantity:qty}]})
+      // Meta Pixel
+      // @ts-ignore
+      window.fbq && window.fbq('track','AddToCart',{content_ids:[String(product.id)], content_name:product.name, currency:'EUR', value: product.price*qty})
+    }
   }
 
   return (
@@ -76,6 +85,28 @@ export default function ProductPage() {
       <Header />
       <section className="product-section">
         <div className="product-container">
+          {!!product && (
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{
+                __html: JSON.stringify({
+                  '@context': 'https://schema.org',
+                  '@type': 'Product',
+                  name: product.name,
+                  image: product.image_url,
+                  description: product.description,
+                  brand: 'Cioccolatini Michele',
+                  offers: {
+                    '@type': 'Offer',
+                    priceCurrency: 'EUR',
+                    price: product.price,
+                    availability: 'https://schema.org/InStock',
+                    url: typeof window !== 'undefined' ? window.location.href : ''
+                  }
+                })
+              }}
+            />
+          )}
           {loading ? (
             <ProductPageSkeleton />
           ) : notFound || !product ? (
@@ -96,6 +127,22 @@ export default function ProductPage() {
                   { label: product.category || "Prodotti", href: `/shop?categoria=${product.category || 'tutti'}` },
                   { label: product.name, current: true }
                 ]} 
+              />
+              {/* Breadcrumb JSON-LD */}
+              <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                  __html: JSON.stringify({
+                    '@context': 'https://schema.org',
+                    '@type': 'BreadcrumbList',
+                    itemListElement: [
+                      { '@type': 'ListItem', position: 1, name: 'Home', item: (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000') + '/' },
+                      { '@type': 'ListItem', position: 2, name: 'Shop', item: (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000') + '/shop' },
+                      { '@type': 'ListItem', position: 3, name: product.category || 'Prodotti', item: (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000') + `/shop?categoria=${product.category || 'tutti'}` },
+                      { '@type': 'ListItem', position: 4, name: product.name, item: (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000') + `/product/${product.id}` }
+                    ]
+                  })
+                }}
               />
               <div className="product-grid">
                 <ProductGallery 

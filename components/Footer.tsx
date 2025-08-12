@@ -53,11 +53,15 @@ export default function Footer() {
               src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" 
               alt="Visa" 
               className="payment-icon"
+              loading="lazy"
+              decoding="async"
             />
             <img 
               src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" 
               alt="Mastercard" 
               className="payment-icon"
+              loading="lazy"
+              decoding="async"
             />
             <img 
               src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" 

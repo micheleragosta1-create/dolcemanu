@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, useCallback } from 'react'
+import Image from 'next/image'
 import { useSwipe } from './useSwipe'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import TouchIndicator, { TouchRipple } from './TouchIndicators'
@@ -70,7 +71,9 @@ export default function ProductGallery({ images, productName, className = '' }: 
   if (galleryImages.length <= 1) {
     return (
       <div className={`simple-gallery ${className}`}>
-        <div className="main-image" style={{ backgroundImage: `url(${galleryImages[0]})` }} />
+        <div className="main-image">
+          <Image src={galleryImages[0]} alt={productName} width={500} height={500} style={{ width: '100%', height: 'auto', objectFit: 'cover', borderRadius: 16 }} />
+        </div>
         <style jsx>{`
           .simple-gallery {
             display: flex;
@@ -97,10 +100,9 @@ export default function ProductGallery({ images, productName, className = '' }: 
       <div className="gallery-container" ref={swipeHandlers}>
         {/* Main Image */}
         <div className="main-image-container">
-          <div 
-            className={`main-image ${isTransitioning ? 'transitioning' : ''}`}
-            style={{ backgroundImage: `url(${galleryImages[currentIndex]})` }}
-          />
+          <div className={`main-image ${isTransitioning ? 'transitioning' : ''}`}>
+            <Image src={galleryImages[currentIndex]} alt={`${productName} - vista`} width={500} height={500} style={{ width: '100%', height: 'auto', objectFit: 'cover', borderRadius: 16 }} />
+          </div>
           
           {/* Navigation Arrows - Hidden on mobile for better swipe UX */}
           <button 
@@ -163,10 +165,11 @@ export default function ProductGallery({ images, productName, className = '' }: 
               <button
                 className={`thumbnail ${index === currentIndex ? 'active' : ''}`}
                 onClick={() => goToIndex(index)}
-                style={{ backgroundImage: `url(${img})` }}
                 disabled={isTransitioning}
                 aria-label={`${productName} - Vista ${index + 1}`}
-              />
+              >
+                <Image src={img} alt={`${productName} miniatura ${index + 1}`} width={60} height={60} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 6 }} />
+              </button>
             </TouchRipple>
           ))}
         </div>
@@ -195,11 +198,10 @@ export default function ProductGallery({ images, productName, className = '' }: 
           width: 100%;
           aspect-ratio: 1/1;
           border-radius: 16px;
-          background-size: cover;
-          background-position: center;
           box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
           transition: all 0.3s ease;
           touch-action: pan-y;
+          overflow: hidden;
         }
         
         .main-image.transitioning {
@@ -308,8 +310,6 @@ export default function ProductGallery({ images, productName, className = '' }: 
           height: 60px;
           border-radius: 8px;
           border: 2px solid transparent;
-          background-size: cover;
-          background-position: center;
           cursor: pointer;
           transition: all 0.3s ease;
         }

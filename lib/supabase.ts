@@ -85,6 +85,21 @@ export interface User {
   created_at: string
 }
 
+// Profile (anagrafica) type
+export interface Profile {
+  id: string
+  user_id: string
+  email: string
+  first_name?: string
+  last_name?: string
+  phone?: string
+  address?: string
+  city?: string
+  zip?: string
+  created_at: string
+  updated_at: string
+}
+
 // Funzioni helper per i prodotti
 export async function getProducts(): Promise<Product[]> {
   try {
@@ -267,4 +282,29 @@ export async function updateUserRole(userId: string, role: UserRole['role']): Pr
 export async function getUserRole(userId: string): Promise<{ data: any, error: any }> {
   const supabase = getSupabaseClient()
   return await supabase.rpc('get_user_role', { user_uuid: userId })
+}
+
+// Profiles helpers
+export async function upsertProfile(profile: Omit<Profile, 'id' | 'created_at' | 'updated_at'>): Promise<{ data: any, error: any }> {
+  const supabase = getSupabaseClient()
+  return await supabase
+    .from('profiles')
+    .upsert(profile, { onConflict: 'user_id' })
+    .select()
+    .single()
+}
+
+export async function getOwnProfile(userId: string): Promise<{ data: Profile | null, error: any }> {
+  try {
+    const supabase = getSupabaseClient()
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('user_id', userId)
+      .maybeSingle()
+    if (error) return { data: null, error }
+    return { data: data as Profile | null, error: null }
+  } catch (error) {
+    return { data: null, error }
+  }
 }

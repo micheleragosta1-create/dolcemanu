@@ -1,4 +1,5 @@
 "use client"
+export const dynamic = 'force-dynamic'
 
 import { useMemo, useState } from "react"
 import Header from "@/components/Header"
@@ -7,6 +8,7 @@ import { useCartWithToast } from "@/components/useCartWithToast"
 import { ProductGridSkeleton } from "@/components/Skeleton"
 import MobileFilters from "@/components/MobileFilters"
 import Link from "next/link"
+import Image from 'next/image'
 import { useRouter } from "next/navigation"
 import { useProducts } from "@/hooks/useSupabase"
 import type { Product } from "@/lib/supabase"
@@ -196,6 +198,20 @@ export default function ShopPage() {
       <Header />
       <section className="shop-section">
         <div className="shop-container">
+          {/* Breadcrumb JSON-LD */}
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                '@context': 'https://schema.org',
+                '@type': 'BreadcrumbList',
+                itemListElement: [
+                  { '@type': 'ListItem', position: 1, name: 'Home', item: (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000') + '/' },
+                  { '@type': 'ListItem', position: 2, name: 'Shop', item: (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000') + '/shop' }
+                ]
+              })
+            }}
+          />
           {/* Mobile Filters */}
           <MobileFilters
             resultsCount={filtrati.length}
@@ -225,7 +241,9 @@ export default function ShopPage() {
                     className="card"
                     style={{ cursor: 'pointer' }}
                   >
-                    <div className="thumb" style={{ backgroundImage: `url(${p.image_url})` }} />
+                    <div className="thumbWrap">
+                      <Image src={p.image_url} alt={p.name} fill sizes="(max-width: 600px) 100vw, 33vw" style={{ objectFit: 'cover' }} />
+                    </div>
                     <div className="body">
                       <h3 className="poppins name">{p.name}</h3>
                       <p className="desc">{p.description}</p>
@@ -450,11 +468,7 @@ export default function ShopPage() {
           transform: translateY(-5px);
           box-shadow: 0 15px 40px rgba(0,0,0,.12);
         }
-        .thumb { 
-          background-size: cover; 
-          background-position: center; 
-          position: relative;
-        }
+        .thumbWrap { position: relative; width: 100%; height: 200px; }
         .body { 
           padding: 1.25rem; 
           display: grid; 

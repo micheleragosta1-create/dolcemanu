@@ -5,6 +5,7 @@ import Footer from "@/components/Footer"
 import { useEffect, useMemo, useState } from "react"
 import { useAuth } from '@/components/AuthContext'
 import { useOrders } from '@/hooks/useSupabase'
+import { upsertProfile, getOwnProfile } from '@/lib/supabase'
 
 interface Order {
   id: string
@@ -34,6 +35,24 @@ export default function AccountPage() {
     city: '',
     zip: ''
   })
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (!user?.id || !user?.email) return
+      const { data } = await getOwnProfile(user.id)
+      if (data) {
+        setProfile({
+          firstName: data.first_name || '',
+          lastName: data.last_name || '',
+          phone: data.phone || '',
+          address: data.address || '',
+          city: data.city || '',
+          zip: data.zip || ''
+        })
+      }
+    }
+    loadProfile()
+  }, [user?.id, user?.email])
 
   return (
     <main>
@@ -82,7 +101,20 @@ export default function AccountPage() {
                     <input className="form-input" value={profile.zip} onChange={(e)=>setProfile({...profile, zip: e.target.value})} placeholder="CAP" />
                   </div>
                   <div className="md:col-span-2" style={{display:'flex',gap:12}}>
-                    <button className="btn btn-primary" type="button" onClick={()=>alert('Dati salvati (mock). Integrare salvataggio su Supabase se desiderato).')}>Salva</button>
+                    <button className="btn btn-primary" type="button" onClick={async ()=>{
+                      if (!user?.id || !user?.email) return
+                      await upsertProfile({
+                        user_id: user.id,
+                        email: user.email,
+                        first_name: profile.firstName || null as any,
+                        last_name: profile.lastName || null as any,
+                        phone: profile.phone || null as any,
+                        address: profile.address || null as any,
+                        city: profile.city || null as any,
+                        zip: profile.zip || null as any
+                      })
+                      alert('Dati anagrafici salvati')
+                    }}>Salva</button>
                     <button className="btn btn-secondary" type="button" onClick={()=>setProfile({firstName:'',lastName:'',phone:'',address:'',city:'',zip:''})}>Reset</button>
                   </div>
                 </form>

@@ -136,6 +136,38 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- User profiles (anagrafica)
+CREATE TABLE IF NOT EXISTS profiles (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID NOT NULL UNIQUE,
+  email VARCHAR(255) NOT NULL,
+  first_name VARCHAR(100),
+  last_name VARCHAR(100),
+  phone VARCHAR(30),
+  address TEXT,
+  city VARCHAR(100),
+  zip VARCHAR(20),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+
+-- Users can read their own profile
+CREATE POLICY IF NOT EXISTS "Users can read own profile" ON profiles
+  FOR SELECT USING (auth.uid()::text = user_id::text);
+
+-- Users can insert/update their own profile
+CREATE POLICY IF NOT EXISTS "Users can upsert own profile" ON profiles
+  FOR INSERT WITH CHECK (auth.uid()::text = user_id::text);
+
+CREATE POLICY IF NOT EXISTS "Users can update own profile" ON profiles
+  FOR UPDATE USING (auth.uid()::text = user_id::text);
+
+-- Trigger to update updated_at on profiles
+CREATE TRIGGER update_profiles_updated_at BEFORE UPDATE ON profiles
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- Function to increase stock quantity safely
 CREATE OR REPLACE FUNCTION increase_stock(product_id UUID, quantity INTEGER)
 RETURNS INTEGER AS $$
