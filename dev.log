@@ -1,0 +1,151 @@
+
+> cioccolatini-michele@0.1.0 dev
+> next dev
+
+   ▲ Next.js 14.0.0
+   - Local:        http://localhost:3000
+   - Environments: .env.local
+
+ ✓ Ready in 1246ms
+ ○ Compiling /page ...
+
+ ⚠ The "images.domains" configuration is deprecated. Please use "images.remotePatterns" configuration instead.
+
+
+
+
+
+
+
+
+ ⨯ Internal error: Error: Invalid OpenGraph type: product
+    at ed.openGraph (/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:411930)
+    at /Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:412842
+
+
+
+
+
+
+ ⨯ TypeError: Cannot read properties of undefined (reading 'call')
+    at __webpack_require__ (/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/.next/server/webpack-runtime.js:1:146)
+    at JSON.parse (<anonymous>)
+TypeError: Cannot read properties of undefined (reading 'call')
+    at __webpack_require__ (/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/.next/server/webpack-runtime.js:1:146)
+    at F (/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:36:6049)
+    at /Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:36:8464
+    at W._fromJSON (/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:36:8902)
+    at JSON.parse (<anonymous>)
+    at L (/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:36:5770)
+    at $ (/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:36:4567)
+    at nC (/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:28:55016)
+    at nw (/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:28:38210)
+    at nk (/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:28:38805)
+    at nC (/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:28:54802)
+    at nj (/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:28:60948)
+    at Timeout._onTimeout (/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:28:35981)
+    at listOnTimeout (node:internal/timers:588:17)
+    at process.processTimers (node:internal/timers:523:7)
+ ⨯ TypeError: Cannot read properties of undefined (reading 'call')
+    at __webpack_require__ (/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/.next/server/webpack-runtime.js:1:146)
+    at F (/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:36:6049)
+    at /Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:36:8464
+    at W._fromJSON (/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:36:8902)
+    at JSON.parse (<anonymous>)
+    at L (/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:36:5770)
+    at $ (/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:36:4567)
+    at nC (/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:28:55016)
+    at nw (/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:28:38210)
+    at nk (/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:28:38805)
+    at nC (/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:28:54802)
+    at nj (/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:28:60948)
+    at Timeout._onTimeout (/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:28:35981)
+    at listOnTimeout (node:internal/timers:588:17)
+    at process.processTimers (node:internal/timers:523:7) {
+  page: '/product/a1c53dc0-a2f8-4286-948d-1861dfab7008'
+}
+
+
+
+
+ ⨯ Failed to generate static paths for /product/[id]:
+Error: Cannot find module './vendor-chunks/@supabase.js'
+Require stack:
+- /Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/.next/server/webpack-runtime.js
+- /Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/.next/server/app/product/[id]/page.js
+- /Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/server/require.js
+- /Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/server/load-components.js
+- /Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/build/utils.js
+- /Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/compiled/jest-worker/processChild.js
+    at Function.<anonymous> (node:internal/modules/cjs/loader:1365:15)
+    at /Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/server/require-hook.js:54:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1021:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1026:22)
+    at Function._load (node:internal/modules/cjs/loader:1175:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1445:12)
+    at mod.require (/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/server/require-hook.js:64:28)
+    at require (node:internal/modules/helpers:135:16) {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/.next/server/webpack-runtime.js',
+    '/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/.next/server/app/product/[id]/page.js',
+    '/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/server/require.js',
+    '/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/server/load-components.js',
+    '/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/build/utils.js',
+    '/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/server/dev/static-paths-worker.js',
+    '/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/compiled/jest-worker/processChild.js'
+  ]
+}
+
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+
+
+
+ ⨯ Error: Cannot find module './vendor-chunks/@supabase.js'
+Require stack:
+- /Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/.next/server/webpack-runtime.js
+- /Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/.next/server/app/product/[id]/page.js
+- /Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/server/require.js
+- /Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/server/load-components.js
+- /Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/build/utils.js
+- /Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/compiled/jest-worker/processChild.js
+    at Function.<anonymous> (node:internal/modules/cjs/loader:1365:15)
+    at /Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/server/require-hook.js:54:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1021:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1026:22)
+    at Function._load (node:internal/modules/cjs/loader:1175:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1445:12)
+    at mod.require (/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/server/require-hook.js:64:28)
+    at require (node:internal/modules/helpers:135:16) {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/.next/server/webpack-runtime.js',
+    '/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/.next/server/app/product/[id]/page.js',
+    '/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/server/require.js',
+    '/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/server/load-components.js',
+    '/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/build/utils.js',
+    '/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/server/dev/static-paths-worker.js',
+    '/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/compiled/jest-worker/processChild.js'
+  ],
+  page: '/product/a1c53dc0-a2f8-4286-948d-1861dfab7008'
+}
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, lstat '/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/.next/server/app/not-found_client-reference-manifest.js'
+<w> [webpack.cache.PackFileCacheStrategy/webpack.FileSystemInfo] Resolving '../../../../.next/server/app/not-found_client-reference-manifest' in /Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/server for build dependencies doesn't lead to expected result '/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/.next/server/app/not-found_client-reference-manifest.js', but to 'Error: Can't resolve '../../../../.next/server/app/not-found_client-reference-manifest' in '/Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/server'' instead. Resolving dependencies are ignored for this path.
+<w>  at resolve commonjs file ../../../../.next/server/app/not-found_client-reference-manifest (expected /Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/.next/server/app/not-found_client-reference-manifest.js)
+<w>  at file dependencies /Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/server/load-components.js
+<w>  at file /Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/server/load-components.js
+<w>  at file dependencies /Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/export/worker.js
+<w>  at file /Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/export/worker.js
+<w>  at file dependencies /Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/build/worker.js
+<w>  at file /Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/build/worker.js
+<w>  at file dependencies /Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/build/webpack/loaders/next-route-loader/index.js
+<w>  at file /Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/build/webpack/loaders/next-route-loader/index.js
+<w>  at resolve commonjs /Users/micheleragosta/Desktop/dolcemanu2/dolcemanu/node_modules/next/dist/build/webpack/loaders/next-route-loader/index.js

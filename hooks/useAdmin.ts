@@ -123,51 +123,58 @@ export function useAdmin() {
 
   const addProduct = useCallback(async (productData: Omit<Product, 'id' | 'created_at' | 'updated_at'>) => {
     if (!isAdmin) return { error: 'Accesso negato' }
-    
     try {
-      const { data, error } = await createProduct(productData)
-      if (error) throw error
-      
-      // Aggiorna la lista prodotti
-      setProducts(prev => [data, ...prev])
-      
-      return { data, error: null }
+      const res = await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(productData)
+      })
+      const payload = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        const message = payload?.error || 'Errore creazione prodotto'
+        return { error: message }
+      }
+      setProducts(prev => [payload, ...prev])
+      return { data: payload, error: null }
     } catch (error: any) {
-      return { error: error.message }
+      return { error: error?.message || 'Errore rete' }
     }
   }, [isAdmin])
 
   const editProduct = useCallback(async (productId: string, productData: Partial<Product>) => {
     if (!isAdmin) return { error: 'Accesso negato' }
-    
     try {
-      const { data, error } = await updateProduct(productId, productData)
-      if (error) throw error
-      
-      // Aggiorna la lista prodotti
+      const res = await fetch(`/api/products/${productId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(productData)
+      })
+      const payload = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        const message = payload?.error || 'Errore aggiornamento prodotto'
+        return { error: message }
+      }
       setProducts(prev => prev.map(product => 
-        product.id === productId ? { ...product, ...data } : product
+        product.id === productId ? { ...product, ...payload } : product
       ))
-      
-      return { data, error: null }
+      return { data: payload, error: null }
     } catch (error: any) {
-      return { error: error.message }
+      return { error: error?.message || 'Errore rete' }
     }
   }, [isAdmin])
 
   const removeProduct = useCallback(async (productId: string) => {
     if (!isSuperAdmin) return { error: 'Solo i super admin possono eliminare prodotti' }
-    
     try {
-      const { error } = await deleteProduct(productId)
-      if (error) throw error
-      
-      // Rimuove il prodotto dalla lista
+      const res = await fetch(`/api/products/${productId}`, { method: 'DELETE' })
+      if (!res.ok) {
+        const payload = await res.json().catch(() => ({}))
+        return { error: payload?.error || 'Errore eliminazione prodotto' }
+      }
       setProducts(prev => prev.filter(product => product.id !== productId))
-      
       return { error: null }
     } catch (error: any) {
-      return { error: error.message }
+      return { error: error?.message || 'Errore rete' }
     }
   }, [isSuperAdmin])
 

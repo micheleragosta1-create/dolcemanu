@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
     description,
     alternates: { canonical: `/product/${params.id}` },
     openGraph: {
-      type: 'product',
+      type: 'website',
       title,
       description,
       url,
