@@ -83,16 +83,12 @@ export default function Header() {
               </div>
             </div>
           ) : (
-            <a href="/auth" className="btn btn-secondary">
-              <User size={16} />
+            <a href="/auth" className="btn btn-secondary btn-compact">
               Login / Registrati
             </a>
           )}
           
-          <button className="icon-btn" title="Wishlist">
-            <Heart size={20} />
-            {mounted && wishlistItems > 0 && <span className="cart-badge">{wishlistItems}</span>}
-          </button>
+          {/* Wishlist rimossa su mobile/desktop come richiesto */}
           
           <div 
             className="cart-container"

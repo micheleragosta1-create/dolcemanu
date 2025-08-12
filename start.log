@@ -5,15 +5,5 @@
    ▲ Next.js 14.0.0
    - Local:        http://localhost:3010
 
- ✓ Ready in 192ms
+ ✓ Ready in 198ms
  ⚠ The "images.domains" configuration is deprecated. Please use "images.remotePatterns" configuration instead.
- ⨯ The requested resource "/images/prodotto-2.svg?view=side" has type "image/svg+xml" but dangerouslyAllowSVG is disabled
- ⨯ The requested resource "/images/prodotto-2.svg?view=detail" has type "image/svg+xml" but dangerouslyAllowSVG is disabled
- ⨯ The requested resource "/images/prodotto-1.svg?view=side" has type "image/svg+xml" but dangerouslyAllowSVG is disabled
- ⨯ The requested resource "/images/prodotto-1.svg?view=detail" has type "image/svg+xml" but dangerouslyAllowSVG is disabled
-Error fetching product: {
-  code: '22P02',
-  details: null,
-  hint: null,
-  message: 'invalid input syntax for type uuid: "3"'
-}

@@ -2,7 +2,7 @@ import manuImg from '@/app/assets/images/manu.jpg'
 
 export default function Storia() {
   return (
-    <section id="storia" className="storia storia-bg">
+    <section id="storia" className="storia-bg">
       <div className="storia-header">
         <h2 className="storia-title">La mia passione</h2>
       </div>
