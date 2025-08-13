@@ -1,6 +1,16 @@
 // Script di test per verificare la connessione Supabase
 const { createClient } = require('@supabase/supabase-js')
-require('dotenv').config({ path: '.env.local' })
+const path = require('path')
+
+// Permette di passare il percorso del file env via argomento CLI
+// Esempio: node test-supabase-connection.js .env.development
+const envPathArg = process.argv[2]
+const envPath = envPathArg && typeof envPathArg === 'string'
+  ? envPathArg
+  : '.env.local'
+
+console.log(`Carico variabili da: ${envPath}`)
+require('dotenv').config({ path: envPath })
 
 async function testSupabaseConnection() {
   console.log('🧪 Test Connessione Supabase...\n')
