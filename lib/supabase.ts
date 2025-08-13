@@ -47,6 +47,18 @@ export interface Product {
   stock_quantity: number
   created_at: string
   updated_at: string
+  // Campi opzionali aggiuntivi
+  ingredients?: string | null
+  allergens?: string | null
+  nutrition?: {
+    energy_kcal?: number | null
+    fat?: number | null
+    saturated_fat?: number | null
+    carbs?: number | null
+    sugars?: number | null
+    protein?: number | null
+    salt?: number | null
+  } | null
 }
 
 export interface Order {
@@ -225,8 +237,8 @@ export async function updateOrderStatus(orderId: string, status: Order['status']
     const session = await supabase.auth.getSession()
     const accessToken = session?.data?.session?.access_token
 
-    // Normalizza 'confirmed' -> 'processing' per retro-compatibilità UI
-    const normalized = (status === 'confirmed' ? 'processing' : status)
+  // Normalizza eventuali label UI non presenti nel tipo
+  const normalized = status
 
     const res = await fetch(`/api/orders/${orderId}`, {
       method: 'PATCH',

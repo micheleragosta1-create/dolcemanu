@@ -11,6 +11,7 @@ import { useCartWithToast } from "@/components/useCartWithToast"
 import { ProductPageSkeleton } from "@/components/Skeleton"
 import Breadcrumbs from "@/components/Breadcrumbs"
 import ProductGallery from "@/components/ProductGallery"
+import ProductReviews from "@/components/ProductReviews"
 
 type Product = {
   id: string
@@ -178,6 +179,7 @@ export default function ProductPage() {
                       <li>Sale: 0.2 g</li>
                     </ul>
                   </div>
+                  <ProductReviews productId={String(product.id)} />
                 </div>
               </div>
 

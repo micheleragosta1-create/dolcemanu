@@ -28,7 +28,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { name, description, price, image_url, category, stock_quantity } = body
+    const { name, description, price, image_url, category, stock_quantity, ingredients, allergens, nutrition } = body
 
     if (!name || !price || !category) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -51,6 +51,9 @@ export async function POST(request: Request) {
         image_url: image_url || '',
         category,
         stock_quantity: Number.isFinite(stock_quantity) ? stock_quantity : 0,
+        ingredients: ingredients || null,
+        allergens: allergens || null,
+        nutrition: nutrition || null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })

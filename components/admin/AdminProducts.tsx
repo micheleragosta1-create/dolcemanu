@@ -36,7 +36,16 @@ export default function AdminProducts() {
     price: '',
     stock: '',
     image_url: '',
-    category: ''
+    category: '',
+    ingredients: '',
+    allergens: '',
+    nutrition_energy_kcal: '',
+    nutrition_fat: '',
+    nutrition_saturated_fat: '',
+    nutrition_carbs: '',
+    nutrition_sugars: '',
+    nutrition_protein: '',
+    nutrition_salt: ''
   })
 
   useEffect(() => {
@@ -87,7 +96,16 @@ export default function AdminProducts() {
       price: '',
       stock: '',
       image_url: '',
-      category: ''
+      category: '',
+      ingredients: '',
+      allergens: '',
+      nutrition_energy_kcal: '',
+      nutrition_fat: '',
+      nutrition_saturated_fat: '',
+      nutrition_carbs: '',
+      nutrition_sugars: '',
+      nutrition_protein: '',
+      nutrition_salt: ''
     })
     setShowProductModal(true)
   }
@@ -100,7 +118,16 @@ export default function AdminProducts() {
       price: product.price.toString(),
       stock: (product.stock_quantity ?? 0).toString(),
       image_url: product.image_url || '',
-      category: product.category || ''
+      category: product.category || '',
+      ingredients: (product as any).ingredients || '',
+      allergens: (product as any).allergens || '',
+      nutrition_energy_kcal: String((product as any)?.nutrition?.energy_kcal ?? ''),
+      nutrition_fat: String((product as any)?.nutrition?.fat ?? ''),
+      nutrition_saturated_fat: String((product as any)?.nutrition?.saturated_fat ?? ''),
+      nutrition_carbs: String((product as any)?.nutrition?.carbs ?? ''),
+      nutrition_sugars: String((product as any)?.nutrition?.sugars ?? ''),
+      nutrition_protein: String((product as any)?.nutrition?.protein ?? ''),
+      nutrition_salt: String((product as any)?.nutrition?.salt ?? '')
     })
     setShowProductModal(true)
   }
@@ -114,7 +141,18 @@ export default function AdminProducts() {
       price: parseFloat(formData.price),
       stock_quantity: parseInt(formData.stock),
       image_url: formData.image_url || '',
-      category: formData.category || ''
+      category: formData.category || '',
+      ingredients: formData.ingredients.trim() || null,
+      allergens: formData.allergens.trim() || null,
+      nutrition: {
+        energy_kcal: numOrNull(formData.nutrition_energy_kcal),
+        fat: numOrNull(formData.nutrition_fat),
+        saturated_fat: numOrNull(formData.nutrition_saturated_fat),
+        carbs: numOrNull(formData.nutrition_carbs),
+        sugars: numOrNull(formData.nutrition_sugars),
+        protein: numOrNull(formData.nutrition_protein),
+        salt: numOrNull(formData.nutrition_salt)
+      }
     }
 
     try {
@@ -128,6 +166,11 @@ export default function AdminProducts() {
     } catch (error) {
       alert(`Errore: ${error}`)
     }
+  }
+
+  function numOrNull(v: string) {
+    const n = parseFloat(v)
+    return Number.isFinite(n) ? n : null
   }
 
   const handleDelete = async (productId: string) => {
@@ -368,7 +411,7 @@ export default function AdminProducts() {
           <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-bold text-gray-800">
+                <h3 className="text-xl font-bold text-gray-800 poppins">
                   {editingProduct ? 'Modifica Prodotto' : 'Nuovo Prodotto'}
                 </h3>
                 <button
@@ -379,7 +422,7 @@ export default function AdminProducts() {
                 </button>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="admin-form space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Nome Prodotto *
@@ -389,7 +432,7 @@ export default function AdminProducts() {
                     required
                     value={formData.name}
                     onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                    className="admin-input"
                     placeholder="Nome del prodotto"
                   />
                 </div>
@@ -403,7 +446,7 @@ export default function AdminProducts() {
                     rows={3}
                     value={formData.description}
                     onChange={(e) => setFormData({...formData, description: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                    className="admin-textarea"
                     placeholder="Descrizione del prodotto"
                   />
                 </div>
@@ -420,7 +463,7 @@ export default function AdminProducts() {
                       step="0.01"
                       value={formData.price}
                       onChange={(e) => setFormData({...formData, price: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                      className="admin-input"
                       placeholder="0.00"
                     />
                   </div>
@@ -435,7 +478,7 @@ export default function AdminProducts() {
                       min="0"
                       value={formData.stock}
                       onChange={(e) => setFormData({...formData, stock: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                      className="admin-input"
                       placeholder="0"
                     />
                   </div>
@@ -449,9 +492,14 @@ export default function AdminProducts() {
                     type="url"
                     value={formData.image_url}
                     onChange={(e) => setFormData({...formData, image_url: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                    className="admin-input"
                     placeholder="https://example.com/image.jpg"
                   />
+                  {formData.image_url && (
+                    <div style={{marginTop: '.5rem'}}>
+                      <img src={formData.image_url} alt="Anteprima immagine" style={{width: '100%', maxHeight: 180, objectFit: 'cover', borderRadius: 8, border: '1px solid #eee'}} />
+                    </div>
+                  )}
                 </div>
 
                 <div>
@@ -462,10 +510,72 @@ export default function AdminProducts() {
                     type="text"
                     value={formData.category}
                     onChange={(e) => setFormData({...formData, category: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                    className="admin-input"
                     placeholder="es. Dolci, Bevande, etc."
                   />
                 </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Ingredienti
+                </label>
+                <textarea
+                  rows={3}
+                  value={formData.ingredients}
+                  onChange={(e)=>setFormData({...formData, ingredients: e.target.value})}
+                  className="admin-textarea"
+                  placeholder="Es. Cacao, zucchero, burro di cacao, latte..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Allergeni
+                </label>
+                <input
+                  type="text"
+                  value={formData.allergens}
+                  onChange={(e)=>setFormData({...formData, allergens: e.target.value})}
+                  className="admin-input"
+                  placeholder="Es. Latte, frutta a guscio, soia..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Tabella nutrizionale (per 100g)
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs text-gray-600">Energia (kcal)</label>
+                    <input className="admin-input" type="number" min="0" value={formData.nutrition_energy_kcal} onChange={(e)=>setFormData({...formData, nutrition_energy_kcal: e.target.value})} />
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-600">Grassi (g)</label>
+                    <input className="admin-input" type="number" min="0" step="0.1" value={formData.nutrition_fat} onChange={(e)=>setFormData({...formData, nutrition_fat: e.target.value})} />
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-600">di cui saturi (g)</label>
+                    <input className="admin-input" type="number" min="0" step="0.1" value={formData.nutrition_saturated_fat} onChange={(e)=>setFormData({...formData, nutrition_saturated_fat: e.target.value})} />
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-600">Carboidrati (g)</label>
+                    <input className="admin-input" type="number" min="0" step="0.1" value={formData.nutrition_carbs} onChange={(e)=>setFormData({...formData, nutrition_carbs: e.target.value})} />
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-600">di cui zuccheri (g)</label>
+                    <input className="admin-input" type="number" min="0" step="0.1" value={formData.nutrition_sugars} onChange={(e)=>setFormData({...formData, nutrition_sugars: e.target.value})} />
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-600">Proteine (g)</label>
+                    <input className="admin-input" type="number" min="0" step="0.1" value={formData.nutrition_protein} onChange={(e)=>setFormData({...formData, nutrition_protein: e.target.value})} />
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-600">Sale (g)</label>
+                    <input className="admin-input" type="number" min="0" step="0.01" value={formData.nutrition_salt} onChange={(e)=>setFormData({...formData, nutrition_salt: e.target.value})} />
+                  </div>
+                </div>
+              </div>
 
                 <div className="flex justify-end space-x-3 pt-4">
                   <button
@@ -483,6 +593,20 @@ export default function AdminProducts() {
                   </button>
                 </div>
               </form>
+              <style jsx>{`
+                .admin-form .admin-input, .admin-form .admin-textarea {
+                  width: 100%;
+                  padding: .8rem 1rem;
+                  border: 2px solid #e9ecef;
+                  border-radius: 10px;
+                  font-size: 0.95rem;
+                  transition: border-color .2s ease;
+                }
+                .admin-form .admin-input:focus, .admin-form .admin-textarea:focus {
+                  outline: none;
+                  border-color: var(--color-brown);
+                }
+              `}</style>
             </div>
           </div>
         </div>
