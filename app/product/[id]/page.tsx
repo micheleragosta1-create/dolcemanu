@@ -163,21 +163,15 @@ export default function ProductPage() {
 
                   <div className="info-block">
                     <h3 className="poppins">Ingredienti</h3>
-                    <p>Cacao, zucchero, burro di cacao, latte in polvere, nocciole, pistacchi, aroma naturale di limone.</p>
+                    <p>{(product as any).ingredients || 'Cacao, zucchero, burro di cacao, latte in polvere, nocciole, pistacchi, aroma naturale di limone.'}</p>
                   </div>
                   <div className="info-block">
                     <h3 className="poppins">Allergeni</h3>
-                    <p>Può contenere tracce di latte, frutta a guscio e soia.</p>
+                    <p>{(product as any).allergens || 'Può contenere tracce di latte, frutta a guscio e soia.'}</p>
                   </div>
                   <div className="info-block">
                     <h3 className="poppins">Valori nutrizionali (100g)</h3>
-                    <ul className="nutri">
-                      <li>Energia: 2300 kJ / 550 kcal</li>
-                      <li>Grassi: 35 g (di cui saturi 21 g)</li>
-                      <li>Carboidrati: 50 g (di cui zuccheri 45 g)</li>
-                      <li>Proteine: 6 g</li>
-                      <li>Sale: 0.2 g</li>
-                    </ul>
+                    {renderNutrition((product as any).nutrition)}
                   </div>
                   <ProductReviews productId={String(product.id)} />
                 </div>
@@ -233,6 +227,30 @@ export default function ProductPage() {
         @media (max-width: 992px) { .product-grid { grid-template-columns: 1fr; } }
       `}</style>
     </main>
+  )
+}
+
+function renderNutrition(nutrition?: any) {
+  if (!nutrition || typeof nutrition !== 'object') {
+    return (
+      <ul className="nutri">
+        <li>Energia: 2300 kJ / 550 kcal</li>
+        <li>Grassi: 35 g (di cui saturi 21 g)</li>
+        <li>Carboidrati: 50 g (di cui zuccheri 45 g)</li>
+        <li>Proteine: 6 g</li>
+        <li>Sale: 0.2 g</li>
+      </ul>
+    )
+  }
+  const v = nutrition
+  return (
+    <ul className="nutri">
+      {v.energy_kcal != null && <li>Energia: {v.energy_kcal} kcal</li>}
+      {v.fat != null && <li>Grassi: {v.fat} g {v.saturated_fat != null && <>(di cui saturi {v.saturated_fat} g)</>}</li>}
+      {v.carbs != null && <li>Carboidrati: {v.carbs} g {v.sugars != null && <>(di cui zuccheri {v.sugars} g)</>}</li>}
+      {v.protein != null && <li>Proteine: {v.protein} g</li>}
+      {v.salt != null && <li>Sale: {v.salt} g</li>}
+    </ul>
   )
 }
 
