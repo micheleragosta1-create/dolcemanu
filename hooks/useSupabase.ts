@@ -177,8 +177,26 @@ export function useSupabaseAuth() {
 
   const signOut = async () => {
     const supabase = getSupabaseClient()
-    const { error } = await supabase.auth.signOut()
-    return { error }
+    try {
+      // Prova lo scope globale (default SDK). Alcuni progetti possono rispondere 403.
+      let { error } = await supabase.auth.signOut({ scope: 'global' as any })
+      if (error && typeof error?.message === 'string' && /403|forbidden/i.test(error.message)) {
+        // Fallback: scope locale
+        const resLocal = await supabase.auth.signOut({ scope: 'local' as any })
+        error = resLocal.error
+      }
+      // Hard fallback: pulizia storage locale per chiudere sessione client-side
+      try {
+        if (typeof window !== 'undefined') {
+          Object.keys(localStorage)
+            .filter(k => k.startsWith('sb-'))
+            .forEach(k => localStorage.removeItem(k))
+        }
+      } catch {}
+      return { error: null }
+    } catch (err: any) {
+      return { error: err }
+    }
   }
 
   return {

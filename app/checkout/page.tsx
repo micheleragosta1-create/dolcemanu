@@ -6,6 +6,7 @@ import { useCart } from "@/components/CartContext"
 import { loadStripe } from "@stripe/stripe-js"
 import { PayPalScriptProvider, PayPalButtons, FUNDING } from "@paypal/react-paypal-js"
 import { useEffect, useState } from "react"
+import { useAuth } from "@/components/AuthContext"
 
 const stripePromise = typeof window !== 'undefined' && process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
   ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
@@ -13,6 +14,7 @@ const stripePromise = typeof window !== 'undefined' && process.env.NEXT_PUBLIC_S
 
 export default function CheckoutPage() {
   const { items, totalAmount } = useCart()
+  const { user } = useAuth()
   const [paypalReady, setPaypalReady] = useState(false)
   const [paypalError, setPaypalError] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
@@ -30,6 +32,31 @@ export default function CheckoutPage() {
 
   const handleStripeCheckout = async () => {
     try {
+      // 1) Crea l'ordine lato server per ottenere order_id (metadati Stripe)
+      let orderId: string | null = null
+      try {
+        const orderRes = await fetch('/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_email: user?.email || 'guest@local.test',
+            items: items.map(i => ({ product_id: String(i.id), quantity: i.qty })),
+            shipping_address: 'Checkout online',
+            shipping_city: 'N/D',
+            shipping_postal_code: '00000',
+            shipping_country: 'IT'
+          })
+        })
+        const orderData = await orderRes.json()
+        if (orderRes.ok && orderData?.order_id) {
+          orderId = orderData.order_id
+        }
+      } catch (e) {
+        // Se fallisce, proseguiamo senza metadata
+        console.warn('Creazione ordine preliminare fallita, proseguo senza metadata', e)
+      }
+
+      // 2) Crea la sessione Stripe passando anche i metadata se disponibili
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -40,7 +67,9 @@ export default function CheckoutPage() {
             quantity: i.qty
           })),
           success_url: `${window.location.origin}/?checkout=success`,
-          cancel_url: `${window.location.origin}/cart`
+          cancel_url: `${window.location.origin}/cart`,
+          order_id: orderId || '',
+          user_email: user?.email || ''
         })
       })
       const data = await res.json()

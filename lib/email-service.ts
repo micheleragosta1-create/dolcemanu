@@ -31,6 +31,19 @@ export class EmailService {
     return EmailService.instance
   }
 
+  private normalizePrice(value: any): number {
+    const n = Number(value)
+    if (!Number.isFinite(n)) return 0
+    // Se sembra in centesimi (es. 1850), converte in euro
+    if (Number.isInteger(n) && n >= 500) return n / 100
+    return n
+  }
+
+  private formatPriceEUR(value: any): string {
+    const n = this.normalizePrice(value)
+    return n.toFixed(2)
+  }
+
   // Email di conferma ordine per il cliente
   async sendOrderConfirmation(data: OrderEmailData): Promise<boolean> {
     try {
@@ -94,7 +107,7 @@ export class EmailService {
 
   private createOrderConfirmationTemplate(data: OrderEmailData): EmailTemplate {
     const itemsList = data.items.map(item => 
-      `<tr><td>${item.name}</td><td>${item.quantity}</td><td>€${item.price.toFixed(2)}</td></tr>`
+      `<tr><td>${item.name}</td><td>${item.quantity}</td><td>€${this.formatPriceEUR(item.price)}</td></tr>`
     ).join('')
 
     return {
@@ -133,7 +146,7 @@ export class EmailService {
               </table>
               
               <div style="text-align: right; margin-top: 20px;">
-                <strong>Totale: €${data.totalAmount.toFixed(2)}</strong>
+                <strong>Totale: €${this.formatPriceEUR(data.totalAmount)}</strong>
               </div>
             </div>
             
@@ -163,9 +176,9 @@ export class EmailService {
         Grazie per il tuo ordine! Ecco i dettagli:
         
         Ordine #${data.orderId}
-        ${data.items.map(item => `${item.name} x${item.quantity} - €${item.price.toFixed(2)}`).join('\n')}
+        ${data.items.map(item => `${item.name} x${item.quantity} - €${this.formatPriceEUR(item.price)}`).join('\n')}
         
-        Totale: €${data.totalAmount.toFixed(2)}
+        Totale: €${this.formatPriceEUR(data.totalAmount)}
         
         Indirizzo di Spedizione: ${data.shippingAddress}
         
@@ -178,7 +191,7 @@ export class EmailService {
 
   private createAdminNotificationTemplate(data: OrderEmailData): EmailTemplate {
     const itemsList = data.items.map(item => 
-      `<tr><td>${item.name}</td><td>${item.quantity}</td><td>€${item.price.toFixed(2)}</td></tr>`
+      `<tr><td>${item.name}</td><td>${item.quantity}</td><td>€${this.formatPriceEUR(item.price)}</td></tr>`
     ).join('')
 
     return {
@@ -197,7 +210,7 @@ export class EmailService {
             <div style="background: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0;">
               <h3>Ordine #${data.orderId}</h3>
               <p><strong>Cliente:</strong> ${data.userEmail}</p>
-              <p><strong>Totale:</strong> €${data.totalAmount.toFixed(2)}</p>
+              <p><strong>Totale:</strong> €${this.formatPriceEUR(data.totalAmount)}</p>
               <p><strong>Stato:</strong> ${data.status}</p>
             </div>
             
@@ -230,11 +243,11 @@ export class EmailService {
         
         Ordine #${data.orderId}
         Cliente: ${data.userEmail}
-        Totale: €${data.totalAmount.toFixed(2)}
+        Totale: €${this.formatPriceEUR(data.totalAmount)}
         Stato: ${data.status}
         
         Prodotti Ordinati:
-        ${data.items.map(item => `${item.name} x${item.quantity} - €${item.price.toFixed(2)}`).join('\n')}
+        ${data.items.map(item => `${item.name} x${item.quantity} - €${this.formatPriceEUR(item.price)}`).join('\n')}
         
         Indirizzo di Spedizione: ${data.shippingAddress}
         

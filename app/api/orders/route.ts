@@ -17,11 +17,54 @@ const supabaseAdmin = hasServiceKey
   ? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
   : null
 
+// Helper: estrae user e ruolo dall'Authorization header (Bearer token)
+async function getUserAndRole(request: Request): Promise<{ user: any | null, role: 'user' | 'admin' | 'super_admin' | null }> {
+  try {
+    const authHeader = request.headers.get('authorization') || request.headers.get('Authorization')
+    if (!authHeader || !authHeader.toLowerCase().startsWith('bearer ')) {
+      return { user: null, role: null }
+    }
+    const token = authHeader.slice(7)
+    const { data: userData, error: userError } = await supabaseAnon.auth.getUser(token)
+    if (userError || !userData?.user) return { user: null, role: null }
+
+    // Whitelist email (env: ADMIN_EMAIL_WHITELIST, csv). Fallback: email owner.
+    const whitelist = (process.env.ADMIN_EMAIL_WHITELIST || 'michele.ragosta1@gmail.com')
+      .split(',')
+      .map(s => s.trim().toLowerCase())
+      .filter(Boolean)
+    if (userData.user.email && whitelist.includes(userData.user.email.toLowerCase())) {
+      return { user: userData.user, role: 'super_admin' }
+    }
+
+    // Recupera ruolo tramite RPC (preferisci client admin se disponibile)
+    const client = supabaseAdmin ?? supabaseAnon
+    const { data: roleData } = await client.rpc('get_user_role', { user_uuid: userData.user.id })
+    let role: any = roleData
+    // Normalizza possibili formati
+    if (Array.isArray(role)) {
+      role = role[0]?.role ?? role[0]
+    } else if (role && typeof role === 'object') {
+      role = role.role ?? null
+    }
+    if (role !== 'admin' && role !== 'super_admin' && role !== 'user') role = 'user'
+    return { user: userData.user, role }
+  } catch {
+    return { user: null, role: null }
+  }
+}
+
 // GET /api/orders - Fetch all orders (admin only)
 export async function GET(request: Request) {
   try {
-    // Verifica autenticazione admin (qui dovresti implementare la verifica del ruolo)
-    const { data: orders, error } = await supabaseAnon
+    // Verifica autenticazione admin lato server
+    const { role } = await getUserAndRole(request)
+    if (role !== 'admin' && role !== 'super_admin') {
+      return NextResponse.json({ error: 'Accesso negato' }, { status: 403 })
+    }
+
+    const client = supabaseAdmin ?? supabaseAnon
+    const { data: orders, error } = await client
       .from('orders')
       .select(`
         *,
@@ -49,7 +92,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json()
     const {
-      user_email,
+      user_email: raw_user_email,
       items,
       shipping_address,
       shipping_city,
@@ -60,6 +103,10 @@ export async function POST(request: Request) {
     const orderNumber = `ORD${Date.now()}${Math.floor(Math.random()*1000).toString().padStart(3,'0')}`
 
     // Validazione payload
+    // Se autenticato, forza l'email del body a quella dell'utente (evita spoofing)
+    const { user } = await getUserAndRole(request)
+    const user_email = user?.email || raw_user_email
+
     if (!user_email || typeof user_email !== 'string') {
       return NextResponse.json({ error: 'Campo user_email mancante o invalido' }, { status: 400 })
     }
@@ -163,11 +210,15 @@ export async function POST(request: Request) {
     }
 
     // Crea gli item dell'ordine (usa unit_price / total_price coerenti con lo schema DB)
+    const orderId = (order as any)?.id
+    if (!orderId) {
+      return NextResponse.json({ error: 'ID ordine non disponibile' }, { status: 500 })
+    }
     const orderItems = normalizedItems.map((item: any) => {
       const quantity = item.quantity
       const unitPrice = Number((productById.get(item.product_id) as any).price)
       return {
-        order_id: order.id,
+        order_id: orderId,
         product_id: item.product_id,
         quantity,
         unit_price: unitPrice,
@@ -192,7 +243,7 @@ export async function POST(request: Request) {
       console.error('Errore creazione item ordine:', itemsError)
       // Rollback dell'ordine se fallisce la creazione degli item
       const rollbackClient = supabaseAdmin ?? clientForItems
-      await rollbackClient.from('orders').delete().eq('id', order.id)
+      await rollbackClient.from('orders').delete().eq('id', orderId)
       return NextResponse.json({ error: itemsError.message }, { status: 500 })
     }
 
@@ -221,9 +272,9 @@ export async function POST(request: Request) {
     // Invia email di conferma al cliente
     try {
       await emailService.sendOrderConfirmation({
-        orderId: order.id,
+        orderId: orderId,
         userEmail: user_email,
-        totalAmount: total_amount,
+        totalAmount: totalAmount,
         items: items.map((item: any) => ({
           name: item.name || 'Prodotto',
           quantity: item.quantity || item.qty,
@@ -240,9 +291,9 @@ export async function POST(request: Request) {
     // Invia notifica all'amministratore
     try {
       await emailService.sendOrderNotificationToAdmin({
-        orderId: order.id,
+        orderId: orderId,
         userEmail: user_email,
-        totalAmount: total_amount,
+        totalAmount: totalAmount,
         items: items.map((item: any) => ({
           name: item.name || 'Prodotto',
           quantity: item.quantity || item.qty,
@@ -257,7 +308,7 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ 
-      order_id: order.id,
+      order_id: orderId,
       message: 'Ordine creato con successo'
     }, { status: 201 })
   } catch (error) {

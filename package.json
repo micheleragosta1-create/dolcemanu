@@ -7,7 +7,8 @@
     "build": "next build",
     "build:fast": "NEXT_TELEMETRY_DISABLED=1 next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test:orders": "node test-orders-e2e.js"
   },
   "dependencies": {
     "@paypal/react-paypal-js": "^8.2.1",

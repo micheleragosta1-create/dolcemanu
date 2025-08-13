@@ -8,13 +8,58 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
+// Client admin (service role) se disponibile
+const hasServiceKey = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY && process.env.SUPABASE_SERVICE_ROLE_KEY.length > 20)
+const supabaseAdmin = hasServiceKey
+  ? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+  : null
+
+// Helper: estrae user e ruolo da Authorization: Bearer <token>
+async function getUserAndRole(request: Request): Promise<{ user: any | null, role: 'user' | 'admin' | 'super_admin' | null }> {
+  try {
+    const authHeader = request.headers.get('authorization') || request.headers.get('Authorization')
+    if (!authHeader || !authHeader.toLowerCase().startsWith('bearer ')) {
+      return { user: null, role: null }
+    }
+    const token = authHeader.slice(7)
+    const { data: userData, error: userError } = await supabase.auth.getUser(token)
+    if (userError || !userData?.user) return { user: null, role: null }
+
+    // Whitelist email (env) per privilegi locali
+    const whitelist = (process.env.ADMIN_EMAIL_WHITELIST || 'michele.ragosta1@gmail.com')
+      .split(',')
+      .map(s => s.trim().toLowerCase())
+      .filter(Boolean)
+    if (userData.user.email && whitelist.includes(userData.user.email.toLowerCase())) {
+      return { user: userData.user, role: 'super_admin' }
+    }
+
+    const client = supabaseAdmin ?? supabase
+    const { data: roleData } = await client.rpc('get_user_role', { user_uuid: userData.user.id })
+    let role: any = roleData
+    if (Array.isArray(role)) {
+      role = role[0]?.role ?? role[0]
+    } else if (role && typeof role === 'object') {
+      role = role.role ?? null
+    }
+    if (role !== 'admin' && role !== 'super_admin' && role !== 'user') role = 'user'
+    return { user: userData.user, role }
+  } catch {
+    return { user: null, role: null }
+  }
+}
+
 // GET /api/orders/[id] - Get order details
 export async function GET(
   request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
-    const { data: order, error } = await supabase
+    // Consenti: admin/super_admin o proprietario dell'ordine
+    const { user, role } = await getUserAndRole(request)
+    const client = supabaseAdmin ?? supabase
+
+    const { data: order, error } = await client
       .from('orders')
       .select(`
         *,
@@ -31,6 +76,12 @@ export async function GET(
       return NextResponse.json({ error: 'Ordine non trovato' }, { status: 404 })
     }
 
+    if (role !== 'admin' && role !== 'super_admin') {
+      if (!user || order.user_email !== user.email) {
+        return NextResponse.json({ error: 'Accesso negato' }, { status: 403 })
+      }
+    }
+
     return NextResponse.json(order)
   } catch (error) {
     console.error('Errore interno:', error)
@@ -44,6 +95,12 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Solo admin/super_admin può aggiornare lo stato
+    const { role } = await getUserAndRole(request)
+    if (role !== 'admin' && role !== 'super_admin') {
+      return NextResponse.json({ error: 'Accesso negato' }, { status: 403 })
+    }
+
     const body = await request.json()
     const { status, admin_note } = body
 
@@ -58,11 +115,11 @@ export async function PATCH(
     }
 
     // Aggiorna l'ordine
-    const { data: order, error: updateError } = await supabase
+    const client = supabaseAdmin ?? supabase
+    const { data: order, error: updateError } = await client
       .from('orders')
       .update({ 
         status,
-        admin_note: admin_note || null,
         updated_at: new Date().toISOString()
       })
       .eq('id', params.id)
@@ -77,7 +134,7 @@ export async function PATCH(
     // Invia email di aggiornamento stato al cliente
     try {
       // Recupera i dettagli dell'ordine per l'email
-      const { data: orderDetails } = await supabase
+      const { data: orderDetails } = await client
         .from('orders')
         .select(`
           *,
@@ -97,7 +154,7 @@ export async function PATCH(
           items: orderDetails.order_items?.map((item: any) => ({
             name: item.products?.name || 'Prodotto',
             quantity: item.quantity,
-            price: item.price
+            price: item.unit_price ?? item.price
           })) || [],
           shippingAddress: orderDetails.shipping_address,
           status: status
@@ -124,8 +181,15 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Solo admin/super_admin può cancellare
+    const { role } = await getUserAndRole(request)
+    if (role !== 'admin' && role !== 'super_admin') {
+      return NextResponse.json({ error: 'Accesso negato' }, { status: 403 })
+    }
+
     // Verifica che l'ordine esista e sia cancellabile
-    const { data: order, error: fetchError } = await supabase
+    const client = supabaseAdmin ?? supabase
+    const { data: order, error: fetchError } = await client
       .from('orders')
       .select('*')
       .eq('id', params.id)
@@ -140,7 +204,7 @@ export async function DELETE(
     }
 
     // Aggiorna lo status a 'cancelled' invece di eliminare
-    const { error: updateError } = await supabase
+    const { error: updateError } = await client
       .from('orders')
       .update({ 
         status: 'cancelled',
@@ -155,22 +219,17 @@ export async function DELETE(
 
     // Ripristina lo stock se l'ordine era in elaborazione o spedito
     if (['processing', 'shipped'].includes(order.status)) {
-      const { data: orderItems } = await supabase
+      const { data: orderItems } = await client
         .from('order_items')
         .select('*')
         .eq('order_id', params.id)
 
       if (orderItems) {
         for (const item of orderItems) {
-          await supabase
-            .from('products')
-            .update({ 
-              stock_quantity: supabase.rpc('increase_stock', { 
-                product_id: item.product_id, 
-                quantity: item.quantity 
-              })
-            })
-            .eq('id', item.product_id)
+          await client.rpc('increase_stock', { 
+            product_id: item.product_id, 
+            quantity: item.quantity 
+          })
         }
       }
     }

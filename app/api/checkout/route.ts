@@ -35,6 +35,10 @@ export async function POST(request: Request) {
       line_items,
       success_url: body.success_url || 'https://example.com',
       cancel_url: body.cancel_url || 'https://example.com',
+      metadata: {
+        order_id: body.order_id || '',
+        user_email: body.user_email || ''
+      }
     })
 
     return NextResponse.json({ url: session.url })
