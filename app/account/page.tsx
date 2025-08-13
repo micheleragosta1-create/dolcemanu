@@ -2,31 +2,20 @@
 
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 import { useAuth } from '@/components/AuthContext'
 import { useOrders } from '@/hooks/useSupabase'
-import { upsertProfile, getOwnProfile } from '@/lib/supabase'
+import { getOwnProfile, upsertProfile, getSupabaseClient } from '@/lib/supabase'
 
-interface Order {
-  id: string
-  date: string
-  total: number
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
-  items: {
-    name: string
-    quantity: number
-    price: number
-  }[]
-}
 
 export default function AccountPage() {
   const { user, loading: authLoading } = useAuth()
   const userEmail = user?.email ?? ''
-  const { orders, loading: ordersLoading, refetch } = useOrders(userEmail)
+  const { orders, loading: ordersLoading } = useOrders(userEmail)
   const loading = authLoading || ordersLoading
   const email = userEmail
 
-  // Stato anagrafica locale (mock semplice, espandibile verso Supabase se previsto dallo schema)
+  // Dati profilo
   const [profile, setProfile] = useState({
     firstName: '',
     lastName: '',
@@ -36,23 +25,77 @@ export default function AccountPage() {
     zip: ''
   })
 
+  // Modali
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [showPasswordModal, setShowPasswordModal] = useState(false)
+  const [savingProfile, setSavingProfile] = useState(false)
+  const [savingPassword, setSavingPassword] = useState(false)
+  const [newPassword, setNewPassword] = useState('')
+  const [newPassword2, setNewPassword2] = useState('')
+
   useEffect(() => {
     const loadProfile = async () => {
-      if (!user?.id || !user?.email) return
-      const { data } = await getOwnProfile(user.id)
-      if (data) {
-        setProfile({
-          firstName: data.first_name || '',
-          lastName: data.last_name || '',
-          phone: data.phone || '',
-          address: data.address || '',
-          city: data.city || '',
-          zip: data.zip || ''
-        })
-      }
+      try {
+        if (!user?.id) return
+        const { data } = await getOwnProfile(user.id)
+        if (data) {
+          setProfile({
+            firstName: data.first_name || '',
+            lastName: data.last_name || '',
+            phone: data.phone || '',
+            address: data.address || '',
+            city: data.city || '',
+            zip: data.zip || ''
+          })
+        }
+      } catch {}
     }
     loadProfile()
-  }, [user?.id, user?.email])
+  }, [user?.id])
+
+  const handleSaveProfile = async () => {
+    if (!user?.id || !user?.email) return
+    setSavingProfile(true)
+    try {
+      await upsertProfile({
+        user_id: user.id,
+        email: user.email,
+        first_name: profile.firstName || (null as any),
+        last_name: profile.lastName || (null as any),
+        phone: profile.phone || (null as any),
+        address: profile.address || (null as any),
+        city: profile.city || (null as any),
+        zip: profile.zip || (null as any)
+      })
+      setShowEditModal(false)
+      alert('Dati aggiornati')
+    } catch (e: any) {
+      alert(e?.message || 'Errore salvataggio')
+    } finally {
+      setSavingProfile(false)
+    }
+  }
+
+  const handleChangePassword = async () => {
+    if (!newPassword || newPassword !== newPassword2) {
+      alert('Le password non coincidono')
+      return
+    }
+    setSavingPassword(true)
+    try {
+      const supabase = getSupabaseClient()
+      const { error } = await supabase.auth.updateUser({ password: newPassword })
+      if (error) throw error
+      setShowPasswordModal(false)
+      setNewPassword('')
+      setNewPassword2('')
+      alert('Password aggiornata')
+    } catch (e: any) {
+      alert(e?.message || 'Errore aggiornamento password')
+    } finally {
+      setSavingPassword(false)
+    }
+  }
 
   return (
     <main>
@@ -71,55 +114,39 @@ export default function AccountPage() {
           </div>
 
           <div className="account-content">
-            {/* Anagrafica */}
-            <div className="card">
-              <div className="card-head"><h3>Le mie informazioni</h3></div>
+            {/* Dati registrazione */}
+            <div className="card" style={{ marginBottom: '1.5rem' }}>
+              <div className="card-head"><h3>I miei dati</h3></div>
               <div className="card-body">
-                <form className="grid grid-cols-1 md:grid-cols-2 gap-4" onSubmit={(e)=>e.preventDefault()}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Nome</label>
-                    <input className="form-input" value={profile.firstName} onChange={(e)=>setProfile({...profile, firstName: e.target.value})} placeholder="Nome" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Cognome</label>
-                    <input className="form-input" value={profile.lastName} onChange={(e)=>setProfile({...profile, lastName: e.target.value})} placeholder="Cognome" />
+                    <div className="text-sm text-gray-500">Email</div>
+                    <div className="text-gray-900">{email}</div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Telefono</label>
-                    <input className="form-input" value={profile.phone} onChange={(e)=>setProfile({...profile, phone: e.target.value})} placeholder="Telefono" />
+                    <div className="text-sm text-gray-500">Telefono</div>
+                    <div className="text-gray-900">{profile.phone || '-'}</div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Indirizzo</label>
-                    <input className="form-input" value={profile.address} onChange={(e)=>setProfile({...profile, address: e.target.value})} placeholder="Via/Piazza" />
+                    <div className="text-sm text-gray-500">Nome</div>
+                    <div className="text-gray-900">{profile.firstName || '-'}</div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Città</label>
-                    <input className="form-input" value={profile.city} onChange={(e)=>setProfile({...profile, city: e.target.value})} placeholder="Città" />
+                    <div className="text-sm text-gray-500">Cognome</div>
+                    <div className="text-gray-900">{profile.lastName || '-'}</div>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">CAP</label>
-                    <input className="form-input" value={profile.zip} onChange={(e)=>setProfile({...profile, zip: e.target.value})} placeholder="CAP" />
+                  <div className="md:col-span-2">
+                    <div className="text-sm text-gray-500">Indirizzo</div>
+                    <div className="text-gray-900">{profile.address || '-'}{profile.city ? `, ${profile.city}` : ''}{profile.zip ? ` (${profile.zip})` : ''}</div>
                   </div>
-                  <div className="md:col-span-2" style={{display:'flex',gap:12}}>
-                    <button className="btn btn-primary" type="button" onClick={async ()=>{
-                      if (!user?.id || !user?.email) return
-                      await upsertProfile({
-                        user_id: user.id,
-                        email: user.email,
-                        first_name: profile.firstName || null as any,
-                        last_name: profile.lastName || null as any,
-                        phone: profile.phone || null as any,
-                        address: profile.address || null as any,
-                        city: profile.city || null as any,
-                        zip: profile.zip || null as any
-                      })
-                      alert('Dati anagrafici salvati')
-                    }}>Salva</button>
-                    <button className="btn btn-secondary" type="button" onClick={()=>setProfile({firstName:'',lastName:'',phone:'',address:'',city:'',zip:''})}>Reset</button>
-                  </div>
-                </form>
+                </div>
+                <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
+                  <button className="btn btn-primary" onClick={() => setShowEditModal(true)}>Modifica dati</button>
+                  <button className="btn btn-secondary" onClick={() => setShowPasswordModal(true)}>Cambia password</button>
+                </div>
               </div>
             </div>
+
             {/* Ordini */}
             <div className="card">
               <div className="card-head"><h3>I miei ordini</h3></div>
@@ -336,6 +363,70 @@ export default function AccountPage() {
           }
         }
       `}</style>
+
+      {/* Modal Modifica dati */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-xl w-full">
+            <div className="p-6 border-b"><h3 className="text-lg font-semibold">Modifica dati</h3></div>
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Nome</label>
+                  <input className="form-input" value={profile.firstName} onChange={(e)=>setProfile(p=>({...p, firstName: e.target.value}))} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Cognome</label>
+                  <input className="form-input" value={profile.lastName} onChange={(e)=>setProfile(p=>({...p, lastName: e.target.value}))} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Telefono</label>
+                  <input className="form-input" value={profile.phone} onChange={(e)=>setProfile(p=>({...p, phone: e.target.value}))} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Indirizzo</label>
+                  <input className="form-input" value={profile.address} onChange={(e)=>setProfile(p=>({...p, address: e.target.value}))} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Città</label>
+                  <input className="form-input" value={profile.city} onChange={(e)=>setProfile(p=>({...p, city: e.target.value}))} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">CAP</label>
+                  <input className="form-input" value={profile.zip} onChange={(e)=>setProfile(p=>({...p, zip: e.target.value}))} />
+                </div>
+              </div>
+            </div>
+            <div className="p-6 flex justify-end gap-3 border-t">
+              <button className="btn btn-secondary" onClick={()=>setShowEditModal(false)} disabled={savingProfile}>Annulla</button>
+              <button className="btn btn-primary" onClick={handleSaveProfile} disabled={savingProfile}>{savingProfile? 'Salvataggio...' : 'Salva'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Cambia password */}
+      {showPasswordModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-md w-full">
+            <div className="p-6 border-b"><h3 className="text-lg font-semibold">Cambia password</h3></div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Nuova password</label>
+                <input type="password" className="form-input" value={newPassword} onChange={(e)=>setNewPassword(e.target.value)} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Conferma password</label>
+                <input type="password" className="form-input" value={newPassword2} onChange={(e)=>setNewPassword2(e.target.value)} />
+              </div>
+            </div>
+            <div className="p-6 flex justify-end gap-3 border-t">
+              <button className="btn btn-secondary" onClick={()=>setShowPasswordModal(false)} disabled={savingPassword}>Annulla</button>
+              <button className="btn btn-primary" onClick={handleChangePassword} disabled={savingPassword || !newPassword || !newPassword2}>{savingPassword? 'Aggiornamento...' : 'Aggiorna'}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   )
 }

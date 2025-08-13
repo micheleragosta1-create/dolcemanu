@@ -219,13 +219,29 @@ export async function getAllOrders(): Promise<{ data: any, error: any }> {
 }
 
 export async function updateOrderStatus(orderId: string, status: Order['status']): Promise<{ data: any, error: any }> {
-  const supabase = getSupabaseClient()
-  return await supabase
-    .from('orders')
-    .update({ status })
-    .eq('id', orderId)
-    .select()
-    .single()
+  try {
+    // Prova a includere il bearer token Supabase per permessi admin lato server
+    const supabase = getSupabaseClient()
+    const session = await supabase.auth.getSession()
+    const accessToken = session?.data?.session?.access_token
+
+    // Normalizza 'confirmed' -> 'processing' per retro-compatibilità UI
+    const normalized = (status === 'confirmed' ? 'processing' : status)
+
+    const res = await fetch(`/api/orders/${orderId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
+      },
+      body: JSON.stringify({ status: normalized })
+    })
+    const json = await res.json()
+    if (!res.ok) return { data: null, error: json?.error || 'Update failed' }
+    return { data: json, error: null }
+  } catch (error: any) {
+    return { data: null, error }
+  }
 }
 
 export async function createProduct(productData: Omit<Product, 'id' | 'created_at' | 'updated_at'>): Promise<{ data: any, error: any }> {

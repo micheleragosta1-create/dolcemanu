@@ -6,6 +6,8 @@ import { useAuth } from '@/components/AuthContext'
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import { Mail, Lock, User, Phone, CheckCircle } from "lucide-react"
+import { upsertProfile } from '@/lib/supabase'
+import { getSupabase } from '@/lib/supabase'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -225,6 +227,10 @@ function RegisterForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [password2, setPassword2] = useState('')
+  const [address, setAddress] = useState('')
+  const [city, setCity] = useState('')
+  const [zip, setZip] = useState('')
+  const [country, setCountry] = useState('Italia')
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -242,7 +248,25 @@ function RegisterForm() {
       if (signUpError) {
         setError(signUpError.message)
       } else {
-        // Registrazione riuscita
+        // Registrazione riuscita → prova a salvare i dati profilo/spedizione
+        try {
+          const supabase = getSupabase()
+          const { data: { session } = { session: null } } = await supabase!.auth.getSession()
+          const userId = session?.user?.id
+          if (userId) {
+            const [firstName, ...rest] = name.split(' ')
+            await upsertProfile({
+              user_id: userId,
+              email,
+              first_name: firstName || name,
+              last_name: rest.join(' ') || undefined,
+              phone: phone || undefined,
+              address: address || undefined,
+              city: city || undefined,
+              zip: zip || undefined
+            })
+          }
+        } catch {}
         setSuccess('Account creato con successo! Reindirizzamento...')
         setTimeout(() => router.push('/'), 1500)
       }
@@ -291,6 +315,38 @@ function RegisterForm() {
           <div className="input">
             <Lock size={18} color="#ff6b6b" />
             <input id="reg-pass2" type="password" value={password2} onChange={e=>setPassword2(e.target.value)} placeholder="Ripeti password" required />
+          </div>
+        </div>
+      </div>
+      <div className="row">
+        <div className="field">
+          <label className="label" htmlFor="reg-address">Indirizzo di spedizione</label>
+          <div className="input">
+            <User size={18} color="#ff6b6b" />
+            <input id="reg-address" type="text" value={address} onChange={e=>setAddress(e.target.value)} placeholder="Via/Piazza e numero civico" required />
+          </div>
+        </div>
+        <div className="field">
+          <label className="label" htmlFor="reg-city">Città</label>
+          <div className="input">
+            <User size={18} color="#ff6b6b" />
+            <input id="reg-city" type="text" value={city} onChange={e=>setCity(e.target.value)} placeholder="Es. Salerno" required />
+          </div>
+        </div>
+      </div>
+      <div className="row">
+        <div className="field">
+          <label className="label" htmlFor="reg-zip">CAP</label>
+          <div className="input">
+            <User size={18} color="#ff6b6b" />
+            <input id="reg-zip" type="text" value={zip} onChange={e=>setZip(e.target.value)} placeholder="Es. 84100" required />
+          </div>
+        </div>
+        <div className="field">
+          <label className="label" htmlFor="reg-country">Paese</label>
+          <div className="input">
+            <User size={18} color="#ff6b6b" />
+            <input id="reg-country" type="text" value={country} onChange={e=>setCountry(e.target.value)} placeholder="Italia" required />
           </div>
         </div>
       </div>

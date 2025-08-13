@@ -81,12 +81,14 @@ export function useAdmin() {
     if (!isAdmin) return { error: 'Accesso negato' }
     
     try {
-      const { data, error } = await updateOrderStatus(orderId, status)
+      // Mappa eventuale 'confirmed' (vecchio label UI) a 'processing' (valore DB)
+      const normalized = (status === 'confirmed' ? 'processing' : status) as Order['status']
+      const { data, error } = await updateOrderStatus(orderId, normalized)
       if (error) throw error
       
       // Aggiorna la lista ordini
       setOrders(prev => prev.map(order => 
-        order.id === orderId ? { ...order, status } : order
+        order.id === orderId ? { ...order, status: normalized } : order
       ))
       
       return { data, error: null }

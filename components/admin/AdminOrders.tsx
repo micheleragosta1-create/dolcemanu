@@ -92,7 +92,7 @@ export default function AdminOrders() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pending': return 'text-yellow-600 bg-yellow-100'
-      case 'confirmed': return 'text-blue-600 bg-blue-100'
+      case 'processing': return 'text-blue-600 bg-blue-100'
       case 'shipped': return 'text-purple-600 bg-purple-100'
       case 'delivered': return 'text-green-600 bg-green-100'
       case 'cancelled': return 'text-red-600 bg-red-100'
@@ -103,7 +103,7 @@ export default function AdminOrders() {
   const getStatusLabel = (status: string) => {
     switch (status) {
       case 'pending': return 'In attesa'
-      case 'confirmed': return 'Confermato'
+      case 'processing': return 'In lavorazione'
       case 'shipped': return 'Spedito'
       case 'delivered': return 'Consegnato'
       case 'cancelled': return 'Annullato'
@@ -175,7 +175,7 @@ export default function AdminOrders() {
               >
                 <option value="all">Tutti gli stati</option>
                 <option value="pending">In attesa</option>
-                <option value="confirmed">Confermato</option>
+                <option value="processing">In lavorazione</option>
                 <option value="shipped">Spedito</option>
                 <option value="delivered">Consegnato</option>
                 <option value="cancelled">Annullato</option>
@@ -227,7 +227,7 @@ export default function AdminOrders() {
                         aria-label="Aggiorna stato"
                       >
                         <option value="pending">In attesa</option>
-                        <option value="confirmed">Confermato</option>
+                        <option value="processing">In lavorazione</option>
                         <option value="shipped">Spedito</option>
                         <option value="delivered">Consegnato</option>
                         <option value="cancelled">Annullato</option>
