@@ -1,5 +1,6 @@
 import Header from '@/components/Header'
-import HeroCarousel from '@/components/HeroCarousel'
+import HeroVideo from '@/components/HeroVideo'
+import ChocoShowcase from '@/components/ChocoShowcase'
 import ProdottiConsigliati from '@/components/ProdottiConsigliati'
 import Storia from '@/components/Storia'
 import InstagramGallery from '@/components/InstagramGallery'
@@ -12,9 +13,9 @@ export default function Home() {
     <main>
       <div className="chocolate-background"></div>
       <Header />
-      <HeroCarousel />
+      <HeroVideo />
       <ProdottiConsigliati />
-      <section aria-hidden className="bg-choco-section" />
+      <ChocoShowcase />
       <Storia />
       <InstagramGallery />
       <ContactSection />
