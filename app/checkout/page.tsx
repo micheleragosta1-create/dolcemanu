@@ -266,8 +266,8 @@ export default function CheckoutPage() {
       <Footer />
 
       <style jsx global>{`
-        .checkout-section { position: relative; z-index: 10; padding: 7rem 2rem 3rem; }
-        .checkout-container { max-width: 1000px; margin: 0 auto; }
+        .checkout-section { position: relative; z-index: 10; padding: 9rem 2rem 3rem; }
+        .checkout-container { max-width: 1000px; width: min(1000px, 100%); margin-inline: auto; }
         .checkout-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
         .summary, .payments { background: #fff; border: 1px solid rgba(0,0,0,.06); border-radius: 12px; padding: 1rem; box-shadow: 0 10px 30px rgba(0,0,0,.06); }
         .list { list-style: none; padding: 0; margin: 0; display: grid; gap: .35rem; }
@@ -351,6 +351,7 @@ export default function CheckoutPage() {
         @media (max-width: 600px) { .ship-grid { grid-template-columns: 1fr; } }
 
         @media (max-width: 992px) { .checkout-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) { .checkout-section { padding: 8rem 1rem 2rem; } }
       `}</style>
     </main>
   )

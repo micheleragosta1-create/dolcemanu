@@ -301,15 +301,18 @@ export default function ShopPage() {
         .shop-section { 
           position: relative; 
           z-index: 10; 
-          padding: 7rem 2rem 3rem; 
+          padding: 10rem 2rem 3rem; /* aumentato ancora per abbassare il contenuto */
           background: var(--color-cream);
         }
         .shop-container { 
           max-width: 1200px; 
-          margin: 0 auto; 
+          width: min(1200px, 100%);
+          margin-inline: auto; 
           display: grid; 
           grid-template-columns: 280px 1fr; 
           gap: 3rem; 
+          align-items: start;
+          justify-content: center;
         }
         
         /* Filters Sidebar */
@@ -554,6 +557,24 @@ export default function ShopPage() {
           display: block;
         }
 
+        /* Tablet: 2 colonne */
+        @media (min-width: 769px) and (max-width: 1023px) {
+          .shop-list .grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+          .card { grid-template-rows: 240px auto; }
+          .thumbWrap { height: 240px; }
+        }
+
+        /* Desktop: 3 colonne */
+        @media (min-width: 1024px) {
+          .shop-list .grid {
+            grid-template-columns: repeat(3, 1fr);
+          }
+          .card { grid-template-rows: 260px auto; }
+          .thumbWrap { height: 260px; }
+        }
+
         /* Responsive */
         @media (max-width: 992px) { 
           .shop-container { 
@@ -578,7 +599,7 @@ export default function ShopPage() {
         
         @media (max-width: 768px) {
           .shop-section {
-            padding: 6rem 1rem 2rem;
+            padding: 9rem 1rem 2rem; /* aumentato anche su mobile */
           }
           .shop-list .grid {
             grid-template-columns: 1fr;
