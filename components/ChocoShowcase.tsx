@@ -28,11 +28,21 @@ export default function ChocoShowcase() {
     <section className="choco-showcase">
       <div className="choco-grid">
         <div className="choco-vertical">
-          <img src="/images/instagram-2.svg" alt="Dettaglio cioccolato" />
+          <img src="/images/img_praline_costiera.png" alt="Praline della Costiera" />
         </div>
         <div className="choco-right">
           <div className="choco-square">
-            <img src="/images/instagram-5.svg" alt="Particolare lavorazione" />
+            <video 
+              className="choco-video"
+              autoPlay 
+              muted 
+              loop 
+              playsInline
+              poster="/images/instagram-5.svg"
+            >
+              <source src="/video/4458586-hd_1920_1080_24fps.mp4" type="video/mp4" />
+              <img src="/images/instagram-5.svg" alt="Particolare lavorazione" />
+            </video>
           </div>
           <div className="choco-carousel">
             <div className="choco-card">

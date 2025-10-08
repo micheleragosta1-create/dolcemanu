@@ -301,7 +301,7 @@ export default function ShopPage() {
         .shop-section { 
           position: relative; 
           z-index: 10; 
-          padding: 10rem 2rem 3rem; /* aumentato ancora per abbassare il contenuto */
+          padding: 13rem 2rem 3rem; /* aumentato ancora per abbassare il contenuto */
           background: var(--color-cream);
         }
         .shop-container { 
