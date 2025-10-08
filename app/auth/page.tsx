@@ -75,6 +75,7 @@ export default function AuthPage() {
           z-index: 10;
           padding: 13rem 2rem 4rem;
           background: #ffffff;
+          min-height: 100vh;
         }
         .auth-container {
           max-width: 1200px;
@@ -87,8 +88,9 @@ export default function AuthPage() {
           background: #fff;
           border: 1px solid rgba(0,0,0,0.06);
           border-radius: 16px;
-          box-shadow: 0 20px 50px rgba(0,0,0,0.06);
+          box-shadow: 0 10px 30px rgba(0,0,0,0.08);
           padding: 2rem;
+          will-change: opacity;
         }
         .auth-header { text-align: center; margin-bottom: 1.5rem; }
         .auth-title { font-size: 2rem; font-weight: 600; letter-spacing: -0.5px; }
@@ -96,11 +98,15 @@ export default function AuthPage() {
         .auth-tabs { display: inline-flex; gap: 0.5rem; background: #f5f5f5; border-radius: 10px; padding: 0.25rem; margin: 1.25rem auto 0; }
         .auth-tab {
           border: none; background: transparent; padding: 0.6rem 1.1rem; border-radius: 8px; cursor: pointer;
-          font-weight: 600; color: #666; transition: all .2s ease; letter-spacing: .3px;
+          font-weight: 600; color: #666; transition: background .2s ease, color .2s ease; letter-spacing: .3px;
         }
-        .auth-tab.active { background: #ff6b6b; color: #fff; }
+        .auth-tab.active { background: var(--color-brown); color: #fff; }
 
-        .form { display: grid; gap: 1rem; margin-top: 0.5rem; }
+        .form { 
+          display: grid; 
+          gap: 1rem; 
+          margin-top: 0.5rem;
+        }
         .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
         .field { display: flex; flex-direction: column; gap: .35rem; }
         .label { font-size: .9rem; font-weight: 600; color: #000; }
@@ -108,13 +114,20 @@ export default function AuthPage() {
           display: flex; align-items: center; gap: .5rem; padding: .75rem 1rem; border: 2px solid #e9ecef; border-radius: 10px; background: #fff;
           font-family: Inter, sans-serif; transition: border-color .2s ease;
         }
-        .input:focus-within { border-color: #ff6b6b; }
-        .input input, .input password, .input email, .input tel { flex: 1; border: none; outline: none; font-size: 1rem; background: transparent; }
+        .input:focus-within { border-color: var(--color-brown); }
+        .input input, .input password, .input email, .input tel { 
+          flex: 1; 
+          border: none; 
+          outline: none; 
+          font-size: 1rem; 
+          background: transparent;
+          font-family: inherit;
+        }
         .helper { font-size: .85rem; color: #888; }
 
         .actions { display: flex; justify-content: space-between; align-items: center; margin-top: .5rem; }
-        .link { color: #ff6b6b; text-decoration: none; font-weight: 600; }
-        .submit { margin-top: .5rem; }
+        .link { color: var(--color-brown); text-decoration: none; font-weight: 600; }
+        .submit { margin-top: .5rem; width: 100%; }
 
         .auth-aside { background: #f5f3f0; border: 1px solid #e8e3dd; border-radius: 16px; overflow: hidden; display: grid; grid-template-rows: auto 260px; }
         .aside-content { padding: 2rem; }
@@ -127,9 +140,12 @@ export default function AuthPage() {
         @media (max-width: 992px) {
           .auth-container { grid-template-columns: 1fr; }
           .auth-aside { order: -1; grid-template-rows: 220px auto; }
+          .auth-card { min-height: 400px; }
         }
         @media (max-width: 480px) {
           .row { grid-template-columns: 1fr; }
+          .auth-section { padding: 10rem 1rem 3rem; }
+          .auth-card { padding: 1.5rem; min-height: 350px; }
         }
       `}</style>
     </main>
@@ -171,16 +187,16 @@ function LoginForm() {
     <form className="form" onSubmit={handleSubmit}>
       <div className="field">
         <label className="label" htmlFor="login-email">Email</label>
-        <div className="input">
-          <Mail size={18} color="#ff6b6b" />
-          <input id="login-email" type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="nome@email.com" required />
+          <div className="input">
+            <Mail size={18} color="#5e3621" />
+            <input id="login-email" type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="nome@email.com" required autoComplete="email" />
+          </div>
         </div>
-      </div>
-      <div className="field">
-        <label className="label" htmlFor="login-password">Password</label>
-        <div className="input">
-          <Lock size={18} color="#ff6b6b" />
-          <input id="login-password" type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="La tua password" required />
+        <div className="field">
+          <label className="label" htmlFor="login-password">Password</label>
+          <div className="input">
+            <Lock size={18} color="#5e3621" />
+          <input id="login-password" type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="La tua password" required autoComplete="current-password" />
         </div>
       </div>
       <div className="actions">
@@ -276,45 +292,46 @@ function RegisterForm() {
       setLoading(false)
     }
   }
+  
   return (
     <form className="form" onSubmit={handleSubmit}>
       <div className="row">
         <div className="field">
           <label className="label" htmlFor="name">Nome e cognome</label>
           <div className="input">
-            <User size={18} color="#ff6b6b" />
-            <input id="name" type="text" value={name} onChange={e=>setName(e.target.value)} placeholder="Es. Emanuela Napolitano" required />
+            <User size={18} color="#5e3621" />
+            <input id="name" type="text" value={name} onChange={e=>setName(e.target.value)} placeholder="Es. Emanuela Napolitano" required autoComplete="name" />
           </div>
         </div>
         <div className="field">
           <label className="label" htmlFor="phone">Telefono (opzionale)</label>
           <div className="input">
-            <Phone size={18} color="#ff6b6b" />
-            <input id="phone" type="tel" value={phone} onChange={e=>setPhone(e.target.value)} placeholder="Es. +39 333 123 4567" />
+            <Phone size={18} color="#5e3621" />
+            <input id="phone" type="tel" value={phone} onChange={e=>setPhone(e.target.value)} placeholder="Es. +39 333 123 4567" autoComplete="tel" />
           </div>
         </div>
       </div>
       <div className="field">
         <label className="label" htmlFor="reg-email">Email</label>
         <div className="input">
-          <Mail size={18} color="#ff6b6b" />
-          <input id="reg-email" type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="nome@email.com" required />
+          <Mail size={18} color="#5e3621" />
+          <input id="reg-email" type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="nome@email.com" required autoComplete="email" />
         </div>
       </div>
       <div className="row">
         <div className="field">
           <label className="label" htmlFor="reg-pass">Password</label>
           <div className="input">
-            <Lock size={18} color="#ff6b6b" />
-            <input id="reg-pass" type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Minimo 8 caratteri" required />
+            <Lock size={18} color="#5e3621" />
+            <input id="reg-pass" type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Minimo 8 caratteri" required autoComplete="new-password" />
           </div>
           <span className="helper">Usa almeno 8 caratteri, una lettera e un numero</span>
         </div>
         <div className="field">
           <label className="label" htmlFor="reg-pass2">Conferma Password</label>
           <div className="input">
-            <Lock size={18} color="#ff6b6b" />
-            <input id="reg-pass2" type="password" value={password2} onChange={e=>setPassword2(e.target.value)} placeholder="Ripeti password" required />
+            <Lock size={18} color="#5e3621" />
+            <input id="reg-pass2" type="password" value={password2} onChange={e=>setPassword2(e.target.value)} placeholder="Ripeti password" required autoComplete="new-password" />
           </div>
         </div>
       </div>
@@ -322,15 +339,15 @@ function RegisterForm() {
         <div className="field">
           <label className="label" htmlFor="reg-address">Indirizzo di spedizione</label>
           <div className="input">
-            <User size={18} color="#ff6b6b" />
-            <input id="reg-address" type="text" value={address} onChange={e=>setAddress(e.target.value)} placeholder="Via/Piazza e numero civico" required />
+            <User size={18} color="#5e3621" />
+            <input id="reg-address" type="text" value={address} onChange={e=>setAddress(e.target.value)} placeholder="Via/Piazza e numero civico" required autoComplete="street-address" />
           </div>
         </div>
         <div className="field">
           <label className="label" htmlFor="reg-city">Città</label>
           <div className="input">
-            <User size={18} color="#ff6b6b" />
-            <input id="reg-city" type="text" value={city} onChange={e=>setCity(e.target.value)} placeholder="Es. Salerno" required />
+            <User size={18} color="#5e3621" />
+            <input id="reg-city" type="text" value={city} onChange={e=>setCity(e.target.value)} placeholder="Es. Salerno" required autoComplete="address-level2" />
           </div>
         </div>
       </div>
@@ -338,15 +355,15 @@ function RegisterForm() {
         <div className="field">
           <label className="label" htmlFor="reg-zip">CAP</label>
           <div className="input">
-            <User size={18} color="#ff6b6b" />
-            <input id="reg-zip" type="text" value={zip} onChange={e=>setZip(e.target.value)} placeholder="Es. 84100" required />
+            <User size={18} color="#5e3621" />
+            <input id="reg-zip" type="text" value={zip} onChange={e=>setZip(e.target.value)} placeholder="Es. 84100" required autoComplete="postal-code" />
           </div>
         </div>
         <div className="field">
           <label className="label" htmlFor="reg-country">Paese</label>
           <div className="input">
-            <User size={18} color="#ff6b6b" />
-            <input id="reg-country" type="text" value={country} onChange={e=>setCountry(e.target.value)} placeholder="Italia" required />
+            <User size={18} color="#5e3621" />
+            <input id="reg-country" type="text" value={country} onChange={e=>setCountry(e.target.value)} placeholder="Italia" required autoComplete="country-name" />
           </div>
         </div>
       </div>

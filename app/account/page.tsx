@@ -152,7 +152,10 @@ export default function AccountPage() {
               <div className="card-head"><h3>I miei ordini</h3></div>
               <div className="card-body">
                 {loading ? (
-                  <div className="loading">Caricamento ordini...</div>
+                  <div className="loading">
+                    <div className="loading-spinner-small"></div>
+                    <span>Caricamento ordini...</span>
+                  </div>
                 ) : orders && orders.length > 0 ? (
                   <div className="orders-list">
                     {orders.map((o) => (
@@ -171,7 +174,7 @@ export default function AccountPage() {
                         </div>
                         <div className="order-items">
                           <div className="order-item"><span>Prodotto</span><span>Q.tà</span><span>Prezzo</span></div>
-                          {(o.order_items || []).map((it:any, idx:number)=> (
+                          {((o as any).order_items || []).map((it:any, idx:number)=> (
                             <div className="order-item" key={idx}><span>{it.products?.name || 'Prodotto'}</span><span>{it.quantity}</span><span>€ {Number(it.price).toFixed(2)}</span></div>
                           ))}
                         </div>
@@ -195,7 +198,7 @@ export default function AccountPage() {
         .account-section {
           position: relative;
           z-index: 10;
-          padding: 7rem 2rem 3rem;
+          padding: 15rem 2rem 3rem;
           min-height: 70vh;
         }
         
@@ -212,7 +215,7 @@ export default function AccountPage() {
           padding: 1.5rem;
           background: #fff;
           border-radius: 12px;
-          box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+          box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         }
         
         .user-info {
@@ -224,7 +227,7 @@ export default function AccountPage() {
         .avatar {
           width: 60px;
           height: 60px;
-          background: linear-gradient(135deg, #8B4513, #D2691E);
+          background: linear-gradient(135deg, var(--color-brown), #D2691E);
           color: white;
           border-radius: 50%;
           display: flex;
@@ -246,10 +249,8 @@ export default function AccountPage() {
         }
         
         .account-content {
-          background: #fff;
-          border-radius: 12px;
-          padding: 2rem;
-          box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+          display: grid;
+          gap: 1.5rem;
         }
         
         .orders-section h2 {
@@ -258,9 +259,25 @@ export default function AccountPage() {
         }
         
         .loading {
-          text-align: center;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.75rem;
           padding: 2rem;
           color: #666;
+        }
+        
+        .loading-spinner-small {
+          width: 24px;
+          height: 24px;
+          border: 3px solid #f3f4f6;
+          border-top-color: var(--color-brown);
+          border-radius: 50%;
+          animation: spin 0.6s linear infinite;
+        }
+        
+        @keyframes spin {
+          to { transform: rotate(360deg); }
         }
         
         .no-orders {
@@ -282,11 +299,79 @@ export default function AccountPage() {
           border: 1px solid rgba(0,0,0,0.06);
           border-radius: 12px;
           padding: 1.5rem;
-          transition: all 0.3s ease;
+          transition: box-shadow 0.2s ease;
         }
         
         .order-card:hover {
           box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        /* Card styles */
+        .card {
+          background: white;
+          border-radius: 12px;
+          overflow: hidden;
+          border: 1px solid rgba(0,0,0,0.06);
+        }
+        
+        .card-head {
+          padding: 1.25rem 1.5rem;
+          border-bottom: 1px solid #eee;
+        }
+        
+        .card-head h3 {
+          margin: 0;
+          font-size: 1.2rem;
+          font-weight: 600;
+          color: var(--color-navy);
+        }
+        
+        .card-body {
+          padding: 1.5rem;
+        }
+        
+        /* Form input styles */
+        .form-input {
+          width: 100%;
+          padding: 0.625rem 0.875rem;
+          border: 2px solid #e9ecef;
+          border-radius: 8px;
+          font-size: 0.95rem;
+          transition: border-color 0.2s ease;
+        }
+        
+        .form-input:focus {
+          outline: none;
+          border-color: var(--color-brown);
+        }
+        
+        .form-input::placeholder {
+          color: #999;
+        }
+        
+        /* Modal styles */
+        .fixed.inset-0 {
+          animation: fadeIn 0.2s ease-out;
+        }
+        
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        
+        .fixed .bg-white {
+          animation: slideUp 0.3s ease-out;
+        }
+        
+        @keyframes slideUp {
+          from { 
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to { 
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
         
         .order-header {
@@ -325,7 +410,7 @@ export default function AccountPage() {
         .order-total {
           font-size: 1.2rem;
           font-weight: 600;
-          color: #8B4513;
+          color: var(--color-brown);
         }
         
         .order-items {
@@ -343,6 +428,44 @@ export default function AccountPage() {
         
         .order-item:first-child span:first-child {
           font-weight: 500;
+        }
+        
+        /* Utility classes per modali */
+        .fixed { position: fixed; }
+        .inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
+        .bg-black { background-color: black; }
+        .bg-opacity-50 { background-color: rgba(0, 0, 0, 0.5); }
+        .flex { display: flex; }
+        .items-center { align-items: center; }
+        .justify-center { justify-content: center; }
+        .p-4 { padding: 1rem; }
+        .p-6 { padding: 1.5rem; }
+        .z-50 { z-index: 50; }
+        .bg-white { background-color: white; }
+        .rounded-lg { border-radius: 0.75rem; }
+        .max-w-xl { max-width: 36rem; }
+        .max-w-md { max-width: 28rem; }
+        .w-full { width: 100%; }
+        .border-b { border-bottom: 1px solid #e5e7eb; }
+        .border-t { border-top: 1px solid #e5e7eb; }
+        .text-lg { font-size: 1.125rem; }
+        .font-semibold { font-weight: 600; }
+        .space-y-4 > * + * { margin-top: 1rem; }
+        .grid { display: grid; }
+        .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+        .gap-3 { gap: 0.75rem; }
+        .gap-4 { gap: 1rem; }
+        .justify-end { justify-content: flex-end; }
+        .block { display: block; }
+        .text-sm { font-size: 0.875rem; }
+        .font-medium { font-weight: 500; }
+        .text-gray-500 { color: #6b7280; }
+        .text-gray-700 { color: #374151; }
+        .text-gray-900 { color: #111827; }
+        .mb-1 { margin-bottom: 0.25rem; }
+        .md\\:col-span-2 { grid-column: span 2; }
+        @media (min-width: 768px) {
+          .md\\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
         
         @media (max-width: 768px) {
@@ -373,27 +496,27 @@ export default function AccountPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Nome</label>
-                  <input className="form-input" value={profile.firstName} onChange={(e)=>setProfile(p=>({...p, firstName: e.target.value}))} />
+                  <input className="form-input" value={profile.firstName} onChange={(e)=>setProfile(p=>({...p, firstName: e.target.value}))} autoComplete="given-name" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Cognome</label>
-                  <input className="form-input" value={profile.lastName} onChange={(e)=>setProfile(p=>({...p, lastName: e.target.value}))} />
+                  <input className="form-input" value={profile.lastName} onChange={(e)=>setProfile(p=>({...p, lastName: e.target.value}))} autoComplete="family-name" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Telefono</label>
-                  <input className="form-input" value={profile.phone} onChange={(e)=>setProfile(p=>({...p, phone: e.target.value}))} />
+                  <input type="tel" className="form-input" value={profile.phone} onChange={(e)=>setProfile(p=>({...p, phone: e.target.value}))} autoComplete="tel" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Indirizzo</label>
-                  <input className="form-input" value={profile.address} onChange={(e)=>setProfile(p=>({...p, address: e.target.value}))} />
+                  <input className="form-input" value={profile.address} onChange={(e)=>setProfile(p=>({...p, address: e.target.value}))} autoComplete="street-address" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Città</label>
-                  <input className="form-input" value={profile.city} onChange={(e)=>setProfile(p=>({...p, city: e.target.value}))} />
+                  <input className="form-input" value={profile.city} onChange={(e)=>setProfile(p=>({...p, city: e.target.value}))} autoComplete="address-level2" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">CAP</label>
-                  <input className="form-input" value={profile.zip} onChange={(e)=>setProfile(p=>({...p, zip: e.target.value}))} />
+                  <input className="form-input" value={profile.zip} onChange={(e)=>setProfile(p=>({...p, zip: e.target.value}))} autoComplete="postal-code" />
                 </div>
               </div>
             </div>
@@ -413,11 +536,11 @@ export default function AccountPage() {
             <div className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Nuova password</label>
-                <input type="password" className="form-input" value={newPassword} onChange={(e)=>setNewPassword(e.target.value)} />
+                <input type="password" className="form-input" value={newPassword} onChange={(e)=>setNewPassword(e.target.value)} autoComplete="new-password" placeholder="Minimo 8 caratteri" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Conferma password</label>
-                <input type="password" className="form-input" value={newPassword2} onChange={(e)=>setNewPassword2(e.target.value)} />
+                <input type="password" className="form-input" value={newPassword2} onChange={(e)=>setNewPassword2(e.target.value)} autoComplete="new-password" placeholder="Ripeti la password" />
               </div>
             </div>
             <div className="p-6 flex justify-end gap-3 border-t">

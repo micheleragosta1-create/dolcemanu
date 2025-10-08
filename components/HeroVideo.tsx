@@ -4,29 +4,40 @@ import { useEffect, useRef, useState } from 'react'
 
 export default function HeroVideo() {
   const videoRef = useRef<HTMLVideoElement | null>(null)
-  const [isReady, setIsReady] = useState(false)
+  const [isReady, setIsReady] = useState(true) // Inizia come ready per mostrare subito
   const [hadError, setHadError] = useState(false)
-  const videoUrl = (process.env.NEXT_PUBLIC_HERO_VIDEO_URL as string) || 'https://www.pexels.com/it-it/download/video/4458664/'
+  
+  // Usa video locale per performance migliori
+  const videoUrl = '/video/videoHP.mp4'
 
   useEffect(() => {
     const v = videoRef.current
     if (!v) return
-    const onCanPlay = () => setIsReady(true)
-    const onLoadedMeta = () => setIsReady(true)
-    const onError = () => { setHadError(true); setIsReady(true) }
-    v.addEventListener('canplay', onCanPlay)
-    v.addEventListener('loadedmetadata', onLoadedMeta)
+    
+    const onError = () => { 
+      setHadError(true)
+      console.warn('Errore caricamento video hero')
+    }
+    
     v.addEventListener('error', onError)
-    // Autoplay best effort
+    
+    // Autoplay best effort - più aggressivo
     const play = async () => {
       try {
         await v.play()
-      } catch {}
+      } catch (err) {
+        console.warn('Autoplay bloccato:', err)
+      }
     }
-    play()
+    
+    // Prova a fare play subito
+    if (v.readyState >= 2) {
+      play()
+    } else {
+      v.addEventListener('loadeddata', play, { once: true })
+    }
+    
     return () => {
-      v.removeEventListener('canplay', onCanPlay)
-      v.removeEventListener('loadedmetadata', onLoadedMeta)
       v.removeEventListener('error', onError)
     }
   }, [])
@@ -36,13 +47,16 @@ export default function HeroVideo() {
       <div className="hero-video-container">
         <video
           ref={videoRef}
-          className={`hero-video-el ${isReady ? 'is-ready' : ''}`}
+          className="hero-video-el is-ready"
           playsInline
           muted
           loop
           autoPlay
-          preload="auto"
+          preload="metadata"
           poster="/images/ondedicacao.png"
+          disablePictureInPicture
+          disableRemotePlayback
+          x-webkit-airplay="deny"
         >
           {!hadError && <source src={videoUrl} type="video/mp4" />}
           {/* Fallback testo */}
@@ -52,7 +66,7 @@ export default function HeroVideo() {
           <div className="hero-content">
             <h1 className="poppins">Emozioni di Cioccolato</h1>
             <p>Artigianalità dalla Costiera Amalfitana, gusto e passione in ogni morso.</p>
-            <a href="#shop" className="btn btn-primary">Ordina Ora</a>
+            <a href="/shop" className="btn btn-primary">Scopri i Prodotti</a>
           </div>
         </div>
       </div>

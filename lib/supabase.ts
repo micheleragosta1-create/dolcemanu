@@ -97,6 +97,13 @@ export interface Product {
     protein?: number | null
     salt?: number | null
   } | null
+  // Nuovi campi per filtri avanzati
+  chocolate_type?: 'fondente' | 'latte' | 'bianco' | 'ruby' | 'misto' | null
+  collection?: string | null
+  box_format?: 6 | 9 | 12 | null
+  is_new?: boolean | null
+  is_bestseller?: boolean | null
+  discount_percentage?: number | null
 }
 
 export interface Order {

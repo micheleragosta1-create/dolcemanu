@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
     }
   }
 
-  const title = `${product.name} | Cioccolatini Michele`
+  const title = `${product.name} | Onde di Cacao`
   const description = (product.description || '').slice(0, 160)
   const url = `${siteUrl}/product/${params.id}`
   const image = product.image_url?.startsWith('http') ? product.image_url : `${siteUrl}${product.image_url}`

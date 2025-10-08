@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { getSupabaseClient, type Product, type Order, type Profile } from '@/lib/supabase'
+import { getSupabaseClient, type Product, type Order, type Profile, isSupabaseConfigured } from '@/lib/supabase'
+import { mockProducts } from '@/lib/mock-data'
 
 export function useProducts() {
   const [products, setProducts] = useState<Product[]>([])
@@ -14,6 +15,15 @@ export function useProducts() {
     try {
       setLoading(true)
       setError(null)
+      
+      // Se Supabase non è configurato, usa i dati mock
+      if (!isSupabaseConfigured) {
+        console.log('📦 Usando dati mock (Supabase non configurato)')
+        setProducts(mockProducts as Product[])
+        setLoading(false)
+        return
+      }
+      
       const supabase = getSupabaseClient()
       const { data, error: supabaseError } = await supabase
         .from('products')
@@ -21,9 +31,19 @@ export function useProducts() {
         .order('created_at', { ascending: false })
       
       if (supabaseError) throw supabaseError
-      setProducts(data || [])
+      
+      // Se Supabase è configurato ma non ha prodotti, usa i dati mock come fallback
+      if (!data || data.length === 0) {
+        console.log('📦 Usando dati mock (Supabase vuoto)')
+        setProducts(mockProducts as Product[])
+      } else {
+        setProducts(data)
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Errore nel caricamento prodotti')
+      console.log('📦 Usando dati mock (errore Supabase)')
+      // In caso di errore, usa i dati mock invece di mostrare errore
+      setProducts(mockProducts as Product[])
+      setError(null) // Non mostrare errore se abbiamo i mock
     } finally {
       setLoading(false)
     }
@@ -31,6 +51,12 @@ export function useProducts() {
 
   const getProductById = async (id: string): Promise<Product | null> => {
     try {
+      // Se Supabase non è configurato, cerca nei dati mock
+      if (!isSupabaseConfigured) {
+        const product = mockProducts.find(p => p.id === id)
+        return (product as Product) || null
+      }
+      
       const supabase = getSupabaseClient()
       const { data, error: supabaseError } = await supabase
         .from('products')
@@ -39,15 +65,29 @@ export function useProducts() {
         .single()
       
       if (supabaseError) throw supabaseError
+      
+      // Se non trovato in Supabase, cerca nei mock
+      if (!data) {
+        const product = mockProducts.find(p => p.id === id)
+        return (product as Product) || null
+      }
+      
       return data
     } catch (err) {
       console.error('Errore nel recupero prodotto:', err)
-      return null
+      // Fallback ai dati mock
+      const product = mockProducts.find(p => p.id === id)
+      return (product as Product) || null
     }
   }
 
   const getProductsByCategory = async (category: string): Promise<Product[]> => {
     try {
+      // Se Supabase non è configurato, filtra i dati mock
+      if (!isSupabaseConfigured) {
+        return mockProducts.filter(p => p.category === category) as Product[]
+      }
+      
       const supabase = getSupabaseClient()
       const { data, error: supabaseError } = await supabase
         .from('products')
@@ -56,10 +96,17 @@ export function useProducts() {
         .order('created_at', { ascending: false })
       
       if (supabaseError) throw supabaseError
+      
+      // Se Supabase vuoto, usa i mock
+      if (!data || data.length === 0) {
+        return mockProducts.filter(p => p.category === category) as Product[]
+      }
+      
       return data || []
     } catch (err) {
       console.error('Errore nel recupero prodotti per categoria:', err)
-      return []
+      // Fallback ai dati mock
+      return mockProducts.filter(p => p.category === category) as Product[]
     }
   }
 
