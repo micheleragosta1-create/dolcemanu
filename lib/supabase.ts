@@ -262,17 +262,37 @@ export async function getUserOrders(userEmail: string): Promise<Order[]> {
 
 // Funzioni helper per admin
 export async function getAllOrders(): Promise<{ data: any, error: any }> {
-  const supabase = getSupabaseClient()
-  return await supabase
-    .from('orders')
-    .select(`
-      *,
-      order_items (
-        *,
-        products (*)
-      )
-    `)
-    .order('created_at', { ascending: false })
+  try {
+    // Recupera il token di autenticazione da Supabase
+    const supabase = getSupabaseClient()
+    const { data: { session } } = await supabase.auth.getSession()
+    const token = session?.access_token
+
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json'
+    }
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+
+    // Usa l'API protetta invece di chiamare Supabase direttamente
+    const response = await fetch('/api/orders', {
+      method: 'GET',
+      headers
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      return { data: null, error: errorData.error || 'Errore nel recupero ordini' }
+    }
+
+    const data = await response.json()
+    return { data, error: null }
+  } catch (error: any) {
+    console.error('Errore nel recupero ordini:', error)
+    return { data: null, error: error.message || 'Errore di connessione' }
+  }
 }
 
 export async function updateOrderStatus(orderId: string, status: Order['status']): Promise<{ data: any, error: any }> {

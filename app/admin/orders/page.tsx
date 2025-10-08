@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
-import { ArrowLeft, Package, Truck, CheckCircle, XCircle, Clock, User, Mail, MapPin, Search, X } from 'lucide-react'
+import { ArrowLeft, Package, Truck, CheckCircle, XCircle, Clock, User, Mail, MapPin, Search, X, Download } from 'lucide-react'
+import { getSupabaseClient } from '@/lib/supabase'
 
 type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
 
@@ -24,6 +25,7 @@ type OrderItem = {
 
 type Order = {
   id: string
+  order_number?: string
   user_email: string
   total_amount: number
   status: OrderStatus
@@ -78,6 +80,7 @@ export default function AdminOrdersPage() {
   const [statusFilter, setStatusFilter] = useState<OrderStatus | 'all'>('all')
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const [downloadingPDF, setDownloadingPDF] = useState<string | null>(null)
 
   // Fetch orders
   useEffect(() => {
@@ -87,13 +90,38 @@ export default function AdminOrdersPage() {
   const fetchOrders = async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/orders')
+      
+      // Recupera il token di autenticazione da Supabase
+      const supabase = getSupabaseClient()
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+      
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json'
+      }
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+      
+      const response = await fetch('/api/orders', { headers })
+      
       if (response.ok) {
         const data = await response.json()
         setOrders(data)
+      } else {
+        const error = await response.json()
+        console.error('Error fetching orders:', error)
+        
+        if (response.status === 403) {
+          alert('⚠️ Accesso negato. Devi essere loggato come admin.\n\nVai su /auth per effettuare il login.')
+        } else {
+          alert(`Errore nel caricamento ordini: ${error.error || 'Sconosciuto'}`)
+        }
       }
     } catch (error) {
       console.error('Error fetching orders:', error)
+      alert('Errore di connessione al server')
     } finally {
       setLoading(false)
     }
@@ -130,6 +158,50 @@ export default function AdminOrdersPage() {
       alert('Errore nell\'aggiornamento dello status')
     } finally {
       setUpdatingStatus(null)
+    }
+  }
+
+  const downloadOrderPDF = async (orderId: string, orderNumber?: string) => {
+    try {
+      setDownloadingPDF(orderId)
+      
+      // Recupera il token di autenticazione da Supabase
+      const supabase = getSupabaseClient()
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+      
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      }
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+
+      const response = await fetch(`/api/orders/${orderId}/pdf`, {
+        method: 'GET',
+        headers
+      })
+
+      if (response.ok) {
+        const blob = await response.blob()
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `proforma_${orderNumber || orderId}.pdf`
+        document.body.appendChild(a)
+        a.click()
+        window.URL.revokeObjectURL(url)
+        document.body.removeChild(a)
+      } else {
+        const error = await response.json()
+        alert('Errore: ' + error.error)
+      }
+    } catch (error) {
+      console.error('Error downloading PDF:', error)
+      alert('Errore nel download del PDF')
+    } finally {
+      setDownloadingPDF(null)
     }
   }
 
@@ -345,12 +417,23 @@ export default function AdminOrdersPage() {
               <div className="order-details">
                 <div className="details-header">
                   <h2>Dettagli Ordine #{selectedOrder.id}</h2>
-                  <button 
-                    className="close-btn"
-                    onClick={() => setSelectedOrder(null)}
-                  >
-                    ×
-                  </button>
+                  <div className="header-actions-group">
+                    <button 
+                      className="btn-download-pdf"
+                      onClick={() => downloadOrderPDF(selectedOrder.id, selectedOrder.order_number)}
+                      disabled={downloadingPDF === selectedOrder.id}
+                      title="Scarica PDF Proforma"
+                    >
+                      <Download size={18} />
+                      {downloadingPDF === selectedOrder.id ? 'Download...' : 'Scarica PDF'}
+                    </button>
+                    <button 
+                      className="close-btn"
+                      onClick={() => setSelectedOrder(null)}
+                    >
+                      ×
+                    </button>
+                  </div>
                 </div>
 
                 <div className="details-content">
@@ -475,7 +558,7 @@ export default function AdminOrdersPage() {
 
       <style jsx global>{`
         .admin-section {
-          padding: 7rem 2rem 3rem;
+          padding: 15rem 2rem 3rem;
           background: var(--color-cream);
           min-height: 100vh;
         }
@@ -763,6 +846,39 @@ export default function AdminOrdersPage() {
           font-size: 1.3rem;
         }
 
+        .header-actions-group {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+        }
+
+        .btn-download-pdf {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.6rem 1.2rem;
+          background: var(--color-brown);
+          color: white;
+          border: none;
+          border-radius: 8px;
+          cursor: pointer;
+          font-weight: 600;
+          font-size: 0.9rem;
+          transition: all 0.3s ease;
+          font-family: inherit;
+        }
+
+        .btn-download-pdf:hover:not(:disabled) {
+          background: #a0522d;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(139, 69, 19, 0.3);
+        }
+
+        .btn-download-pdf:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+
         .close-btn {
           background: none;
           border: none;
@@ -776,6 +892,7 @@ export default function AdminOrdersPage() {
           justify-content: center;
           border-radius: 50%;
           transition: all 0.3s ease;
+          flex-shrink: 0;
         }
 
         .close-btn:hover {
@@ -1044,8 +1161,23 @@ export default function AdminOrdersPage() {
             padding: 1rem;
           }
           
+          .details-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+          }
+
           .details-header h2 {
             font-size: 1.1rem;
+          }
+
+          .header-actions-group {
+            width: 100%;
+            justify-content: space-between;
+          }
+
+          .btn-download-pdf {
+            flex: 1;
           }
         }
       `}</style>
