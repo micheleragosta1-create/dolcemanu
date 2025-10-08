@@ -33,7 +33,7 @@ CREATE TRIGGER update_user_roles_updated_at
 INSERT INTO user_roles (user_id, role) 
 SELECT id, 'super_admin' 
 FROM auth.users 
-WHERE email = 'michele.ragosta1@gmail.com'
+WHERE email = 'michele.ragota1@gmail.com'
 ON CONFLICT (user_id) DO UPDATE SET role = 'super_admin';
 
 -- 5. Creiamo una funzione per ottenere il ruolo dell'utente
@@ -83,18 +83,20 @@ DROP POLICY IF EXISTS "Users can view own orders" ON orders;
 DROP POLICY IF EXISTS "Users can insert own orders" ON orders;
 DROP POLICY IF EXISTS "Admin can view all orders" ON orders;
 DROP POLICY IF EXISTS "Admin can update order status" ON orders;
+DROP POLICY IF EXISTS "Users can view their own orders" ON orders;
+DROP POLICY IF EXISTS "Users can create their own orders" ON orders;
 
--- Policy per visualizzare ordini (utente vede i suoi, admin vede tutti)
+-- Policy per visualizzare ordini (utente vede i suoi tramite email, admin vede tutti)
 CREATE POLICY "Users can view own orders" ON orders
   FOR SELECT USING (
-    auth.uid() = user_id OR 
+    auth.jwt() ->> 'email' = user_email OR
     get_user_role(auth.uid()) IN ('admin', 'super_admin')
   );
 
 -- Policy per inserire ordini (utenti autenticati)
 CREATE POLICY "Users can insert own orders" ON orders
   FOR INSERT WITH CHECK (
-    auth.uid() = user_id
+    auth.jwt() ->> 'email' = user_email
   );
 
 -- Policy per aggiornare stato ordini (solo admin e super_admin)

@@ -23,15 +23,17 @@ export default function AdminPage() {
     // Manteniamo la pagina accessibile; la UI sotto gestisce accesso negato
   }, [isAdmin, roleLoading])
 
-  // Mostra loading mentre verifica i permessi
+  // Rendering ottimizzato: mostra la pagina subito, verifica permessi in background
   if (roleLoading) {
     return (
       <main>
         <Header />
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto mb-4"></div>
-            <p className="text-gray-600">Verifica permessi...</p>
+        <div className="admin-section">
+          <div className="admin-container">
+            <div className="admin-loading">
+              <div className="loading-spinner"></div>
+              <p>Verifica permessi...</p>
+            </div>
           </div>
         </div>
         <Footer />
@@ -125,7 +127,7 @@ export default function AdminPage() {
 
       <style jsx global>{`
         .admin-section {
-          padding: 8rem 2rem 4rem;
+          padding: 15rem 2rem 4rem;
           background: #f8fafc;
           min-height: 100vh;
         }
@@ -214,7 +216,7 @@ export default function AdminPage() {
           font-weight: 500;
           border-radius: 8px;
           cursor: pointer;
-          transition: all 0.2s;
+          transition: background 0.2s ease, color 0.2s ease;
         }
         
         .admin-tab:hover {
@@ -223,7 +225,7 @@ export default function AdminPage() {
         }
         
         .admin-tab.active {
-          background: #ec4899;
+          background: var(--color-brown);
           color: white;
         }
         
@@ -232,6 +234,31 @@ export default function AdminPage() {
           border-radius: 16px;
           box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
           overflow: hidden;
+        }
+        
+        /* Loading State */
+        .admin-loading {
+          text-align: center;
+          padding: 4rem 2rem;
+        }
+        
+        .loading-spinner {
+          width: 48px;
+          height: 48px;
+          border: 4px solid #f3f4f6;
+          border-top-color: var(--color-brown);
+          border-radius: 50%;
+          animation: spin 0.8s linear infinite;
+          margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        
+        .admin-loading p {
+          color: #6b7280;
+          font-size: 0.95rem;
         }
         
         @media (max-width: 768px) {

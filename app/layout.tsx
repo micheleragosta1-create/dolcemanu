@@ -8,13 +8,13 @@ import SEO from '@/components/SEO'
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
   title: {
-    default: 'Cioccolatini Michele - Artigianato dalla Costiera Amalfitana',
-    template: '%s | Cioccolatini Michele'
+    default: 'Onde di Cacao - Artigianato dalla Costiera Amalfitana',
+    template: '%s | Onde di Cacao'
   },
   description: 'Cioccolatini artigianali di alta qualità dalla Costiera Amalfitana. Esperienza stellata, ingredienti premium.',
   openGraph: {
     type: 'website',
-    title: 'Cioccolatini Michele',
+    title: 'Onde di Cacao',
     description: 'Cioccolatini artigianali premium dalla Costiera Amalfitana',
     url: '/',
     images: ['/images/ondedicacao.png']

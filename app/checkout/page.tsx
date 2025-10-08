@@ -132,7 +132,32 @@ export default function CheckoutPage() {
       <section className="checkout-section">
         <div className="checkout-container">
           <h1 className="poppins">Checkout</h1>
-          {items.length === 0 ? (
+          
+          {/* Controllo autenticazione */}
+          {!user ? (
+            <div className="auth-required">
+              <div className="auth-icon">🔒</div>
+              <h2 className="poppins">Accesso richiesto</h2>
+              <p>Per completare l'ordine è necessario effettuare l'accesso o creare un account.</p>
+              <div className="auth-benefits">
+                <h3>Perché registrarsi?</h3>
+                <ul>
+                  <li>✓ Salva i tuoi indirizzi di spedizione</li>
+                  <li>✓ Monitora lo stato degli ordini</li>
+                  <li>✓ Checkout più veloce</li>
+                  <li>✓ Storico degli acquisti</li>
+                </ul>
+              </div>
+              <div className="auth-actions">
+                <a href="/auth" className="btn btn-primary">
+                  Accedi o Registrati
+                </a>
+                <a href="/cart" className="btn btn-secondary">
+                  Torna al Carrello
+                </a>
+              </div>
+            </div>
+          ) : items.length === 0 ? (
             <p>Il carrello è vuoto.</p>
           ) : (
             <div className="checkout-grid">
@@ -193,7 +218,7 @@ export default function CheckoutPage() {
 
                 <div className="paypal-container">
                   {mounted && paypalClientId && (
-                  <PayPalScriptProvider options={{ 'client-id': paypalClientId, currency: 'EUR', intent: 'capture', components: 'buttons', locale: 'it_IT', debug: true }}>
+                  <PayPalScriptProvider options={{ clientId: paypalClientId, currency: 'EUR', intent: 'capture', components: 'buttons', locale: 'it_IT', debug: true }}>
                      <PayPalButtons
                         // Lasciamo che la SDK scelga il funding idoneo
                         style={{ 
@@ -266,8 +291,112 @@ export default function CheckoutPage() {
       <Footer />
 
       <style jsx global>{`
-        .checkout-section { position: relative; z-index: 10; padding: 9rem 2rem 3rem; }
+        .checkout-section { position: relative; z-index: 10; padding: 15rem 2rem 3rem; }
         .checkout-container { max-width: 1000px; width: min(1000px, 100%); margin-inline: auto; }
+        
+        /* Auth Required Box */
+        .auth-required {
+          background: white;
+          border-radius: 16px;
+          padding: 3rem 2rem;
+          text-align: center;
+          box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+          max-width: 600px;
+          margin: 2rem auto;
+        }
+        
+        .auth-icon {
+          font-size: 4rem;
+          margin-bottom: 1rem;
+        }
+        
+        .auth-required h2 {
+          font-size: 1.8rem;
+          color: var(--color-navy);
+          margin-bottom: 0.75rem;
+        }
+        
+        .auth-required > p {
+          color: #666;
+          font-size: 1.1rem;
+          margin-bottom: 2rem;
+          line-height: 1.6;
+        }
+        
+        .auth-benefits {
+          background: #f8f9fa;
+          border-radius: 12px;
+          padding: 1.5rem;
+          margin-bottom: 2rem;
+          text-align: left;
+        }
+        
+        .auth-benefits h3 {
+          font-size: 1.1rem;
+          color: var(--color-navy);
+          margin-bottom: 1rem;
+          font-weight: 600;
+        }
+        
+        .auth-benefits ul {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+          display: grid;
+          gap: 0.75rem;
+        }
+        
+        .auth-benefits li {
+          color: #555;
+          font-size: 0.95rem;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+        
+        .auth-actions {
+          display: flex;
+          gap: 1rem;
+          justify-content: center;
+          flex-wrap: wrap;
+        }
+        
+        .auth-actions .btn {
+          padding: 0.875rem 2rem;
+          font-size: 1rem;
+          font-weight: 600;
+          border-radius: 12px;
+          text-decoration: none;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.3s ease;
+        }
+        
+        .auth-actions .btn-primary {
+          background: var(--color-brown);
+          color: white;
+          border: none;
+        }
+        
+        .auth-actions .btn-primary:hover {
+          background: #6d3d0f;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(94, 54, 33, 0.3);
+        }
+        
+        .auth-actions .btn-secondary {
+          background: white;
+          color: var(--color-brown);
+          border: 2px solid var(--color-brown);
+        }
+        
+        .auth-actions .btn-secondary:hover {
+          background: var(--color-brown);
+          color: white;
+          transform: translateY(-2px);
+        }
+        
         .checkout-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
         .summary, .payments { background: #fff; border: 1px solid rgba(0,0,0,.06); border-radius: 12px; padding: 1rem; box-shadow: 0 10px 30px rgba(0,0,0,.06); }
         .list { list-style: none; padding: 0; margin: 0; display: grid; gap: .35rem; }
@@ -351,7 +480,13 @@ export default function CheckoutPage() {
         @media (max-width: 600px) { .ship-grid { grid-template-columns: 1fr; } }
 
         @media (max-width: 992px) { .checkout-grid { grid-template-columns: 1fr; } }
-        @media (max-width: 768px) { .checkout-section { padding: 8rem 1rem 2rem; } }
+        @media (max-width: 768px) { 
+          .checkout-section { padding: 8rem 1rem 2rem; }
+          .auth-required { padding: 2rem 1.5rem; }
+          .auth-required h2 { font-size: 1.5rem; }
+          .auth-actions { flex-direction: column; }
+          .auth-actions .btn { width: 100%; }
+        }
       `}</style>
     </main>
   )

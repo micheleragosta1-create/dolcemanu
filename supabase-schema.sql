@@ -155,14 +155,14 @@ ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 
 -- Users can read their own profile
 CREATE POLICY IF NOT EXISTS "Users can read own profile" ON profiles
-  FOR SELECT USING (auth.uid()::text = user_id::text);
+  FOR SELECT USING (auth.uid() = user_id);
 
 -- Users can insert/update their own profile
 CREATE POLICY IF NOT EXISTS "Users can upsert own profile" ON profiles
-  FOR INSERT WITH CHECK (auth.uid()::text = user_id::text);
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY IF NOT EXISTS "Users can update own profile" ON profiles
-  FOR UPDATE USING (auth.uid()::text = user_id::text);
+  FOR UPDATE USING (auth.uid() = user_id);
 
 -- Trigger to update updated_at on profiles
 CREATE TRIGGER update_profiles_updated_at BEFORE UPDATE ON profiles

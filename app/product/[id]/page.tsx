@@ -30,6 +30,7 @@ export default function ProductPage() {
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [qty, setQty] = useState(1)
+  const [selectedBoxSize, setSelectedBoxSize] = useState<6 | 9 | 12>(6)
 
   useEffect(() => {
     const id = Array.isArray(params?.id) ? params.id[0] : (params?.id as string)
@@ -68,16 +69,35 @@ export default function ProductPage() {
 
   const related = useRelated(product)
 
+  // Calcola il prezzo in base alla dimensione del box
+  const boxPrices = useMemo(() => {
+    if (!product) return { 6: 0, 9: 0, 12: 0 }
+    const basePrice = product.price
+    return {
+      6: basePrice,
+      9: basePrice * 1.4, // circa 40% in più
+      12: basePrice * 1.75 // circa 75% in più
+    }
+  }, [product])
+
+  const currentPrice = boxPrices[selectedBoxSize]
+
   const addToCart = () => {
     if (!product) return
-    addItem({ id: String(product.id), nome: product.name, prezzo: product.price, immagine: product.image_url }, qty)
+    const productName = `${product.name} (${selectedBoxSize} praline)`
+    addItem({ 
+      id: `${product.id}-${selectedBoxSize}`, 
+      nome: productName, 
+      prezzo: currentPrice, 
+      immagine: product.image_url 
+    }, qty)
     if (typeof window !== 'undefined') {
       // GA4 event
       // @ts-ignore
-      window.gtag && window.gtag('event','add_to_cart',{currency:'EUR', value: product.price*qty, items:[{item_id:String(product.id), item_name:product.name, price:product.price, quantity:qty}]})
+      window.gtag && window.gtag('event','add_to_cart',{currency:'EUR', value: currentPrice*qty, items:[{item_id:`${product.id}-${selectedBoxSize}`, item_name:productName, price:currentPrice, quantity:qty}]})
       // Meta Pixel
       // @ts-ignore
-      window.fbq && window.fbq('track','AddToCart',{content_ids:[String(product.id)], content_name:product.name, currency:'EUR', value: product.price*qty})
+      window.fbq && window.fbq('track','AddToCart',{content_ids:[`${product.id}-${selectedBoxSize}`], content_name:productName, currency:'EUR', value: currentPrice*qty})
     }
   }
 
@@ -96,7 +116,7 @@ export default function ProductPage() {
                   name: product.name,
                   image: product.image_url,
                   description: product.description,
-                  brand: 'Cioccolatini Michele',
+                  brand: 'Onde di Cacao',
                   offers: {
                     '@type': 'Offer',
                     priceCurrency: 'EUR',
@@ -153,8 +173,42 @@ export default function ProductPage() {
                 />
                 <div className="details">
                   <h1 className="poppins name">{product.name}</h1>
-                  <p className="price">€ {product.price.toFixed(2)}</p>
+                  <p className="price">€ {currentPrice.toFixed(2)}</p>
                   <p className="desc">{product.description}</p>
+
+                  {/* Selettore dimensione box */}
+                  <div className="box-size-selector">
+                    <label className="box-size-label">Formato Box:</label>
+                    <div className="box-size-options">
+                      <button
+                        className={`box-size-btn ${selectedBoxSize === 6 ? 'active' : ''}`}
+                        onClick={() => setSelectedBoxSize(6)}
+                      >
+                        <span className="box-size-number">6</span>
+                        <span className="box-size-text">praline</span>
+                        <span className="box-size-price">€ {boxPrices[6].toFixed(2)}</span>
+                      </button>
+                      <button
+                        className={`box-size-btn ${selectedBoxSize === 9 ? 'active' : ''}`}
+                        onClick={() => setSelectedBoxSize(9)}
+                      >
+                        <span className="box-size-number">9</span>
+                        <span className="box-size-text">praline</span>
+                        <span className="box-size-price">€ {boxPrices[9].toFixed(2)}</span>
+                      </button>
+                      <button
+                        className={`box-size-btn ${selectedBoxSize === 12 ? 'active' : ''}`}
+                        onClick={() => setSelectedBoxSize(12)}
+                      >
+                        <span className="box-size-number">12</span>
+                        <span className="box-size-text">praline</span>
+                        <span className="box-size-price">€ {boxPrices[12].toFixed(2)}</span>
+                        {boxPrices[12] < boxPrices[6] * 2 && (
+                          <span className="box-size-badge">Conveniente</span>
+                        )}
+                      </button>
+                    </div>
+                  </div>
 
                   <div className="buy-row">
                     <input type="number" min={1} value={qty} onChange={e=>setQty(Math.max(1, parseInt(e.target.value||'1',10)))} className="qty" />
@@ -213,6 +267,90 @@ export default function ProductPage() {
         .name { font-size: 2rem; }
         .price { font-size: 1.6rem; font-weight: 700; color: var(--color-brown); }
         .desc { color: #555; line-height: 1.7; }
+        
+        /* Box Size Selector */
+        .box-size-selector {
+          background: #f8f9fa;
+          border-radius: 12px;
+          padding: 1.25rem;
+          border: 2px solid #e9ecef;
+        }
+        
+        .box-size-label {
+          display: block;
+          font-weight: 600;
+          font-size: 0.95rem;
+          color: var(--color-navy);
+          margin-bottom: 0.75rem;
+        }
+        
+        .box-size-options {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 0.75rem;
+        }
+        
+        .box-size-btn {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding: 1rem 0.75rem;
+          background: white;
+          border: 2px solid #e9ecef;
+          border-radius: 10px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          position: relative;
+        }
+        
+        .box-size-btn:hover {
+          border-color: var(--color-brown);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .box-size-btn.active {
+          border-color: var(--color-brown);
+          background: var(--color-brown);
+          color: white;
+        }
+        
+        .box-size-number {
+          font-size: 1.75rem;
+          font-weight: 700;
+          line-height: 1;
+          margin-bottom: 0.25rem;
+        }
+        
+        .box-size-text {
+          font-size: 0.8rem;
+          opacity: 0.8;
+          margin-bottom: 0.5rem;
+        }
+        
+        .box-size-price {
+          font-size: 0.95rem;
+          font-weight: 600;
+        }
+        
+        .box-size-btn.active .box-size-price {
+          color: white;
+        }
+        
+        .box-size-badge {
+          position: absolute;
+          top: -8px;
+          right: -8px;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          font-size: 0.65rem;
+          font-weight: 700;
+          padding: 0.25rem 0.5rem;
+          border-radius: 999px;
+          text-transform: uppercase;
+          letter-spacing: 0.3px;
+        }
+        
         .buy-row { display: flex; gap: .75rem; align-items: center; }
         .qty { width: 80px; padding: .6rem .7rem; border: 2px solid #e9ecef; border-radius: 8px; }
         .info-block { background: #fff; border: 1px solid rgba(0,0,0,.06); border-radius: 12px; padding: 1rem; }
@@ -224,7 +362,30 @@ export default function ProductPage() {
         .related-card:hover { transform: translateY(-3px); }
         .related-card .img { width: 100%; height: 160px; background-size: cover; background-position: center; }
         .related-card .meta { display: flex; justify-content: space-between; padding: .75rem; }
-        @media (max-width: 992px) { .product-grid { grid-template-columns: 1fr; } }
+        
+        @media (max-width: 992px) { 
+          .product-grid { grid-template-columns: 1fr; }
+        }
+        
+        @media (max-width: 600px) {
+          .box-size-options {
+            grid-template-columns: 1fr;
+          }
+          
+          .box-size-btn {
+            flex-direction: row;
+            justify-content: space-between;
+            padding: 0.875rem 1rem;
+          }
+          
+          .box-size-number {
+            font-size: 1.5rem;
+          }
+          
+          .box-size-text {
+            margin: 0 auto 0 0.5rem;
+          }
+        }
       `}</style>
     </main>
   )

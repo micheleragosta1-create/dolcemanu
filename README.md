@@ -1,4 +1,4 @@
-# Cioccolatini Michele - Landing Page
+#Onde di Cacao - Landing Page
 
 Una landing page elegante e moderna per un business di cioccolatini artigianali dalla Costiera Amalfitana, realizzata con Next.js.
 

@@ -1,5 +1,6 @@
 // Servizio per l'invio di email di notifica ordini
 // Per ora implementiamo un mock, ma può essere facilmente sostituito con SendGrid, Resend, o altri servizi
+import { Readable } from 'stream'
 
 export interface OrderEmailData {
   orderId: string
@@ -15,10 +16,17 @@ export interface OrderEmailData {
   status: string
 }
 
+export interface EmailAttachment {
+  filename: string
+  content: Buffer | Readable
+  contentType: string
+}
+
 export interface EmailTemplate {
   subject: string
   html: string
   text: string
+  attachments?: EmailAttachment[]
 }
 
 export class EmailService {
@@ -45,15 +53,28 @@ export class EmailService {
   }
 
   // Email di conferma ordine per il cliente
-  async sendOrderConfirmation(data: OrderEmailData): Promise<boolean> {
+  async sendOrderConfirmation(data: OrderEmailData, pdfAttachment?: Buffer): Promise<boolean> {
     try {
       const template = this.createOrderConfirmationTemplate(data)
       
+      // Aggiungi allegato PDF se fornito
+      if (pdfAttachment) {
+        template.attachments = [{
+          filename: `proforma_${data.orderId}.pdf`,
+          content: pdfAttachment,
+          contentType: 'application/pdf'
+        }]
+      }
+      
       // In produzione, qui invieresti l'email tramite un servizio esterno
+      // Esempio con Resend, SendGrid, NodeMailer, ecc.
+      // await this.sendEmailViaProvider(data.userEmail, template)
+      
       console.log('📧 Email di conferma ordine inviata:', {
         to: data.userEmail,
         subject: template.subject,
-        orderId: data.orderId
+        orderId: data.orderId,
+        hasAttachment: !!pdfAttachment
       })
 
       // Simula l'invio dell'email
@@ -67,13 +88,23 @@ export class EmailService {
   }
 
   // Email di notifica ordine per l'amministratore
-  async sendOrderNotificationToAdmin(data: OrderEmailData): Promise<boolean> {
+  async sendOrderNotificationToAdmin(data: OrderEmailData, pdfAttachment?: Buffer): Promise<boolean> {
     try {
       const template = this.createAdminNotificationTemplate(data)
       
+      // Aggiungi allegato PDF se fornito
+      if (pdfAttachment) {
+        template.attachments = [{
+          filename: `proforma_${data.orderId}.pdf`,
+          content: pdfAttachment,
+          contentType: 'application/pdf'
+        }]
+      }
+      
       console.log('📧 Notifica ordine inviata all\'admin:', {
         orderId: data.orderId,
-        subject: template.subject
+        subject: template.subject,
+        hasAttachment: !!pdfAttachment
       })
 
       await this.simulateEmailSending(template)
@@ -156,6 +187,11 @@ export class EmailService {
             </div>
             
             <p>Il tuo ordine è stato ricevuto e verrà processato al più presto. Riceverai un aggiornamento quando verrà spedito.</p>
+            
+            <div style="background: #e8f5e8; padding: 15px; border-radius: 8px; margin: 20px 0;">
+              <p style="margin: 0;"><strong>📄 Proforma allegata</strong></p>
+              <p style="margin: 5px 0 0 0; font-size: 0.9em;">Trovi in allegato il documento proforma con il riepilogo del tuo ordine.</p>
+            </div>
             
             <p>Per qualsiasi domanda, non esitare a contattarci.</p>
             

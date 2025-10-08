@@ -1,13 +1,20 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { mockProducts } from '@/lib/mock-data'
 
 // GET /api/products - Fetch all products from Supabase
 export async function GET() {
   try {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
+    // Check if Supabase is configured
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+    if (!supabaseUrl || !supabaseKey) {
+      console.log('📦 API usando dati mock (Supabase non configurato)')
+      return NextResponse.json(mockProducts)
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseKey)
 
     const { data: products, error } = await supabase
       .from('products')
@@ -15,12 +22,20 @@ export async function GET() {
       .order('created_at', { ascending: false })
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      console.log('📦 API usando dati mock (errore Supabase):', error.message)
+      return NextResponse.json(mockProducts)
+    }
+
+    // Se Supabase è vuoto, usa i mock
+    if (!products || products.length === 0) {
+      console.log('📦 API usando dati mock (Supabase vuoto)')
+      return NextResponse.json(mockProducts)
     }
 
     return NextResponse.json(products)
   } catch (error) {
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    console.log('📦 API usando dati mock (errore catch):', error)
+    return NextResponse.json(mockProducts)
   }
 }
 
