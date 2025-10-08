@@ -66,7 +66,7 @@ export default function Header() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  const headerClass = `header ${isHidden ? 'header--hidden' : isTransparent ? 'header--transparent' : 'header--solid'}`
+  const headerClass = `header ${isHidden ? 'header--hidden' : 'header--solid'}`
 
   return (
     <>

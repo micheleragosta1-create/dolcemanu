@@ -54,7 +54,7 @@ export default function CartPage() {
       <Footer />
 
       <style jsx global>{`
-        .cart-section { position: relative; z-index: 10; padding: 9rem 2rem 3rem; }
+        .cart-section { position: relative; z-index: 10; padding: 13rem 2rem 3rem; }
         .cart-container { max-width: 1100px; width: min(1100px, 100%); margin-inline: auto; }
         .cart-grid { 
           display: grid; 

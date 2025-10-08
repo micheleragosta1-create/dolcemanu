@@ -73,7 +73,7 @@ export default function AuthPage() {
         .auth-section {
           position: relative;
           z-index: 10;
-          padding: 8rem 2rem 4rem;
+          padding: 13rem 2rem 4rem;
           background: #ffffff;
         }
         .auth-container {
