@@ -31,7 +31,7 @@ const COMPANY_INFO = {
   country: 'Italia',
   vatNumber: 'P.IVA: 12345678901',
   phone: 'Tel: +39 089 123456',
-  email: 'info@dolcemanu.it'
+  email: 'info@ondedicacao.com'
 }
 
 export class PDFService {

@@ -46,6 +46,12 @@ export default function AdminDashboard() {
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
   const [downloadingPDF, setDownloadingPDF] = useState<string | null>(null)
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null)
+  const [mounted, setMounted] = useState(false)
+
+  // Evita hydration mismatch
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Carica i dati all'avvio
   useEffect(() => {
@@ -80,6 +86,7 @@ export default function AdminDashboard() {
   }
 
   const formatDate = (dateString: string) => {
+    if (!mounted) return dateString
     return new Date(dateString).toLocaleDateString('it-IT', {
       day: '2-digit',
       month: '2-digit',

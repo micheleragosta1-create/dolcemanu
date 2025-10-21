@@ -104,6 +104,10 @@ export interface Product {
   is_new?: boolean | null
   is_bestseller?: boolean | null
   discount_percentage?: number | null
+  // Formati box con prezzi personalizzati
+  box_formats?: {
+    [key: string]: number // es. { "6": 18.90, "9": 26.90, "12": 34.90 }
+  } | null
 }
 
 export interface Order {

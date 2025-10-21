@@ -61,7 +61,7 @@ export default function ContactSection() {
               <Mail className="contact-icon" size={20} />
               <div>
                 <strong>Email</strong>
-                <p>info@emanuelanapolitano.it</p>
+                <p>info@ondedicacao.com</p>
               </div>
             </div>
 
