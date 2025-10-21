@@ -68,3 +68,4 @@ Nel root del progetto troverai anche:
 - `test-complete.js` - Test completo del sistema
 
 Esegui con: `node <nome-script>.js`
+

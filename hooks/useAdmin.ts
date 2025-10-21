@@ -77,7 +77,7 @@ export function useAdmin() {
     }
   }, [isAdmin])
 
-  const updateOrder = useCallback(async (orderId: string, status: Order['status']) => {
+  const updateOrder = useCallback(async (orderId: string, status: Order['status'] | string) => {
     if (!isAdmin) return { error: 'Accesso negato' }
     
     try {
@@ -105,6 +105,8 @@ export function useAdmin() {
     if (!isAdmin) return
     setProductsLoading(true)
     try {
+      console.log('🔄 Caricamento prodotti...')
+      
       // Usa l'helper prodotti corretto
       const productsList = await (async () => {
         try {
@@ -115,9 +117,11 @@ export function useAdmin() {
           return [] as Product[]
         }
       })()
+      
+      console.log(`✅ Caricati ${productsList?.length || 0} prodotti`)
       setProducts(productsList || [])
     } catch (error) {
-      console.error('Errore nel recupero prodotti:', error)
+      console.error('❌ Errore nel recupero prodotti:', error)
     } finally {
       setProductsLoading(false)
     }
@@ -126,19 +130,32 @@ export function useAdmin() {
   const addProduct = useCallback(async (productData: Omit<Product, 'id' | 'created_at' | 'updated_at'>) => {
     if (!isAdmin) return { error: 'Accesso negato' }
     try {
+      console.log('📤 Invio dati prodotto:', productData)
+      
       const res = await fetch('/api/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(productData)
       })
+      
       const payload = await res.json().catch(() => ({}))
+      console.log('📥 Risposta API:', { status: res.status, payload })
+      
       if (!res.ok) {
         const message = payload?.error || 'Errore creazione prodotto'
+        console.error('❌ Errore API:', message)
         return { error: message }
       }
-      setProducts(prev => [payload, ...prev])
+      
+      // Aggiungi il prodotto alla lista locale
+      setProducts(prev => {
+        console.log('✅ Aggiunto prodotto alla lista:', payload.name)
+        return [payload, ...prev]
+      })
+      
       return { data: payload, error: null }
     } catch (error: any) {
+      console.error('❌ Errore catch:', error)
       return { error: error?.message || 'Errore rete' }
     }
   }, [isAdmin])
@@ -186,23 +203,40 @@ export function useAdmin() {
   const [usersCount, setUsersCount] = useState<number | null>(null)
 
   const fetchAllUsers = useCallback(async () => {
-    if (!isSuperAdmin) return
+    if (!isAdmin) return // Anche gli admin normali possono vedere gli utenti
     setUsersLoading(true)
     try {
       const { data, error } = await getAllUsers()
-      if (error) throw error
-      setUsers(data || [])
-      // Recupera anche il count con RPC semplificata (se l'utente è admin)
+      if (error) {
+        console.error('Errore getAllUsers:', error)
+        // Fallback: prova a recuperare dalla tabella user_roles
+        const supabase = await import('@/lib/supabase').then(m => m.getSupabaseClient())
+        const { data: rolesData, error: rolesError } = await supabase
+          .from('user_roles')
+          .select('*')
+          .order('created_at', { ascending: false })
+        
+        if (!rolesError && rolesData) {
+          setUsers(rolesData || [])
+        } else {
+          setUsers([])
+        }
+      } else {
+        setUsers(data || [])
+      }
+      
+      // Recupera anche il count
       try {
         const { data: count } = await getUsersCountAdmin()
         if (typeof count === 'number') setUsersCount(count)
       } catch {}
     } catch (error) {
       console.error('Errore nel recupero utenti:', error)
+      setUsers([])
     } finally {
       setUsersLoading(false)
     }
-  }, [isSuperAdmin])
+  }, [isAdmin])
 
   const changeUserRole = useCallback(async (userId: string, newRole: 'user' | 'admin' | 'super_admin') => {
     if (!isSuperAdmin) return { error: 'Solo i super admin possono modificare i ruoli' }

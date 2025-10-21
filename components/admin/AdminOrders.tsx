@@ -34,6 +34,12 @@ export default function AdminOrders() {
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
   const [page, setPage] = useState<number>(1)
   const [pageSize, setPageSize] = useState<number>(10)
+  const [mounted, setMounted] = useState(false)
+
+  // Evita hydration mismatch
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     fetchAllOrders()
@@ -134,6 +140,7 @@ export default function AdminOrders() {
   }
 
   const formatDateTime = (iso: string) => {
+    if (!mounted) return iso
     try {
       const d = new Date(iso)
       return d.toLocaleString('it-IT', {

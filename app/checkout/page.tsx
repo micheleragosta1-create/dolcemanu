@@ -432,9 +432,13 @@ export default function CheckoutPage() {
           box-shadow: 0 6px 20px rgba(99, 91, 255, 0.4);
         }
 
-        /* Effetto rimosso */
-        
-        .stripe-icon { filter: brightness(0) invert(1); width: 44px; height: 18px; flex-shrink: 0; display: block; }
+        .stripe-icon { 
+          filter: brightness(0) invert(1); 
+          width: 44px; 
+          height: 18px; 
+          flex-shrink: 0; 
+          display: block; 
+        }
         
         /* Divider */
         .divider {

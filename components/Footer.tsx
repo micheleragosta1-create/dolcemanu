@@ -28,7 +28,7 @@ export default function Footer() {
         <div className="footer-section">
           <h3>Contatti</h3>
           <ul>
-            <li>Email: info@cioccolatinimichele.it</li>
+            <li>Email: info@ondedicacao.com</li>
             <li>Tel: +39 089 123 456</li>
             <li>Costiera Amalfitana, Italia</li>
           </ul>
@@ -50,23 +50,32 @@ export default function Footer() {
           <h3>Pagamenti Sicuri</h3>
           <div className="payment-icons">
             <img 
-              src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" 
+              src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/800px-Visa_Inc._logo.svg.png" 
               alt="Visa" 
               className="payment-icon"
               loading="lazy"
               decoding="async"
             />
             <img 
-              src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" 
+              src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/800px-Mastercard-logo.svg.png" 
               alt="Mastercard" 
               className="payment-icon"
               loading="lazy"
               decoding="async"
             />
             <img 
-              src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" 
+              src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/PayPal.svg/800px-PayPal.svg.png" 
               alt="PayPal" 
               className="payment-icon"
+              loading="lazy"
+              decoding="async"
+            />
+            <img 
+              src="https://js.stripe.com/v3/fingerprinted/img/stripe-logo-2x.png" 
+              alt="Stripe" 
+              className="payment-icon"
+              loading="lazy"
+              decoding="async"
             />
           </div>
           

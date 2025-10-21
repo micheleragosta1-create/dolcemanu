@@ -1,5 +1,5 @@
 export default function SEO() {
-  const siteName = 'Cioccolatini Michele'
+  const siteName = 'Onde di Cacao'
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
   const logoUrl = `${siteUrl}/images/ondedicacao.png`
 

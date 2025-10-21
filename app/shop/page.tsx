@@ -23,6 +23,9 @@ export default function ShopPage() {
   const [pagina, setPagina] = useState(1)
   const [perPagina] = useState(12)
   const [ordine, setOrdine] = useState<"prezzo_asc" | "prezzo_desc" | "nome_asc">("prezzo_asc")
+  
+  // Stato per tenere traccia del formato selezionato per ogni prodotto
+  const [selectedFormats, setSelectedFormats] = useState<Record<string, 6 | 9 | 12>>({})
   const [filtersOpen, setFiltersOpen] = useState(false)
 
   // Nuovi filtri avanzati
@@ -337,6 +340,52 @@ export default function ShopPage() {
     return price * (1 - discount / 100)
   }
 
+  // Ottieni i prezzi dei formati box per un prodotto
+  const getBoxPrices = (product: Product) => {
+    const productData = product as any
+    if (productData.box_formats && typeof productData.box_formats === 'object') {
+      const formats = productData.box_formats
+      return {
+        6: formats['6'] || 0,
+        9: formats['9'] || 0,
+        12: formats['12'] || 0
+      }
+    }
+    // Fallback con formule se non configurato
+    return {
+      6: product.price,
+      9: product.price * 1.4,
+      12: product.price * 1.75
+    }
+  }
+
+  // Ottieni formati disponibili per un prodotto
+  const getAvailableFormats = (product: Product) => {
+    const productData = product as any
+    if (productData?.box_formats && typeof productData.box_formats === 'object') {
+      const formats = productData.box_formats
+      return [6, 9, 12].filter(size => formats[String(size)] !== undefined && formats[String(size)] > 0)
+    }
+    return [] // Nessun formato se non configurato
+  }
+
+  // Ottieni il formato selezionato per un prodotto (o il primo disponibile)
+  const getSelectedFormat = (productId: string, availableFormats: number[]) => {
+    if (availableFormats.length === 0) return null
+    return selectedFormats[productId] || (availableFormats[0] as 6 | 9 | 12)
+  }
+
+  // Ottieni il prezzo corrente in base al formato selezionato
+  const getCurrentPrice = (product: Product) => {
+    const availableFormats = getAvailableFormats(product)
+    if (availableFormats.length === 0) {
+      return product.price // Usa prezzo base se nessun formato
+    }
+    const selectedFormat = getSelectedFormat(product.id, availableFormats)
+    const boxPrices = getBoxPrices(product)
+    return selectedFormat ? boxPrices[selectedFormat as keyof typeof boxPrices] : product.price
+  }
+
   return (
     <main>
       <Header />
@@ -495,9 +544,15 @@ export default function ShopPage() {
 
             <div className="grid">
               {visibili.map((p) => {
-                const discountedPrice = getDiscountedPrice(p.price, p.discount_percentage)
+                const availableFormats = getAvailableFormats(p)
+                const hasBoxFormats = availableFormats.length > 0
+                const selectedFormat = getSelectedFormat(p.id, availableFormats)
+                const currentPrice = getCurrentPrice(p)
+                const boxPrices = getBoxPrices(p)
+                const discountedPrice = getDiscountedPrice(currentPrice, p.discount_percentage)
+                
                 return (
-                <Link href={`/product/${p.id}`} key={p.id} style={{ textDecoration: 'none', color: 'inherit' }}>
+                <div key={p.id} style={{ textDecoration: 'none', color: 'inherit' }}>
                     <article className="product-card">
                       {/* Badges */}
                       <div className="product-badges">
@@ -522,20 +577,28 @@ export default function ShopPage() {
                       </div>
 
                       {/* Image */}
-                      <div className="product-image">
-                        <Image 
-                          src={p.image_url} 
-                          alt={p.name} 
-                          fill 
-                          sizes="(max-width: 600px) 100vw, (max-width: 992px) 50vw, 33vw" 
-                          style={{ objectFit: 'cover' }} 
-                        />
-                      </div>
+                      <Link href={`/product/${p.id}`}>
+                        <div className="product-image">
+                          <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+                            <Image 
+                              src={p.image_url} 
+                              alt={p.name} 
+                              fill 
+                              sizes="(max-width: 600px) 100vw, (max-width: 992px) 50vw, 33vw" 
+                              style={{ 
+                                objectFit: 'contain'
+                              }} 
+                            />
+                          </div>
+                        </div>
+                      </Link>
 
                       {/* Content */}
                       <div className="product-content">
-                        <h3 className="product-name poppins">{p.name}</h3>
-                        <p className="product-description">{p.description}</p>
+                        <Link href={`/product/${p.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                          <h3 className="product-name poppins">{p.name}</h3>
+                          <p className="product-description">{p.description}</p>
+                        </Link>
                         
                         {/* Meta Info */}
                         <div className="product-meta">
@@ -550,40 +613,71 @@ export default function ShopPage() {
                           )}
                         </div>
 
+                        {/* Selettore Formati Box */}
+                        {hasBoxFormats && (
+                          <div className="box-format-selector-shop">
+                            <label className="format-label">Formato:</label>
+                            <div className="format-buttons">
+                              {availableFormats.map((format) => (
+                                <button
+                                  key={format}
+                                  type="button"
+                                  className={`format-btn ${selectedFormat === format ? 'active' : ''}`}
+                                  onClick={(e) => {
+                                    e.preventDefault()
+                                    e.stopPropagation()
+                                    setSelectedFormats((prev: Record<string, 6 | 9 | 12>) => ({ ...prev, [p.id]: format as 6 | 9 | 12 }))
+                                  }}
+                                >
+                                  <span className="format-size">{format}</span>
+                                  <span className="format-label-text">pz</span>
+                                  <span className="format-price">€{boxPrices[format as 6 | 9 | 12].toFixed(2)}</span>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
                         {/* Footer */}
                         <div className="product-footer">
                           <div className="price-wrapper">
                             {discountedPrice ? (
                               <>
-                                <span className="price-original">€ {p.price.toFixed(2)}</span>
+                                <span className="price-original">€ {currentPrice.toFixed(2)}</span>
                                 <span className="price-discounted">€ {discountedPrice.toFixed(2)}</span>
                               </>
                             ) : (
-                        <span className="price">€ {p.price.toFixed(2)}</span>
+                              <span className="price">€ {currentPrice.toFixed(2)}</span>
                             )}
                           </div>
-                        <button 
+                          <button 
                             className="btn btn-add" 
                             onClick={(e) => { 
                               e.preventDefault(); 
-                              e.stopPropagation(); 
+                              e.stopPropagation();
+                              const productName = hasBoxFormats && selectedFormat 
+                                ? `${p.name} (${selectedFormat} praline)` 
+                                : p.name;
+                              const productId = hasBoxFormats && selectedFormat 
+                                ? `${p.id}-${selectedFormat}` 
+                                : p.id;
                               addItem({ 
-                                id: p.id, 
-                                nome: p.name, 
-                                prezzo: discountedPrice || p.price, 
+                                id: productId, 
+                                nome: productName, 
+                                prezzo: discountedPrice || currentPrice, 
                                 immagine: p.image_url, 
                                 tipo: p.category, 
                                 pezzi: 1 
                               }); 
                             }}
-                          disabled={p.stock_quantity === 0}
-                        >
+                            disabled={p.stock_quantity === 0}
+                          >
                             {p.stock_quantity > 0 ? 'Aggiungi' : 'Esaurito'}
-                        </button>
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  </article>
-                </Link>
+                    </article>
+                  </div>
                 )
               })}
             </div>
@@ -979,13 +1073,15 @@ export default function ShopPage() {
           box-shadow: 0 4px 20px rgba(0,0,0,.06); 
           display: flex;
           flex-direction: column;
-          transition: all 0.3s ease;
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
           position: relative;
+          border: 2px solid transparent;
         }
         
         .product-card:hover {
-          transform: translateY(-8px);
-          box-shadow: 0 12px 40px rgba(0,0,0,.12);
+          transform: translateY(-10px);
+          box-shadow: 0 20px 50px rgba(0,0,0,.15);
+          border-color: rgba(139, 69, 19, 0.1);
         }
         
         /* Product Badges */
@@ -1031,8 +1127,27 @@ export default function ShopPage() {
         .product-image { 
           position: relative; 
           width: 100%; 
-          height: 280px;
-          background: #f8f9fa;
+          height: 350px;
+          background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 1.5rem;
+          overflow: hidden;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+        
+        .product-image:hover {
+          background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        }
+        
+        .product-image img {
+          transition: transform 0.4s ease;
+        }
+        
+        .product-image:hover img {
+          transform: scale(1.05);
         }
         
         /* Product Content */
@@ -1049,6 +1164,11 @@ export default function ShopPage() {
           color: var(--color-navy);
           line-height: 1.3;
           margin: 0;
+          transition: color 0.3s ease;
+        }
+        
+        .product-name:hover {
+          color: var(--color-brown);
         }
         
         .product-description { 
@@ -1117,22 +1237,109 @@ export default function ShopPage() {
           padding: 0.75rem 1.25rem; 
           font-size: 0.9rem;
           font-weight: 700;
-          background: var(--color-brown);
+          background: linear-gradient(135deg, var(--color-brown) 0%, #6d3d0f 100%);
           color: white;
           border: none;
           border-radius: 12px;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: 0 2px 8px rgba(139, 69, 19, 0.2);
+          position: relative;
+          overflow: hidden;
+        }
+        
+        .btn-add::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+          transition: left 0.5s ease;
+        }
+        
+        .btn-add:hover::before {
+          left: 100%;
         }
         
         .btn-add:hover:not(:disabled) {
-          background: #6d3d0f;
+          background: linear-gradient(135deg, #6d3d0f 0%, var(--color-brown) 100%);
           transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(139, 69, 19, 0.4);
         }
         
         .btn-add:disabled {
           background: #ccc;
           cursor: not-allowed;
+        }
+
+        /* ========== BOX FORMAT SELECTOR ========== */
+        .box-format-selector-shop {
+          margin: 1rem 0;
+          padding: 1rem;
+          background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+          border-radius: 12px;
+          border: 2px solid var(--color-brown);
+          box-shadow: 0 2px 8px rgba(139, 69, 19, 0.1);
+        }
+
+        .format-label {
+          display: block;
+          font-weight: 600;
+          font-size: 0.85rem;
+          color: var(--color-navy);
+          margin-bottom: 0.75rem;
+        }
+
+        .format-buttons {
+          display: flex;
+          gap: 0.5rem;
+          flex-wrap: wrap;
+        }
+
+        .format-btn {
+          flex: 1;
+          min-width: 80px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 0.25rem;
+          padding: 0.75rem 0.5rem;
+          border: 2px solid #e9ecef;
+          border-radius: 10px;
+          background: white;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+
+        .format-btn:hover {
+          border-color: var(--color-brown);
+          transform: translateY(-3px);
+          box-shadow: 0 4px 12px rgba(139, 69, 19, 0.2);
+        }
+
+        .format-btn.active {
+          border-color: var(--color-brown);
+          background: linear-gradient(135deg, var(--color-brown) 0%, #6d3d0f 100%);
+          color: white;
+          box-shadow: 0 4px 15px rgba(139, 69, 19, 0.3);
+        }
+
+        .format-size {
+          font-size: 1.2rem;
+          font-weight: 700;
+        }
+
+        .format-label-text {
+          font-size: 0.7rem;
+          opacity: 0.8;
+        }
+
+        .format-price {
+          font-size: 0.85rem;
+          font-weight: 600;
+          margin-top: 0.25rem;
         }
 
         /* ========== NO RESULTS ========== */

@@ -126,7 +126,7 @@ Il sito è ottimizzato per:
 
 Per domande o personalizzazioni, contatta:
 
-- Email: info@cioccolatinimichele.it
+- Email: info@ondedicacao.com
 - Sviluppatore: [Il tuo contatto]
 
 ## 📄 Licenza

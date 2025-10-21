@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@paypal/react-paypal-js": "^8.2.1",
+    "@sendgrid/mail": "^8.1.6",
     "@stripe/stripe-js": "^2.4.0",
     "@supabase/supabase-js": "^2.54.0",
     "date-fns": "^4.1.0",
@@ -30,6 +31,7 @@
     "next": "14.0.0",
     "react": "^18",
     "react-dom": "^18",
+    "resend": "^6.2.0",
     "stripe": "^14.0.0"
   },
   "devDependencies": {

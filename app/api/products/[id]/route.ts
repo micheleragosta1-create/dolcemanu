@@ -43,7 +43,7 @@ export async function PUT(
 ) {
   try {
     const body = await request.json()
-    const { name, description, price, image_url, category, stock_quantity, ingredients, allergens, nutrition } = body
+    const { name, description, price, image_url, category, stock_quantity, box_formats, collection, chocolate_type, is_new, is_bestseller, discount_percentage } = body
 
     if (!isSupabaseConfigured) {
       const idx = mockProducts.findIndex(p => p.id === params.id)
@@ -71,9 +71,12 @@ export async function PUT(
         image_url,
         category,
         stock_quantity,
-        ingredients: ingredients ?? null,
-        allergens: allergens ?? null,
-        nutrition: nutrition ?? null,
+        box_formats: box_formats ?? null,
+        collection: collection || null,
+        chocolate_type: chocolate_type || null,
+        is_new: is_new ?? false,
+        is_bestseller: is_bestseller ?? false,
+        discount_percentage: discount_percentage || null,
         updated_at: new Date().toISOString(),
       })
       .eq('id', params.id)

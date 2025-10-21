@@ -1,7 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['images.unsplash.com', 'via.placeholder.com'],
+    domains: [
+      'images.unsplash.com', 
+      'via.placeholder.com',
+      'ukvmltjmjhwoazabhicy.supabase.co' // Supabase Storage
+    ],
   },
   eslint: {
     // Salta ESLint durante la build per velocizzare

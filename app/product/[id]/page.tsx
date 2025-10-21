@@ -31,6 +31,7 @@ export default function ProductPage() {
   const [notFound, setNotFound] = useState(false)
   const [qty, setQty] = useState(1)
   const [selectedBoxSize, setSelectedBoxSize] = useState<6 | 9 | 12>(6)
+  const [carouselPosition, setCarouselPosition] = useState(0)
 
   useEffect(() => {
     const id = Array.isArray(params?.id) ? params.id[0] : (params?.id as string)
@@ -72,6 +73,19 @@ export default function ProductPage() {
   // Calcola il prezzo in base alla dimensione del box
   const boxPrices = useMemo(() => {
     if (!product) return { 6: 0, 9: 0, 12: 0 }
+    
+    // Se il prodotto ha formati box personalizzati dal database, usali
+    const productData = product as any
+    if (productData.box_formats && typeof productData.box_formats === 'object') {
+      const formats = productData.box_formats
+      return {
+        6: formats['6'] || 0,
+        9: formats['9'] || 0,
+        12: formats['12'] || 0
+      }
+    }
+    
+    // Altrimenti usa le formule di fallback
     const basePrice = product.price
     return {
       6: basePrice,
@@ -80,7 +94,26 @@ export default function ProductPage() {
     }
   }, [product])
 
+  // Determina quali formati sono disponibili
+  const availableFormats = useMemo(() => {
+    const productData = product as any
+    if (productData?.box_formats && typeof productData.box_formats === 'object') {
+      // Se ci sono formati personalizzati, mostra solo quelli configurati
+      const formats = productData.box_formats
+      return [6, 9, 12].filter(size => formats[String(size)] !== undefined && formats[String(size)] > 0)
+    }
+    // Altrimenti mostra tutti i formati (comportamento predefinito)
+    return [6, 9, 12]
+  }, [product])
+
   const currentPrice = boxPrices[selectedBoxSize]
+
+  // Assicura che il formato selezionato sia disponibile
+  useEffect(() => {
+    if (availableFormats.length > 0 && !availableFormats.includes(selectedBoxSize)) {
+      setSelectedBoxSize(availableFormats[0] as 6 | 9 | 12)
+    }
+  }, [availableFormats, selectedBoxSize])
 
   const addToCart = () => {
     if (!product) return
@@ -100,6 +133,26 @@ export default function ProductPage() {
       window.fbq && window.fbq('track','AddToCart',{content_ids:[`${product.id}-${selectedBoxSize}`], content_name:productName, currency:'EUR', value: currentPrice*qty})
     }
   }
+
+  const nextCarousel = () => {
+    if (!related) return
+    const maxPosition = Math.max(0, related.length - 3) // Mostra 3 prodotti alla volta
+    setCarouselPosition(prev => {
+      const next = prev + 1
+      const newPos = next > maxPosition ? maxPosition : next
+      console.log('Next carousel:', { prev, next, maxPosition, newPos, totalItems: related.length })
+      return newPos
+    })
+  }
+
+  const prevCarousel = () => {
+    setCarouselPosition(prev => Math.max(prev - 1, 0))
+  }
+
+  // Reset carosello quando cambiano i prodotti correlati
+  useEffect(() => {
+    setCarouselPosition(0)
+  }, [related])
 
   return (
     <main>
@@ -177,38 +230,46 @@ export default function ProductPage() {
                   <p className="desc">{product.description}</p>
 
                   {/* Selettore dimensione box */}
-                  <div className="box-size-selector">
-                    <label className="box-size-label">Formato Box:</label>
-                    <div className="box-size-options">
-                      <button
-                        className={`box-size-btn ${selectedBoxSize === 6 ? 'active' : ''}`}
-                        onClick={() => setSelectedBoxSize(6)}
-                      >
-                        <span className="box-size-number">6</span>
-                        <span className="box-size-text">praline</span>
-                        <span className="box-size-price">€ {boxPrices[6].toFixed(2)}</span>
-                      </button>
-                      <button
-                        className={`box-size-btn ${selectedBoxSize === 9 ? 'active' : ''}`}
-                        onClick={() => setSelectedBoxSize(9)}
-                      >
-                        <span className="box-size-number">9</span>
-                        <span className="box-size-text">praline</span>
-                        <span className="box-size-price">€ {boxPrices[9].toFixed(2)}</span>
-                      </button>
-                      <button
-                        className={`box-size-btn ${selectedBoxSize === 12 ? 'active' : ''}`}
-                        onClick={() => setSelectedBoxSize(12)}
-                      >
-                        <span className="box-size-number">12</span>
-                        <span className="box-size-text">praline</span>
-                        <span className="box-size-price">€ {boxPrices[12].toFixed(2)}</span>
-                        {boxPrices[12] < boxPrices[6] * 2 && (
-                          <span className="box-size-badge">Conveniente</span>
+                  {availableFormats.length > 0 && (
+                    <div className="box-size-selector">
+                      <label className="box-size-label">Formato Box:</label>
+                      <div className="box-size-options">
+                        {availableFormats.includes(6) && boxPrices[6] > 0 && (
+                          <button
+                            className={`box-size-btn ${selectedBoxSize === 6 ? 'active' : ''}`}
+                            onClick={() => setSelectedBoxSize(6)}
+                          >
+                            <span className="box-size-number">6</span>
+                            <span className="box-size-text">praline</span>
+                            <span className="box-size-price">€ {boxPrices[6].toFixed(2)}</span>
+                          </button>
                         )}
-                      </button>
+                        {availableFormats.includes(9) && boxPrices[9] > 0 && (
+                          <button
+                            className={`box-size-btn ${selectedBoxSize === 9 ? 'active' : ''}`}
+                            onClick={() => setSelectedBoxSize(9)}
+                          >
+                            <span className="box-size-number">9</span>
+                            <span className="box-size-text">praline</span>
+                            <span className="box-size-price">€ {boxPrices[9].toFixed(2)}</span>
+                          </button>
+                        )}
+                        {availableFormats.includes(12) && boxPrices[12] > 0 && (
+                          <button
+                            className={`box-size-btn ${selectedBoxSize === 12 ? 'active' : ''}`}
+                            onClick={() => setSelectedBoxSize(12)}
+                          >
+                            <span className="box-size-number">12</span>
+                            <span className="box-size-text">praline</span>
+                            <span className="box-size-price">€ {boxPrices[12].toFixed(2)}</span>
+                            {boxPrices[12] < boxPrices[6] * 2 && (
+                              <span className="box-size-badge">Conveniente</span>
+                            )}
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   <div className="buy-row">
                     <input type="number" min={1} value={qty} onChange={e=>setQty(Math.max(1, parseInt(e.target.value||'1',10)))} className="qty" />
@@ -234,16 +295,71 @@ export default function ProductPage() {
               {!loading && related.length > 0 && (
                 <div className="related">
                   <h2 className="poppins">Potrebbero piacerti</h2>
-                  <div className="related-grid">
-                    {related.map(r => (
-                      <a key={r.id} className="related-card" href={`/product/${r.id}`}>
-                        <div className="img" style={{ backgroundImage: `url(${r.image_url})` }} />
-                        <div className="meta">
-                          <span className="title">{r.name}</span>
-                          <span className="r-price">€ {r.price.toFixed(2)}</span>
-                        </div>
-                      </a>
-                    ))}
+                  <div className="choco-carousel">
+                    <div className="carousel-container">
+                      <div 
+                        className="carousel-track"
+                        style={{ 
+                          transform: `translateX(-${carouselPosition * (280 + 24)}px)`,
+                          width: `${related.length * (280 + 24)}px`
+                        }}
+                      >
+                        {related.map((r, index) => (
+                          <div key={r.id} className="choco-card">
+                            <a href={`/product/${r.id}`} className="card-link">
+                              <div className="card-image">
+                                <img src={r.image_url} alt={r.name} />
+                                <div className="card-overlay">
+                                  <span className="view-btn">Visualizza</span>
+                                </div>
+                              </div>
+                              <div className="card-content">
+                                <h3 className="card-title">{r.name}</h3>
+                                <p className="card-price">€ {r.price.toFixed(2)}</p>
+                                <div className="card-rating">
+                                  <span className="stars">★★★★★</span>
+                                  <span className="rating-text">(4.8)</span>
+                                </div>
+                              </div>
+                            </a>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="carousel-controls">
+                      <button 
+                        className="carousel-btn prev-btn" 
+                        onClick={prevCarousel}
+                        disabled={carouselPosition === 0}
+                        aria-label="Prodotti precedenti"
+                      >
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                          <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </button>
+                      
+                      <div className="carousel-indicators">
+                        {Array.from({ length: Math.max(1, related.length - 2) }, (_, i) => (
+                          <button
+                            key={i}
+                            className={`indicator ${i === carouselPosition ? 'active' : ''}`}
+                            onClick={() => setCarouselPosition(i)}
+                            aria-label={`Vai al gruppo ${i + 1}`}
+                          />
+                        ))}
+                      </div>
+                      
+                      <button 
+                        className="carousel-btn next-btn" 
+                        onClick={nextCarousel}
+                        disabled={carouselPosition >= Math.max(0, related.length - 3)}
+                        aria-label="Prodotti successivi"
+                      >
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                          <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -257,7 +373,7 @@ export default function ProductPage() {
         .product-section {
           position: relative;
           z-index: 10;
-          padding: 7rem 2rem 8rem;
+          padding: 15rem 2rem 8rem;
           min-height: calc(100vh - 200px);
         }
         .product-container { max-width: 1200px; margin: 0 auto; }
@@ -356,15 +472,214 @@ export default function ProductPage() {
         .info-block { background: #fff; border: 1px solid rgba(0,0,0,.06); border-radius: 12px; padding: 1rem; }
         .info-block h3 { margin-bottom: .5rem; font-size: 1rem; }
         .nutri { list-style: none; padding: 0; margin: 0; display: grid; gap: .25rem; color: #555; }
-        .related { margin-top: 3rem; }
-        .related-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
-        .related-card { background: #fff; border: 1px solid rgba(0,0,0,.06); border-radius: 12px; overflow: hidden; text-decoration: none; color: inherit; transition: transform .2s ease; }
-        .related-card:hover { transform: translateY(-3px); }
-        .related-card .img { width: 100%; height: 160px; background-size: cover; background-position: center; }
-        .related-card .meta { display: flex; justify-content: space-between; padding: .75rem; }
+        .related { 
+          margin-top: 4rem; 
+          padding-top: 2rem;
+          border-top: 1px solid #e9ecef;
+        }
+
+        .related h2 {
+          text-align: center;
+          margin-bottom: 2.5rem;
+          color: var(--color-navy);
+          font-size: 2rem;
+          font-weight: 600;
+        }
+
+        /* Choco Carousel */
+        .choco-carousel {
+          position: relative;
+          margin: 0 auto;
+          max-width: 100%;
+        }
+
+        .carousel-container {
+          overflow: hidden;
+          border-radius: 16px;
+        }
+
+        .carousel-track {
+          display: flex;
+          gap: 1.5rem;
+          transition: transform 0.5s ease;
+          padding: 1rem 0;
+        }
+
+        .choco-card {
+          flex: 0 0 280px;
+          background: white;
+          border-radius: 16px;
+          overflow: hidden;
+          box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+          transition: all 0.3s ease;
+          position: relative;
+        }
+
+        .choco-card:hover {
+          transform: translateY(-8px);
+          box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+
+        .card-link {
+          display: block;
+          text-decoration: none;
+          color: inherit;
+        }
+
+        .card-image {
+          position: relative;
+          height: 220px;
+          overflow: hidden;
+        }
+
+        .card-image img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          transition: transform 0.3s ease;
+        }
+
+        .choco-card:hover .card-image img {
+          transform: scale(1.05);
+        }
+
+        .card-overlay {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(139, 69, 19, 0.8);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          opacity: 0;
+          transition: opacity 0.3s ease;
+        }
+
+        .choco-card:hover .card-overlay {
+          opacity: 1;
+        }
+
+        .view-btn {
+          background: white;
+          color: var(--color-brown);
+          padding: 0.75rem 1.5rem;
+          border-radius: 25px;
+          font-weight: 600;
+          font-size: 0.9rem;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .card-content {
+          padding: 1.5rem;
+        }
+
+        .card-title {
+          font-size: 1.1rem;
+          font-weight: 600;
+          color: var(--color-navy);
+          margin: 0 0 0.75rem 0;
+          line-height: 1.3;
+        }
+
+        .card-price {
+          font-size: 1.25rem;
+          font-weight: 700;
+          color: var(--color-brown);
+          margin: 0 0 0.75rem 0;
+        }
+
+        .card-rating {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+
+        .stars {
+          color: #ffc107;
+          font-size: 1rem;
+        }
+
+        .rating-text {
+          font-size: 0.85rem;
+          color: #666;
+          font-weight: 500;
+        }
+
+        /* Carousel Controls */
+        .carousel-controls {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 1.5rem;
+          margin-top: 2rem;
+        }
+
+        .carousel-btn {
+          width: 48px;
+          height: 48px;
+          border: 2px solid var(--color-brown);
+          background: white;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          color: var(--color-brown);
+        }
+
+        .carousel-btn:hover {
+          background: var(--color-brown);
+          color: white;
+          transform: scale(1.1);
+        }
+
+        .carousel-btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+          transform: none;
+        }
+
+        .carousel-indicators {
+          display: flex;
+          gap: 0.5rem;
+          align-items: center;
+        }
+
+        .indicator {
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          border: 2px solid #ddd;
+          background: white;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+
+        .indicator.active {
+          background: var(--color-brown);
+          border-color: var(--color-brown);
+          transform: scale(1.2);
+        }
+
+        .indicator:hover {
+          border-color: var(--color-brown);
+          transform: scale(1.1);
+        }
         
         @media (max-width: 992px) { 
           .product-grid { grid-template-columns: 1fr; }
+          
+          .choco-card {
+            flex: 0 0 240px;
+          }
+          
+          .card-image {
+            height: 180px;
+          }
         }
         
         @media (max-width: 600px) {
@@ -384,6 +699,31 @@ export default function ProductPage() {
           
           .box-size-text {
             margin: 0 auto 0 0.5rem;
+          }
+
+          .choco-card {
+            flex: 0 0 200px;
+          }
+          
+          .card-image {
+            height: 160px;
+          }
+          
+          .card-content {
+            padding: 1rem;
+          }
+          
+          .card-title {
+            font-size: 1rem;
+          }
+          
+          .card-price {
+            font-size: 1.1rem;
+          }
+          
+          .carousel-btn {
+            width: 40px;
+            height: 40px;
           }
         }
       `}</style>

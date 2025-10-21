@@ -31,3 +31,4 @@ CREATE INDEX IF NOT EXISTS idx_products_discount ON products(discount_percentage
 
 -- Messaggio di conferma
 SELECT 'Colonne prodotti aggiornate con successo!' as status;
+
