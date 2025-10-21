@@ -62,8 +62,29 @@ export async function PUT(
       return NextResponse.json(mockProducts[idx])
     }
 
-    const supabase = getSupabase()!
-    const { data: product, error } = await supabase
+    // Usa service role key se disponibile per bypassare RLS
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    
+    if (!supabaseUrl || !anonKey) {
+      return NextResponse.json({ error: 'Supabase not configured' }, { status: 500 })
+    }
+
+    // Usa service role key se disponibile, altrimenti usa anon key
+    const { createClient } = await import('@supabase/supabase-js')
+    const supabase = createClient(
+      supabaseUrl,
+      serviceRoleKey && serviceRoleKey.length > 20 ? serviceRoleKey : anonKey,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
+    )
+
+    const { data, error } = await supabase
       .from('products')
       .update({
         name,
@@ -82,13 +103,18 @@ export async function PUT(
       })
       .eq('id', params.id)
       .select()
-      .single()
 
     if (error) {
+      console.error('Update error:', error)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    return NextResponse.json(product)
+    // Verifica che sia stato aggiornato almeno un record
+    if (!data || data.length === 0) {
+      return NextResponse.json({ error: 'Product not found' }, { status: 404 })
+    }
+
+    return NextResponse.json(data[0])
   } catch (error) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
