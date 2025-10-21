@@ -1,10 +1,21 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: [
-      'images.unsplash.com', 
-      'via.placeholder.com',
-      'ukvmltjmjhwoazabhicy.supabase.co' // Supabase Storage
+    // Usa remotePatterns invece di domains per supportare tutti i progetti Supabase
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'via.placeholder.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.supabase.co', // Wildcard per tutti i progetti Supabase
+        pathname: '/storage/v1/object/public/**',
+      },
     ],
   },
   eslint: {
