@@ -275,16 +275,31 @@ export default function AdminProducts() {
   }
 
   const handleDelete = async (productId: string) => {
-    if (confirm('Sei sicuro di voler eliminare questo prodotto?')) {
+    if (confirm('Sei sicuro di voler eliminare questo prodotto? Questa azione non può essere annullata.')) {
       try {
-        await removeProduct(productId)
-        fetchProducts()
+        console.log('🗑️ Eliminazione prodotto:', productId)
+        const result = await removeProduct(productId)
+        
+        if (result.error) {
+          console.error('❌ Errore eliminazione:', result.error)
+          alert(`Errore nell'eliminazione: ${result.error}`)
+          return
+        }
+        
+        console.log('✅ Prodotto eliminato con successo')
+        
+        // Chiudi il pannello se è aperto il prodotto eliminato
         if (selectedProduct?.id === productId) {
           setSelectedProduct(null)
         }
+        
+        // Ricarica la lista prodotti dal database
+        await fetchProducts()
+        
         alert('Prodotto eliminato con successo!')
       } catch (error) {
-        alert(`Errore: ${error}`)
+        console.error('❌ Errore catch eliminazione:', error)
+        alert(`Errore imprevisto: ${error}`)
       }
     }
   }

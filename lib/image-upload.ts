@@ -142,12 +142,16 @@ export async function uploadProductImage(
     
     // Ottimizza l'immagine se richiesto
     let fileToUpload: Blob = file
+    let finalContentType = file.type
+    
     if (optimize) {
       try {
         fileToUpload = await optimizeImage(file)
+        finalContentType = 'image/jpeg' // L'ottimizzazione converte sempre a JPEG
       } catch (optimizeError) {
         console.warn('Impossibile ottimizzare immagine, uso file originale:', optimizeError)
         fileToUpload = file
+        finalContentType = file.type // Mantieni tipo originale se non ottimizzato
       }
     }
     
@@ -157,12 +161,14 @@ export async function uploadProductImage(
     // Ottieni client Supabase
     const supabase = getSupabaseClient()
     
+    console.log('🔄 Upload immagine:', { fileName, contentType: finalContentType, size: fileToUpload.size })
+    
     // Carica su Supabase Storage
     const { data, error } = await supabase
       .storage
       .from(PRODUCTS_BUCKET)
       .upload(fileName, fileToUpload, {
-        contentType: 'image/jpeg',
+        contentType: finalContentType, // Usa il content type corretto
         cacheControl: '3600',
         upsert: false
       })
