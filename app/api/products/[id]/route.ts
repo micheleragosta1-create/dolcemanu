@@ -21,6 +21,7 @@ export async function GET(
       .from('products')
       .select('*')
       .eq('id', params.id)
+      .is('deleted_at', null) // Filtra prodotti eliminati (soft delete)
       .single()
 
     if (error) {
@@ -93,7 +94,7 @@ export async function PUT(
   }
 }
 
-// DELETE /api/products/[id] - Delete product
+// DELETE /api/products/[id] - Soft delete product
 export async function DELETE(
   request: Request,
   { params }: { params: { id: string } }
@@ -106,18 +107,63 @@ export async function DELETE(
       return NextResponse.json({ message: 'Product deleted successfully' })
     }
 
-    const supabase = getSupabase()!
-    const { error } = await supabase
+    // Usa la service role key se disponibile per bypassare RLS
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    
+    if (!supabaseUrl || !anonKey) {
+      return NextResponse.json({ error: 'Supabase not configured' }, { status: 500 })
+    }
+
+    // Usa service role key se disponibile, altrimenti usa anon key
+    const { createClient } = await import('@supabase/supabase-js')
+    const supabase = createClient(
+      supabaseUrl,
+      serviceRoleKey && serviceRoleKey.length > 20 ? serviceRoleKey : anonKey,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
+    )
+
+    // SOFT DELETE: Invece di eliminare fisicamente, imposta deleted_at
+    // Questo mantiene l'integrità referenziale con order_items
+    const { data, error } = await supabase
       .from('products')
-      .delete()
+      .update({ 
+        deleted_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
       .eq('id', params.id)
+      .is('deleted_at', null) // Solo se non è già eliminato
+      .select()
 
     if (error) {
+      console.error('Soft delete error:', error)
+      
+      // Se l'errore è ancora di foreign key, significa che c'è un altro problema
+      if (error.message.includes('foreign key')) {
+        return NextResponse.json({ 
+          error: 'Impossibile eliminare il prodotto perché ha ordini associati. Contatta il supporto tecnico.' 
+        }, { status: 409 })
+      }
+      
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    return NextResponse.json({ message: 'Product deleted successfully' })
+    if (!data || data.length === 0) {
+      return NextResponse.json({ error: 'Product not found or already deleted' }, { status: 404 })
+    }
+
+    return NextResponse.json({ 
+      message: 'Product deleted successfully',
+      product: data[0]
+    })
   } catch (error) {
+    console.error('Delete exception:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

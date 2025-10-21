@@ -9,6 +9,20 @@ export function useProducts() {
 
   useEffect(() => {
     fetchProducts()
+
+    // Ricarica i prodotti quando la pagina diventa visibile
+    // Questo assicura che le modifiche dalla dashboard vengano riflesse
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchProducts()
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
   }, [])
 
   const fetchProducts = async () => {
@@ -28,6 +42,7 @@ export function useProducts() {
       const { data, error: supabaseError } = await supabase
         .from('products')
         .select('*')
+        .is('deleted_at', null) // Filtra prodotti eliminati (soft delete)
         .order('created_at', { ascending: false })
       
       if (supabaseError) throw supabaseError
@@ -62,6 +77,7 @@ export function useProducts() {
         .from('products')
         .select('*')
         .eq('id', id)
+        .is('deleted_at', null) // Filtra prodotti eliminati (soft delete)
         .single()
       
       if (supabaseError) throw supabaseError
@@ -93,6 +109,7 @@ export function useProducts() {
         .from('products')
         .select('*')
         .eq('category', category)
+        .is('deleted_at', null) // Filtra prodotti eliminati (soft delete)
         .order('created_at', { ascending: false })
       
       if (supabaseError) throw supabaseError

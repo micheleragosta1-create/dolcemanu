@@ -85,6 +85,7 @@ export interface Product {
   stock_quantity: number
   created_at: string
   updated_at: string
+  deleted_at?: string | null // Soft delete: se NOT NULL, il prodotto è eliminato
   // Campi opzionali aggiuntivi
   ingredients?: string | null
   allergens?: string | null
@@ -168,6 +169,7 @@ export async function getProducts(): Promise<Product[]> {
     const { data, error } = await supabase
       .from('products')
       .select('*')
+      .is('deleted_at', null) // Filtra prodotti eliminati (soft delete)
       .order('created_at', { ascending: false })
     
     if (error) throw error
@@ -185,6 +187,7 @@ export async function getProductById(id: string): Promise<Product | null> {
       .from('products')
       .select('*')
       .eq('id', id)
+      .is('deleted_at', null) // Filtra prodotti eliminati (soft delete)
       .single()
     
     if (error) throw error
@@ -202,6 +205,7 @@ export async function getProductsByCategory(category: string): Promise<Product[]
       .from('products')
       .select('*')
       .eq('category', category)
+      .is('deleted_at', null) // Filtra prodotti eliminati (soft delete)
       .order('created_at', { ascending: false })
     
     if (error) throw error
