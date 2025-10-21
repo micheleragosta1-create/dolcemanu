@@ -377,22 +377,8 @@ export async function updateUserRole(userId: string, role: UserRole['role']): Pr
 }
 
 export async function getUserRole(userId: string): Promise<{ data: any, error: any }> {
-  try {
-    const supabase = getSupabaseClient()
-    const { data, error } = await supabase.rpc('get_user_role', { user_uuid: userId })
-    
-    if (error) {
-      console.error('Errore getUserRole:', error)
-      return { data: 'user', error }
-    }
-    
-    // La funzione ora ritorna JSONB: { role: 'admin' | 'user' | 'super_admin' }
-    const role = data?.role || 'user'
-    return { data: role, error: null }
-  } catch (error: any) {
-    console.error('Eccezione getUserRole:', error)
-    return { data: 'user', error }
-  }
+  const supabase = getSupabaseClient()
+  return await supabase.rpc('get_user_role', { user_uuid: userId })
 }
 
 // Profiles helpers
