@@ -1,7 +1,7 @@
 "use client"
 export const dynamic = 'force-dynamic'
 
-import { useMemo, useState } from "react"
+import { useMemo, useState, useEffect } from "react"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import { useCartWithToast } from "@/components/useCartWithToast"
@@ -36,6 +36,17 @@ export default function ShopPage() {
   const [showOnlyNew, setShowOnlyNew] = useState(false)
   const [showOnlyBestseller, setShowOnlyBestseller] = useState(false)
   const [showOnlyDiscount, setShowOnlyDiscount] = useState(false)
+
+  // Leggi il parametro collection dall'URL al caricamento della pagina
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      const collectionParam = params.get('collection')
+      if (collectionParam) {
+        setCollection(collectionParam)
+      }
+    }
+  }, [])
 
   // Get unique values for filters
   const chocolateTypes = useMemo(() => {
@@ -1456,18 +1467,157 @@ export default function ShopPage() {
           }
           
           .grid {
-            grid-template-columns: 1fr;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
           }
           
           .product-card {
-            max-width: 500px;
-            margin: 0 auto;
+            font-size: 0.9rem;
+          }
+
+          .product-image {
+            height: 200px;
+            padding: 1rem;
+          }
+
+          .product-content {
+            padding: 1rem;
+            gap: 0.5rem;
+          }
+
+          .product-name {
+            font-size: 1rem;
+          }
+
+          .product-description {
+            font-size: 0.85rem;
+            -webkit-line-clamp: 2;
+          }
+
+          .btn-add {
+            padding: 0.625rem 0.875rem;
+            font-size: 0.85rem;
+          }
+
+          .price {
+            font-size: 1.1rem;
+          }
+
+          .price-discounted {
+            font-size: 1.1rem;
+          }
+
+          .box-format-selector-shop {
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+          }
+
+          .format-btn {
+            min-width: 60px;
+            padding: 0.5rem 0.25rem;
+            font-size: 0.8rem;
+          }
+
+          .format-size {
+            font-size: 1rem;
+          }
+
+          .format-price {
+            font-size: 0.75rem;
           }
         }
         
         @media (max-width: 480px) {
           .shop-section {
-            padding: 8rem 1rem 2rem;
+            padding: 8rem 0.75rem 2rem;
+          }
+
+          .grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+          }
+
+          .product-card {
+            border-radius: 12px;
+          }
+
+          .product-image {
+            height: 160px;
+            padding: 0.75rem;
+          }
+
+          .product-content {
+            padding: 0.75rem;
+            gap: 0.4rem;
+          }
+
+          .product-name {
+            font-size: 0.9rem;
+            line-height: 1.2;
+          }
+
+          .product-description {
+            font-size: 0.75rem;
+            -webkit-line-clamp: 2;
+          }
+
+          .product-meta {
+            gap: 0.35rem;
+          }
+
+          .meta-badge {
+            font-size: 0.65rem;
+            padding: 0.2rem 0.5rem;
+          }
+
+          .badge {
+            padding: 0.3rem 0.6rem;
+            font-size: 0.65rem;
+          }
+
+          .btn-add {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.8rem;
+          }
+
+          .price {
+            font-size: 1rem;
+          }
+
+          .price-original {
+            font-size: 0.8rem;
+          }
+
+          .price-discounted {
+            font-size: 1rem;
+          }
+
+          .box-format-selector-shop {
+            padding: 0.5rem;
+            margin: 0.4rem 0;
+          }
+
+          .format-label {
+            font-size: 0.75rem;
+            margin-bottom: 0.5rem;
+          }
+
+          .format-btn {
+            min-width: 50px;
+            padding: 0.4rem 0.2rem;
+            gap: 0.15rem;
+          }
+
+          .format-size {
+            font-size: 0.9rem;
+          }
+
+          .format-label-text {
+            font-size: 0.65rem;
+          }
+
+          .format-price {
+            font-size: 0.7rem;
           }
           
           .pagination {
