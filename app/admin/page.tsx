@@ -261,24 +261,104 @@ export default function AdminPage() {
           font-size: 0.95rem;
         }
         
+        @media (max-width: 992px) {
+          .admin-section {
+            padding: 11rem 1.5rem 3rem;
+          }
+          
+          .admin-header {
+            padding: 1.5rem;
+          }
+          
+          .admin-icon {
+            width: 2rem;
+            height: 2rem;
+          }
+          
+          .admin-title {
+            font-size: 1.5rem;
+          }
+        }
+        
         @media (max-width: 768px) {
           .admin-section {
-            padding: 6rem 1rem 2rem;
+            padding: 10rem 1rem 2rem;
           }
           
           .admin-header {
             flex-direction: column;
-            gap: 1rem;
+            gap: 1.25rem;
+            text-align: center;
+            padding: 1.25rem;
+          }
+          
+          .admin-title-section {
+            flex-direction: column;
+            text-align: center;
+          }
+          
+          .admin-title {
+            font-size: 1.4rem;
+          }
+          
+          .admin-subtitle {
+            font-size: 0.9rem;
+          }
+          
+          .admin-user-info {
             text-align: center;
           }
           
           .admin-tabs {
-            flex-wrap: wrap;
+            flex-direction: column;
+            gap: 0.5rem;
+            padding: 0.75rem;
           }
           
           .admin-tab {
-            flex: 1;
-            min-width: 120px;
+            width: 100%;
+            justify-content: center;
+            padding: 1rem;
+            font-size: 0.95rem;
+          }
+        }
+        
+        @media (max-width: 480px) {
+          .admin-section {
+            padding: 9rem 0.75rem 1.5rem;
+          }
+          
+          .admin-header {
+            padding: 1rem;
+            margin-bottom: 1.25rem;
+          }
+          
+          .admin-icon {
+            width: 1.75rem;
+            height: 1.75rem;
+          }
+          
+          .admin-title {
+            font-size: 1.25rem;
+          }
+          
+          .admin-subtitle {
+            font-size: 0.85rem;
+          }
+          
+          .admin-tabs {
+            padding: 0.5rem;
+            margin-bottom: 1.25rem;
+          }
+          
+          .admin-tab {
+            padding: 0.875rem;
+            font-size: 0.9rem;
+          }
+          
+          .admin-tab svg {
+            width: 16px;
+            height: 16px;
           }
         }
       `}</style>
