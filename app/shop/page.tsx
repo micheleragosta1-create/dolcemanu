@@ -12,7 +12,7 @@ import Image from 'next/image'
 import { useRouter } from "next/navigation"
 import { useProducts } from "@/hooks/useSupabase"
 import type { Product } from "@/lib/supabase"
-import { Tag, Percent, Sparkles, TrendingUp, X } from 'lucide-react'
+import { Tag, Percent, Sparkles, TrendingUp, X, ArrowLeft } from 'lucide-react'
 
 type PriceRange = 'all' | 'under5' | '5to10' | '10to20' | 'over20'
 
@@ -430,6 +430,16 @@ export default function ShopPage() {
 
           {/* Product List with Filters */}
           <section className="shop-list-full">
+            {/* Back Button */}
+            <button 
+              className="back-button"
+              onClick={() => router.push('/')}
+              aria-label="Torna alla home"
+            >
+              <ArrowLeft size={20} />
+              <span>Torna alla home</span>
+            </button>
+
             {/* Header with Title */}
             <div className="page-header">
               <h1 className="poppins">I Nostri Prodotti</h1>
@@ -746,6 +756,35 @@ export default function ShopPage() {
           display: flex;
           flex-direction: column;
           gap: 2rem;
+        }
+
+        /* ========== BACK BUTTON ========== */
+        .back-button {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.75rem 1.25rem;
+          background: white;
+          border: 2px solid #e9ecef;
+          border-radius: 12px;
+          color: var(--color-navy);
+          font-size: 0.95rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          margin-bottom: 1rem;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .back-button:hover {
+          border-color: var(--color-brown);
+          color: var(--color-brown);
+          transform: translateX(-4px);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .back-button:active {
+          transform: translateX(-2px);
         }
         
         /* ========== PAGE HEADER ========== */
@@ -1462,6 +1501,11 @@ export default function ShopPage() {
         }
         
         @media (max-width: 768px) {
+          .back-button {
+            font-size: 0.9rem;
+            padding: 0.625rem 1rem;
+          }
+
           .page-header h1 {
             font-size: 1.8rem;
           }

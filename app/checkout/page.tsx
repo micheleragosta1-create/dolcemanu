@@ -291,7 +291,7 @@ export default function CheckoutPage() {
       <Footer />
 
       <style jsx global>{`
-        .checkout-section { position: relative; z-index: 10; padding: 15rem 2rem 3rem; }
+        .checkout-section { position: relative; z-index: 10; padding: 13rem 2rem 3rem; }
         .checkout-container { max-width: 1000px; width: min(1000px, 100%); margin-inline: auto; }
         
         /* Auth Required Box */
@@ -483,13 +483,31 @@ export default function CheckoutPage() {
         .ship-field input { padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px; }
         @media (max-width: 600px) { .ship-grid { grid-template-columns: 1fr; } }
 
-        @media (max-width: 992px) { .checkout-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 992px) { 
+          .checkout-grid { grid-template-columns: 1fr; }
+          .summary, .payments { margin-bottom: 1rem; }
+        }
         @media (max-width: 768px) { 
-          .checkout-section { padding: 8rem 1rem 2rem; }
+          .checkout-section { padding: 10rem 1rem 2rem; }
+          .checkout-container h1 { font-size: 1.8rem; margin-bottom: 1.5rem; }
           .auth-required { padding: 2rem 1.5rem; }
           .auth-required h2 { font-size: 1.5rem; }
           .auth-actions { flex-direction: column; }
           .auth-actions .btn { width: 100%; }
+          .stripe-btn { padding: 14px 20px; font-size: 15px; }
+          .ship-grid { grid-template-columns: 1fr !important; }
+        }
+        @media (max-width: 480px) { 
+          .checkout-section { padding: 9rem 0.75rem 1.5rem; }
+          .checkout-container h1 { font-size: 1.6rem; }
+          .auth-required { padding: 1.5rem 1rem; }
+          .auth-icon { font-size: 3rem; }
+          .auth-required h2 { font-size: 1.3rem; }
+          .auth-benefits { padding: 1rem; }
+          .auth-actions .btn { padding: 0.75rem 1.5rem; font-size: 0.95rem; }
+          .summary, .payments { padding: 0.875rem; }
+          .stripe-btn { padding: 12px 18px; font-size: 14px; gap: 8px; }
+          .stripe-icon { width: 40px; height: 16px; }
         }
       `}</style>
     </main>

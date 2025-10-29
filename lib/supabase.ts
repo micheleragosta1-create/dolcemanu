@@ -109,6 +109,8 @@ export interface Product {
   box_formats?: {
     [key: string]: number // es. { "6": 18.90, "9": 26.90, "12": 34.90 }
   } | null
+  // Immagini multiple - la prima è quella principale mostrata nello shop
+  images?: string[] | null // es. ["url1.jpg", "url2.jpg", "url3.jpg"]
 }
 
 export interface Order {

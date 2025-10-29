@@ -26,17 +26,27 @@ type CartContextValue = {
 const CartContext = createContext<CartContextValue | undefined>(undefined)
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>(() => {
-    if (typeof window === 'undefined') return []
-    try {
-      const raw = localStorage.getItem('cart:v1')
-      if (!raw) return []
-      const parsed = JSON.parse(raw)
-      return Array.isArray(parsed) ? parsed : []
-    } catch {
-      return []
+  // Inizializza sempre con array vuoto per evitare hydration mismatch
+  const [items, setItems] = useState<CartItem[]>([])
+  const [isHydrated, setIsHydrated] = useState(false)
+
+  // Carica dal localStorage solo dopo il primo render (client-side)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const raw = localStorage.getItem('cart:v1')
+        if (raw) {
+          const parsed = JSON.parse(raw)
+          if (Array.isArray(parsed)) {
+            setItems(parsed)
+          }
+        }
+      } catch {
+        // Ignora errori di parsing
+      }
+      setIsHydrated(true)
     }
-  })
+  }, [])
 
   useEffect(() => {
     // sincronizza se cambia storage (multi-tab)
@@ -53,12 +63,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    // Salva nel localStorage solo dopo l'hydration iniziale
+    if (typeof window !== 'undefined' && isHydrated) {
       try {
         localStorage.setItem("cart:v1", JSON.stringify(items))
       } catch {}
     }
-  }, [items])
+  }, [items, isHydrated])
 
   const addItem: CartContextValue["addItem"] = (item, qty = 1) => {
     setItems((prev) => {

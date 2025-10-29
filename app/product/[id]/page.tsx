@@ -9,7 +9,7 @@ import { useEffect, useMemo, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { useCartWithToast } from "@/components/useCartWithToast"
 import { ProductPageSkeleton } from "@/components/Skeleton"
-import Breadcrumbs from "@/components/Breadcrumbs"
+import { ArrowLeft } from "lucide-react"
 import ProductGallery from "@/components/ProductGallery"
 import ProductReviews from "@/components/ProductReviews"
 
@@ -185,23 +185,26 @@ export default function ProductPage() {
             <ProductPageSkeleton />
           ) : notFound || !product ? (
             <>
-              <Breadcrumbs 
-                items={[
-                  { label: "Shop", href: "/shop" },
-                  { label: "Prodotto non trovato", current: true }
-                ]} 
-              />
+              <button 
+                className="back-button-product"
+                onClick={() => router.push('/shop')}
+                aria-label="Torna allo shop"
+              >
+                <ArrowLeft size={20} />
+                <span>Torna allo shop</span>
+              </button>
               <div className="loading">Prodotto non trovato. <a href="/shop" className="link">Torna allo shop</a></div>
             </>
           ) : (
             <>
-              <Breadcrumbs 
-                items={[
-                  { label: "Shop", href: "/shop" },
-                  { label: product.category || "Prodotti", href: `/shop?categoria=${product.category || 'tutti'}` },
-                  { label: product.name, current: true }
-                ]} 
-              />
+              <button 
+                className="back-button-product"
+                onClick={() => router.push('/shop')}
+                aria-label="Torna allo shop"
+              >
+                <ArrowLeft size={20} />
+                <span>Torna allo shop</span>
+              </button>
               {/* Breadcrumb JSON-LD */}
               <script
                 type="application/ld+json"
@@ -220,7 +223,11 @@ export default function ProductPage() {
               />
               <div className="product-grid">
                 <ProductGallery 
-                  images={[product.image_url]} 
+                  images={
+                    (product as any).images && Array.isArray((product as any).images) && (product as any).images.length > 0
+                      ? (product as any).images
+                      : [product.image_url]
+                  }
                   productName={product.name}
                   className="product-gallery"
                 />
@@ -377,6 +384,36 @@ export default function ProductPage() {
           min-height: calc(100vh - 200px);
         }
         .product-container { max-width: 1200px; margin: 0 auto; }
+        
+        /* Back Button */
+        .back-button-product {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.75rem 1.25rem;
+          background: white;
+          border: 2px solid #e9ecef;
+          border-radius: 12px;
+          color: var(--color-navy);
+          font-size: 0.95rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          margin-bottom: 2rem;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .back-button-product:hover {
+          border-color: var(--color-brown);
+          color: var(--color-brown);
+          transform: translateX(-4px);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .back-button-product:active {
+          transform: translateX(-2px);
+        }
+
         .product-grid { display: grid; grid-template-columns: 2fr 3fr; gap: 2rem; }
         .product-gallery { width: 100%; }
         .details { display: grid; gap: 1rem; align-content: start; }
@@ -671,6 +708,11 @@ export default function ProductPage() {
         }
         
         @media (max-width: 992px) { 
+          .back-button-product {
+            font-size: 0.9rem;
+            padding: 0.625rem 1rem;
+          }
+
           .product-grid { grid-template-columns: 1fr; }
           
           .choco-card {
