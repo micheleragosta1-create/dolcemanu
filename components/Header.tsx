@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { ShoppingCart, Heart, User, Menu, X } from 'lucide-react'
+import { ShoppingCart, Heart, User, Menu, X, ChevronDown } from 'lucide-react'
 import { useAuth } from '@/components/AuthContext'
 import { useAdmin } from '@/hooks/useAdmin'
 import { useCart } from './CartContext'
@@ -14,11 +14,24 @@ export default function Header() {
   const [wishlistItems, setWishlistItems] = useState(2)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [cartPopupVisible, setCartPopupVisible] = useState(false)
+  const [shopDropdownOpen, setShopDropdownOpen] = useState(false)
+  const [mobileCollectionsOpen, setMobileCollectionsOpen] = useState(false)
   const { totalQty } = useCart()
   const [mounted, setMounted] = useState(false)
   const { user, signOut } = useAuth()
   const { isAdmin } = useAdmin()
   const router = useRouter()
+  
+  // Collezioni disponibili
+  const collections = [
+    'Costiera Amalfitana',
+    'Tradizione Napoletana',
+    'Sapori di Sicilia',
+    'Dolci Mediterranei',
+    'Limited Edition',
+    'Stagionale',
+    'Praline dal Mondo'
+  ]
   const handleLogout = async (e?: React.MouseEvent) => {
     e?.preventDefault()
     try {
@@ -40,6 +53,8 @@ export default function Header() {
       document.body.classList.add('no-scroll')
     } else {
       document.body.classList.remove('no-scroll')
+      // Reset collections state when closing menu
+      setMobileCollectionsOpen(false)
     }
     return () => document.body.classList.remove('no-scroll')
   }, [mobileMenuOpen, mounted])
@@ -142,7 +157,30 @@ export default function Header() {
       {/* Nav secondaria stile Omega */}
       <nav className="nav-secondary" aria-label="Principale">
         <ul className="nav-menu">
-          <li><a href="/shop">Shop</a></li>
+          <li 
+            className="nav-item-with-dropdown"
+            onMouseEnter={() => setShopDropdownOpen(true)}
+            onMouseLeave={() => setShopDropdownOpen(false)}
+          >
+            <a href="/shop" className="nav-link-with-icon">
+              Shop
+              <ChevronDown size={14} className="nav-chevron" />
+            </a>
+            {shopDropdownOpen && (
+              <div className="nav-dropdown">
+                <a href="/shop" className="nav-dropdown-item">Tutti i Prodotti</a>
+                {collections.map((collection) => (
+                  <a 
+                    key={collection}
+                    href={`/shop?collection=${encodeURIComponent(collection)}`}
+                    className="nav-dropdown-item"
+                  >
+                    {collection}
+                  </a>
+                ))}
+              </div>
+            )}
+          </li>
           <li><a href="/#storia">Storia</a></li>
           <li><a href="/#contatti">Contatti</a></li>
         </ul>
@@ -152,7 +190,30 @@ export default function Header() {
       ? createPortal(
           <div className="mobile-menu-overlay" onClick={() => setMobileMenuOpen(false)}>
             <div className="mobile-menu" onClick={(e) => e.stopPropagation()}>
-              <a href="/shop" onClick={() => setMobileMenuOpen(false)}>Shop</a>
+              <div className="mobile-menu-item-expandable">
+                <button 
+                  className="mobile-menu-toggle"
+                  onClick={() => setMobileCollectionsOpen(!mobileCollectionsOpen)}
+                >
+                  <span>Shop</span>
+                  <ChevronDown 
+                    size={18} 
+                    className={`mobile-chevron ${mobileCollectionsOpen ? 'open' : ''}`}
+                  />
+                </button>
+                <div className={`mobile-menu-submenu ${mobileCollectionsOpen ? 'open' : ''}`}>
+                  <a href="/shop" onClick={() => setMobileMenuOpen(false)}>Tutti i Prodotti</a>
+                  {collections.map((collection) => (
+                    <a 
+                      key={collection}
+                      href={`/shop?collection=${encodeURIComponent(collection)}`}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {collection}
+                    </a>
+                  ))}
+                </div>
+              </div>
               <a href="/#storia" onClick={() => setMobileMenuOpen(false)}>Storia</a>
               <a href="/#contatti" onClick={() => setMobileMenuOpen(false)}>Contatti</a>
               <a href="/auth" onClick={() => setMobileMenuOpen(false)}>Accedi</a>
