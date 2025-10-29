@@ -36,6 +36,8 @@ export default function AdminProducts() {
   const [pageSize, setPageSize] = useState<number>(10)
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string>('')
+  const [imageFiles, setImageFiles] = useState<File[]>([])
+  const [imagePreviews, setImagePreviews] = useState<string[]>([])
   const [uploadingImage, setUploadingImage] = useState(false)
   const [boxFormats, setBoxFormats] = useState<{[key: string]: { enabled: boolean; price: string }}>({
     '6': { enabled: false, price: '' },
@@ -120,6 +122,8 @@ export default function AdminProducts() {
     setEditingProduct(null)
     setImageFile(null)
     setImagePreview('')
+    setImageFiles([])
+    setImagePreviews([])
     setBoxFormats({
       '6': { enabled: false, price: '' },
       '9': { enabled: false, price: '' },
@@ -145,6 +149,10 @@ export default function AdminProducts() {
     setEditingProduct(product)
     setImageFile(null)
     setImagePreview(product.image_url || '')
+    setImageFiles([])
+    // Carica le immagini esistenti
+    const existingImages = product.images || []
+    setImagePreviews(existingImages)
     
     // Carica i formati box esistenti
     const existingFormats = product.box_formats || {}
@@ -192,6 +200,55 @@ export default function AdminProducts() {
     }
   }
 
+  const handleMultipleImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    if (files.length > 0) {
+      setImageFiles(prev => [...prev, ...files])
+      
+      // Crea preview locali per tutte le nuove immagini
+      files.forEach(file => {
+        const reader = new FileReader()
+        reader.onloadend = () => {
+          setImagePreviews(prev => [...prev, reader.result as string])
+        }
+        reader.readAsDataURL(file)
+      })
+    }
+  }
+
+  const removeImageAtIndex = (index: number) => {
+    setImagePreviews(prev => prev.filter((_, i) => i !== index))
+    setImageFiles(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const moveImageUp = (index: number) => {
+    if (index === 0) return
+    setImagePreviews(prev => {
+      const newArr = [...prev]
+      ;[newArr[index - 1], newArr[index]] = [newArr[index], newArr[index - 1]]
+      return newArr
+    })
+    setImageFiles(prev => {
+      const newArr = [...prev]
+      ;[newArr[index - 1], newArr[index]] = [newArr[index], newArr[index - 1]]
+      return newArr
+    })
+  }
+
+  const moveImageDown = (index: number) => {
+    if (index === imagePreviews.length - 1) return
+    setImagePreviews(prev => {
+      const newArr = [...prev]
+      ;[newArr[index + 1], newArr[index]] = [newArr[index], newArr[index + 1]]
+      return newArr
+    })
+    setImageFiles(prev => {
+      const newArr = [...prev]
+      ;[newArr[index + 1], newArr[index]] = [newArr[index], newArr[index + 1]]
+      return newArr
+    })
+  }
+
   const removeImage = () => {
     setImageFile(null)
     setImagePreview('')
@@ -203,8 +260,38 @@ export default function AdminProducts() {
     
     try {
       let imageUrl = formData.image_url
+      let allImages: string[] = []
 
-      // Se c'è un nuovo file da caricare
+      // Carica le nuove immagini se presenti
+      if (imageFiles.length > 0) {
+        setUploadingImage(true)
+        
+        for (let i = 0; i < imageFiles.length; i++) {
+          const file = imageFiles[i]
+          const { url, error } = await uploadProductImage(file, `${formData.name}-${i+1}`, true)
+          
+          if (error || !url) {
+            alert(`Errore caricamento immagine ${i+1}: ${error}`)
+            setUploadingImage(false)
+            return
+          }
+          
+          allImages.push(url)
+        }
+        
+        setUploadingImage(false)
+      }
+
+      // Mantieni le immagini esistenti che non erano file (URL già caricati)
+      const existingImages = imagePreviews.filter(preview => preview.startsWith('http'))
+      allImages = [...existingImages, ...allImages]
+
+      // La prima immagine è quella principale
+      if (allImages.length > 0) {
+        imageUrl = allImages[0]
+      }
+
+      // Se c'è un nuovo file da caricare come immagine singola (retrocompatibilità)
       if (imageFile) {
         setUploadingImage(true)
         const { url, error } = await uploadProductImage(imageFile, formData.name, true)
@@ -216,6 +303,10 @@ export default function AdminProducts() {
         }
         
         imageUrl = url
+        // Aggiungi anche all'array se non è già presente
+        if (!allImages.includes(url)) {
+          allImages.unshift(url) // Metti in prima posizione
+        }
       }
 
       // Prepara i formati box selezionati
@@ -241,7 +332,8 @@ export default function AdminProducts() {
         box_formats: Object.keys(boxFormatsData).length > 0 ? boxFormatsData : null,
         is_new: formData.is_new,
         is_bestseller: formData.is_bestseller,
-        discount_percentage: formData.discount_percentage ? parseInt(formData.discount_percentage) : null
+        discount_percentage: formData.discount_percentage ? parseInt(formData.discount_percentage) : null,
+        images: allImages.length > 0 ? allImages : null
       }
 
       if (editingProduct) {
@@ -265,6 +357,8 @@ export default function AdminProducts() {
       setEditingProduct(null)
       setImageFile(null)
       setImagePreview('')
+      setImageFiles([])
+      setImagePreviews([])
       
       // Ricarica i prodotti dal database
       await fetchProducts()
@@ -676,6 +770,73 @@ export default function AdminProducts() {
                       <span>Caricamento e ottimizzazione immagine...</span>
                     </div>
                   )}
+                </div>
+
+                {/* Immagini Multiple (Galleria) */}
+                <div className="form-group">
+                  <label>📸 Galleria Immagini Prodotto</label>
+                  <p className="field-hint">
+                    Carica immagini aggiuntive per il carousel del prodotto. 
+                    La prima immagine sarà quella principale mostrata nello shop.
+                  </p>
+                  
+                  {/* Grid immagini esistenti */}
+                  {imagePreviews.length > 0 && (
+                    <div className="images-grid">
+                      {imagePreviews.map((preview, index) => (
+                        <div key={index} className="image-grid-item">
+                          <img src={preview} alt={`Immagine ${index + 1}`} className="grid-image" />
+                          {index === 0 && (
+                            <span className="main-badge">Principale</span>
+                          )}
+                          <div className="image-actions">
+                            <button
+                              type="button"
+                              onClick={() => moveImageUp(index)}
+                              disabled={index === 0}
+                              className="btn-move"
+                              title="Sposta su"
+                            >
+                              ↑
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => moveImageDown(index)}
+                              disabled={index === imagePreviews.length - 1}
+                              className="btn-move"
+                              title="Sposta giù"
+                            >
+                              ↓
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => removeImageAtIndex(index)}
+                              className="btn-remove"
+                              title="Rimuovi"
+                            >
+                              <X size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {/* Aggiungi nuove immagini */}
+                  <div className="add-images-area">
+                    <input
+                      type="file"
+                      id="images-upload"
+                      multiple
+                      accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                      onChange={handleMultipleImagesChange}
+                      className="image-input-hidden"
+                    />
+                    <label htmlFor="images-upload" className="btn-add-images">
+                      <Plus size={20} />
+                      Aggiungi immagini
+                    </label>
+                  </div>
                 </div>
               </div>
 
@@ -1123,6 +1284,129 @@ export default function AdminProducts() {
         @keyframes spin {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
+        }
+
+        /* Immagini Multiple */
+        .images-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+          gap: 1rem;
+          margin-bottom: 1rem;
+        }
+
+        .image-grid-item {
+          position: relative;
+          border-radius: 12px;
+          border: 2px solid #e9ecef;
+          overflow: hidden;
+          transition: all 0.3s ease;
+        }
+
+        .image-grid-item:hover {
+          border-color: var(--color-brown);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .grid-image {
+          width: 100%;
+          height: 150px;
+          object-fit: contain;
+          background: #f8f9fa;
+          padding: 0.5rem;
+        }
+
+        .main-badge {
+          position: absolute;
+          top: 0.5rem;
+          left: 0.5rem;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          padding: 0.25rem 0.625rem;
+          border-radius: 999px;
+          font-size: 0.7rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .image-actions {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          background: rgba(0,0,0,0.7);
+          display: flex;
+          justify-content: center;
+          gap: 0.25rem;
+          padding: 0.5rem;
+          opacity: 0;
+          transition: opacity 0.3s ease;
+        }
+
+        .image-grid-item:hover .image-actions {
+          opacity: 1;
+        }
+
+        .btn-move,
+        .btn-remove {
+          background: rgba(255,255,255,0.9);
+          border: none;
+          border-radius: 4px;
+          width: 32px;
+          height: 32px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          font-size: 0.9rem;
+          font-weight: 700;
+          color: var(--color-navy);
+          transition: all 0.2s ease;
+        }
+
+        .btn-move:hover {
+          background: white;
+          color: var(--color-brown);
+          transform: scale(1.1);
+        }
+
+        .btn-move:disabled {
+          opacity: 0.3;
+          cursor: not-allowed;
+        }
+
+        .btn-remove {
+          color: #dc2626;
+        }
+
+        .btn-remove:hover {
+          background: #dc2626;
+          color: white;
+        }
+
+        .add-images-area {
+          margin-top: 1rem;
+        }
+
+        .btn-add-images {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.875rem 1.5rem;
+          background: var(--color-brown);
+          color: white;
+          border: none;
+          border-radius: 10px;
+          font-weight: 600;
+          font-size: 0.95rem;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+
+        .btn-add-images:hover {
+          background: #6d3d0f;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(139, 69, 19, 0.3);
         }
 
         .form-hint {

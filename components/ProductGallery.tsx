@@ -72,7 +72,7 @@ export default function ProductGallery({ images, productName, className = '' }: 
     return (
       <div className={`simple-gallery ${className}`}>
         <div className="main-image">
-          <Image src={galleryImages[0]} alt={productName} width={500} height={500} style={{ width: '100%', height: 'auto', objectFit: 'cover', borderRadius: 16 }} />
+          <Image src={galleryImages[0]} alt={productName} width={500} height={500} style={{ width: '100%', height: 'auto', objectFit: 'contain', borderRadius: 16 }} />
         </div>
         <style jsx>{`
           .simple-gallery {
@@ -84,11 +84,14 @@ export default function ProductGallery({ images, productName, className = '' }: 
           .main-image {
             width: 100%;
             max-width: 500px;
-            aspect-ratio: 1/1;
+            min-height: 400px;
             border-radius: 16px;
-            background-size: cover;
-            background-position: center;
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+            padding: 1rem;
           }
         `}</style>
       </div>
@@ -101,7 +104,7 @@ export default function ProductGallery({ images, productName, className = '' }: 
         {/* Main Image */}
         <div className="main-image-container">
           <div className={`main-image ${isTransitioning ? 'transitioning' : ''}`}>
-            <Image src={galleryImages[currentIndex]} alt={`${productName} - vista`} width={500} height={500} style={{ width: '100%', height: 'auto', objectFit: 'cover', borderRadius: 16 }} />
+            <Image src={galleryImages[currentIndex]} alt={`${productName} - vista`} width={500} height={500} style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: 16 }} />
           </div>
           
           {/* Navigation Arrows - Hidden on mobile for better swipe UX */}
@@ -168,7 +171,7 @@ export default function ProductGallery({ images, productName, className = '' }: 
                 disabled={isTransitioning}
                 aria-label={`${productName} - Vista ${index + 1}`}
               >
-                <Image src={img} alt={`${productName} miniatura ${index + 1}`} width={60} height={60} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 6 }} />
+                <Image src={img} alt={`${productName} miniatura ${index + 1}`} width={60} height={60} style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: 6 }} />
               </button>
             </TouchRipple>
           ))}
@@ -196,12 +199,17 @@ export default function ProductGallery({ images, productName, className = '' }: 
         
         .main-image {
           width: 100%;
-          aspect-ratio: 1/1;
+          min-height: 400px;
+          height: 500px;
           border-radius: 16px;
+          background: #f8f9fa;
           box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
           transition: all 0.3s ease;
           touch-action: pan-y;
-          overflow: hidden;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 1.5rem;
         }
         
         .main-image.transitioning {
@@ -312,6 +320,9 @@ export default function ProductGallery({ images, productName, className = '' }: 
           border: 2px solid transparent;
           cursor: pointer;
           transition: all 0.3s ease;
+          background: #f8f9fa;
+          padding: 0.25rem;
+          overflow: hidden;
         }
         
         .thumbnail.active {
@@ -340,6 +351,17 @@ export default function ProductGallery({ images, productName, className = '' }: 
           
           .main-image-container {
             max-width: 100%;
+          }
+
+          .main-image {
+            height: 350px;
+            min-height: 350px;
+            padding: 1rem;
+          }
+
+          .simple-gallery .main-image {
+            min-height: 300px;
+            padding: 0.75rem;
           }
           
           .gallery-dots {

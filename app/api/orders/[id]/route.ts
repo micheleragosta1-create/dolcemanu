@@ -89,6 +89,14 @@ export async function GET(
   }
 }
 
+// PUT /api/orders/[id] - Update order status (alias for PATCH)
+export async function PUT(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  return PATCH(request, { params })
+}
+
 // PATCH /api/orders/[id] - Update order status
 export async function PATCH(
   request: Request,
