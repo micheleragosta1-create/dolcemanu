@@ -12,9 +12,21 @@ async function verifyPayPalPayment(orderId: string) {
     throw new Error('PayPal non configurato')
   }
 
+  // Determina se stiamo usando sandbox o produzione
+  // Le credenziali sandbox di solito contengono "sb" o iniziano con caratteri specifici
+  const isSandbox = clientId.includes('sb') || clientId === 'sb' || 
+                    process.env.PAYPAL_MODE === 'sandbox' ||
+                    process.env.NODE_ENV === 'development'
+  
+  const baseUrl = isSandbox 
+    ? 'https://api-m.sandbox.paypal.com' 
+    : 'https://api-m.paypal.com'
+
+  console.log(`PayPal API: Usando ${isSandbox ? 'SANDBOX' : 'PRODUCTION'} - ${baseUrl}`)
+
   // Ottieni access token
   const auth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64')
-  const tokenResponse = await fetch('https://api-m.paypal.com/v1/oauth2/token', {
+  const tokenResponse = await fetch(`${baseUrl}/v1/oauth2/token`, {
     method: 'POST',
     headers: {
       'Authorization': `Basic ${auth}`,
@@ -24,13 +36,16 @@ async function verifyPayPalPayment(orderId: string) {
   })
 
   if (!tokenResponse.ok) {
-    throw new Error('Errore autenticazione PayPal')
+    const errorText = await tokenResponse.text()
+    console.error('Errore autenticazione PayPal:', errorText)
+    throw new Error(`Errore autenticazione PayPal: ${tokenResponse.status}`)
   }
 
   const { access_token } = await tokenResponse.json()
+  console.log('Access token ottenuto con successo')
 
   // Verifica l'ordine
-  const orderResponse = await fetch(`https://api-m.paypal.com/v2/checkout/orders/${orderId}`, {
+  const orderResponse = await fetch(`${baseUrl}/v2/checkout/orders/${orderId}`, {
     headers: {
       'Authorization': `Bearer ${access_token}`,
       'Content-Type': 'application/json'
@@ -38,10 +53,15 @@ async function verifyPayPalPayment(orderId: string) {
   })
 
   if (!orderResponse.ok) {
-    throw new Error('Ordine PayPal non trovato')
+    const errorText = await orderResponse.text()
+    console.error('Errore recupero ordine PayPal:', errorText)
+    throw new Error(`Ordine PayPal non trovato: ${orderResponse.status}`)
   }
 
-  return await orderResponse.json()
+  const orderData = await orderResponse.json()
+  console.log('Ordine PayPal recuperato:', orderData.id, orderData.status)
+  
+  return orderData
 }
 
 export async function POST(request: Request) {
@@ -77,39 +97,68 @@ export async function POST(request: Request) {
       0
     )
 
+    // Prepara i dati dell'ordine (adatta ai campi della tabella)
+    const orderData = {
+      user_email: userEmail,
+      total_amount: totalAmount,
+      status: 'processing',
+      shipping_address: shippingAddress.address,
+      shipping_city: shippingAddress.city,
+      shipping_zip: shippingAddress.zip,
+      shipping_notes: `PayPal Order ID: ${paypalOrderId}\nPaese: ${shippingAddress.country || 'Italia'}${shippingAddress.notes ? '\n' + shippingAddress.notes : ''}`,
+      admin_note: `Pagamento PayPal completato. PayPal Order ID: ${paypalOrderId}`,
+    }
+
+    console.log('Tentativo inserimento ordine:', orderData)
+
     // Crea l'ordine nel database
     const { data: order, error: orderError } = await supabase
       .from('orders')
-      .insert({
-        user_email: userEmail,
-        total_amount: totalAmount,
-        status: 'processing',
-        payment_method: 'paypal',
-        payment_id: paypalOrderId,
-        shipping_address: shippingAddress.address,
-        shipping_city: shippingAddress.city,
-        shipping_zip: shippingAddress.zip,
-        shipping_country: shippingAddress.country || 'Italia',
-        notes: shippingAddress.notes || '',
-      })
+      .insert(orderData)
       .select()
       .single()
 
     if (orderError) {
-      console.error('Errore creazione ordine:', orderError)
+      console.error('Errore creazione ordine Supabase:', {
+        message: orderError.message,
+        details: orderError.details,
+        hint: orderError.hint,
+        code: orderError.code
+      })
       return NextResponse.json(
-        { error: 'Errore nella creazione dell\'ordine' },
+        { 
+          error: 'Errore nella creazione dell\'ordine',
+          details: orderError.message,
+          code: orderError.code
+        },
         { status: 500 }
       )
     }
 
+    console.log('Ordine creato con successo:', order.id)
+
+    // Recupera i dettagli dei prodotti per completare order_items
+    const productIds = orderDetails.items.map((item: any) => item.productId)
+    const { data: products } = await supabase
+      .from('products')
+      .select('id, name, image_url')
+      .in('id', productIds)
+    
+    // Crea una mappa prodotto per accesso veloce
+    const productMap = new Map(products?.map(p => [p.id, p]) || [])
+
     // Inserisci gli items dell'ordine
-    const orderItems = orderDetails.items.map((item: any) => ({
-      order_id: order.id,
-      product_id: item.productId,
-      quantity: item.quantity,
-      price_at_time: item.price
-    }))
+    const orderItems = orderDetails.items.map((item: any) => {
+      const product = productMap.get(item.productId)
+      return {
+        order_id: order.id,
+        product_id: item.productId,
+        product_name: product?.name || 'Prodotto sconosciuto',
+        product_image_url: product?.image_url || '',
+        quantity: item.quantity,
+        price: item.price
+      }
+    })
 
     const { error: itemsError } = await supabase
       .from('order_items')
@@ -127,10 +176,14 @@ export async function POST(request: Request) {
 
     // Diminuisci lo stock dei prodotti
     for (const item of orderDetails.items) {
-      await supabase.rpc('decrease_product_stock', {
-        p_product_id: item.productId,
-        p_quantity: item.quantity
+      const { error: stockError } = await supabase.rpc('decrease_stock', {
+        product_id: item.productId,
+        quantity: item.quantity
       })
+      if (stockError) {
+        console.warn(`Errore diminuzione stock per prodotto ${item.productId}:`, stockError)
+        // Non blocchiamo l'ordine per questo errore
+      }
     }
 
     // Invia email di conferma (opzionale)
