@@ -74,6 +74,13 @@ export async function POST(request: Request) {
       shippingAddress
     } = body
 
+    console.log('📦 Dati ricevuti:', {
+      paypalOrderId,
+      userEmail,
+      itemsCount: orderDetails?.items?.length,
+      shippingAddress
+    })
+
     // Verifica il pagamento con PayPal
     const paypalOrder = await verifyPayPalPayment(paypalOrderId)
 
@@ -97,16 +104,21 @@ export async function POST(request: Request) {
       0
     )
 
-    // Prepara i dati dell'ordine (adatta ai campi della tabella)
+    // Prepara l'indirizzo completo (metti tutto in shipping_address)
+    const fullAddress = [
+      shippingAddress.address,
+      shippingAddress.city,
+      shippingAddress.zip,
+      shippingAddress.country || 'Italia'
+    ].filter(Boolean).join(', ')
+
+    // Prepara i dati dell'ordine (solo campi che esistono nel DB)
     const orderData = {
       user_email: userEmail,
       total_amount: totalAmount,
       status: 'processing',
-      shipping_address: shippingAddress.address,
-      shipping_city: shippingAddress.city,
-      shipping_zip: shippingAddress.zip,
-      shipping_notes: `PayPal Order ID: ${paypalOrderId}\nPaese: ${shippingAddress.country || 'Italia'}${shippingAddress.notes ? '\n' + shippingAddress.notes : ''}`,
-      admin_note: `Pagamento PayPal completato. PayPal Order ID: ${paypalOrderId}`,
+      shipping_address: fullAddress || 'Indirizzo non fornito',
+      admin_note: `Pagamento PayPal completato.\nPayPal Order ID: ${paypalOrderId}\nIndirizzo: ${fullAddress}${shippingAddress.notes ? '\nNote: ' + shippingAddress.notes : ''}`,
     }
 
     console.log('Tentativo inserimento ordine:', orderData)
@@ -139,10 +151,17 @@ export async function POST(request: Request) {
 
     // Recupera i dettagli dei prodotti per completare order_items
     const productIds = orderDetails.items.map((item: any) => item.productId)
-    const { data: products } = await supabase
+    console.log('🔍 Product IDs da recuperare:', productIds)
+    
+    const { data: products, error: productsError } = await supabase
       .from('products')
       .select('id, name, image_url')
       .in('id', productIds)
+    
+    if (productsError) {
+      console.error('Errore recupero prodotti:', productsError)
+    }
+    console.log('✅ Prodotti recuperati:', products?.length || 0)
     
     // Crea una mappa prodotto per accesso veloce
     const productMap = new Map(products?.map(p => [p.id, p]) || [])
