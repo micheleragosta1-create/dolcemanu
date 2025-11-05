@@ -254,12 +254,22 @@ export default function CheckoutPage() {
 
                 <div className="paypal-container">
                   {mounted && paypalClientId && (
-                  <PayPalScriptProvider options={{ clientId: paypalClientId, currency: 'EUR', intent: 'capture', components: 'buttons', locale: 'it_IT', debug: true }}>
+                  <PayPalScriptProvider options={{ 
+                    clientId: paypalClientId, 
+                    currency: 'EUR', 
+                    intent: 'capture', 
+                    components: 'buttons,funding-eligibility', 
+                    locale: 'it_IT', 
+                    debug: true,
+                    'enable-funding': 'paypal,card,mybank,bancontact,ideal,giropay,sofort,sepa,venmo,paylater',
+                    'disable-funding': ''
+                  }}>
                      <PayPalButtons
-                        // Lasciamo che la SDK scelga il funding idoneo
+                        // Abilita tutti i metodi di pagamento disponibili
+                        fundingSource={undefined}
                         style={{ 
                           layout: "vertical", 
-                          color: "gold", // Gold ufficiale per alta visibilità
+                          color: "gold", 
                           shape: "rect", 
                           label: "paypal", 
                           tagline: false,
