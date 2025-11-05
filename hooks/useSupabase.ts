@@ -137,25 +137,45 @@ export function useProducts() {
   }
 }
 
-export function useOrders(userEmail?: string) {
+export function useOrders(userEmail?: string, userId?: string) {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchUserOrders = async (email: string) => {
+  const fetchUserOrders = async (email?: string, uid?: string) => {
     try {
       setLoading(true)
       setError(null)
-      const supabase = getSupabaseClient()
-      const { data, error: supabaseError } = await supabase
-        .from('orders')
-        .select('*')
-        .eq('user_email', email)
-        .order('created_at', { ascending: false })
       
-      if (supabaseError) throw supabaseError
-      setOrders(data || [])
+      console.log('🔍 Recupero ordini via API per user:', uid, email)
+      
+      // Ottieni il token di autenticazione da Supabase
+      const supabase = getSupabaseClient()
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session?.access_token) {
+        throw new Error('Sessione non valida')
+      }
+      
+      console.log('🔐 Token ottenuto, chiamata API...')
+      
+      // Usa API server-side che bypassa RLS con token nell'header
+      const response = await fetch('/api/orders/my-orders', {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      })
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Errore nel recupero ordini')
+      }
+      
+      const data = await response.json()
+      console.log('📦 Ordini recuperati:', data.orders?.length || 0, data.orders)
+      setOrders(data.orders || [])
     } catch (err) {
+      console.error('Errore fetchUserOrders:', err)
       setError(err instanceof Error ? err.message : 'Errore nel caricamento ordini')
     } finally {
       setLoading(false)
@@ -186,17 +206,17 @@ export function useOrders(userEmail?: string) {
   }
 
   useEffect(() => {
-    if (userEmail) {
-      fetchUserOrders(userEmail)
+    if (userId || userEmail) {
+      fetchUserOrders(userEmail, userId)
     }
-  }, [userEmail])
+  }, [userEmail, userId])
 
   return {
     orders,
     loading,
     error,
     createOrder,
-    refetch: () => userEmail ? fetchUserOrders(userEmail) : Promise.resolve()
+    refetch: () => (userId || userEmail) ? fetchUserOrders(userEmail, userId) : Promise.resolve()
   }
 }
 
