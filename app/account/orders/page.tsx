@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/components/AuthContext'
 import { useOrders } from '@/hooks/useSupabase'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import { format } from 'date-fns'
@@ -26,8 +26,28 @@ const statusColors: Record<string, string> = {
 
 export default function OrdersPage() {
   const { user } = useAuth()
-  const { orders, loading, error, refetch } = useOrders(user?.email)
+  const { orders, loading, error, refetch } = useOrders(user?.email, user?.id)
   const [selectedOrder, setSelectedOrder] = useState<string | null>(null)
+
+  // Debug: mostra info utente e ordini
+  useEffect(() => {
+    console.log('👤 Utente loggato:', user?.email, 'ID:', user?.id)
+    console.log('📦 Ordini caricati:', orders?.length, orders)
+    console.log('⏳ Loading:', loading)
+    console.log('❌ Error:', error)
+  }, [user, orders, loading, error])
+
+  // Ricarica ordini quando la pagina diventa visibile
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && user?.email) {
+        console.log('🔄 Ricaricamento ordini per:', user.email)
+        refetch()
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [user?.email, refetch])
 
   if (!user) {
     return (

@@ -24,6 +24,8 @@ export default function CheckoutPage() {
   const [city, setCity] = useState('')
   const [zip, setZip] = useState('')
   const [country, setCountry] = useState('Italia')
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [orderInfo, setOrderInfo] = useState<{ orderId: string; payerName: string } | null>(null)
   useEffect(() => setMounted(true), [])
   useEffect(() => {
     ;(async () => {
@@ -129,6 +131,40 @@ export default function CheckoutPage() {
   return (
     <main>
       <Header />
+      
+      {/* Modal di successo ordine */}
+      {showSuccessModal && orderInfo && (
+        <div className="success-modal-overlay" onClick={() => {
+          setShowSuccessModal(false)
+          window.location.href = `/?checkout=success&orderId=${orderInfo.orderId}`
+        }}>
+          <div className="success-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="success-icon">✓</div>
+            <h2 className="poppins">Grazie {orderInfo.payerName}!</h2>
+            <p className="success-message">
+              Il tuo ordine è stato ricevuto con successo
+            </p>
+            <div className="order-number">
+              <span className="label">Numero Ordine:</span>
+              <span className="value">#{orderInfo.orderId.substring(0, 8).toUpperCase()}</span>
+            </div>
+            <div className="success-details">
+              <p>📧 Riceverai una email di conferma a breve</p>
+              <p>📦 Potrai tracciare il tuo ordine nella sezione "I miei ordini"</p>
+            </div>
+            <button 
+              className="success-btn"
+              onClick={() => {
+                setShowSuccessModal(false)
+                window.location.href = `/?checkout=success&orderId=${orderInfo.orderId}`
+              }}
+            >
+              Continua gli Acquisti
+            </button>
+          </div>
+        </div>
+      )}
+      
       <section className="checkout-section">
         <div className="checkout-container">
           <h1 className="poppins">Checkout</h1>
@@ -263,10 +299,50 @@ export default function CheckoutPage() {
                         })
                       }}
                       onApprove={async (data, actions) => {
-                        const details = await actions.order?.capture()
-                        const payerName = details?.payer?.name?.given_name || 'Cliente'
-                        alert(`Grazie ${payerName}! Pagamento PayPal completato.`)
-                        window.location.href = '/?checkout=success'
+                        try {
+                          // Cattura il pagamento
+                          const details = await actions.order?.capture()
+                          const payerName = details?.payer?.name?.given_name || 'Cliente'
+                          
+                          // Salva l'ordine nel database
+                          const saveResponse = await fetch('/api/paypal-capture', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              paypalOrderId: data.orderID,
+                              orderDetails: {
+                                items: items.map(i => ({
+                                  productId: i.id,
+                                  quantity: i.qty,
+                                  price: i.prezzo
+                                }))
+                              },
+                              userId: user?.id,  // ✅ IMPORTANTE: ID univoco utente
+                              userEmail: user?.email || 'guest@local.test',
+                              shippingAddress: {
+                                address: addr,
+                                city: city,
+                                zip: zip,
+                                country: country,
+                                notes: ''
+                              }
+                            })
+                          })
+
+                          const saveResult = await saveResponse.json()
+                          
+                          if (saveResponse.ok && saveResult.success) {
+                            // Mostra popup di successo
+                            setOrderInfo({ orderId: saveResult.orderId, payerName })
+                            setShowSuccessModal(true)
+                          } else {
+                            console.error('Errore salvataggio ordine:', saveResult.error)
+                            alert(`Pagamento completato ma errore nel salvataggio: ${saveResult.error}`)
+                          }
+                        } catch (err) {
+                          console.error('Errore durante onApprove:', err)
+                          alert('Pagamento completato ma errore nel processare l\'ordine. Contatta il supporto.')
+                        }
                       }}
                       onError={(err) => {
                         console.error('PayPal error', err)
@@ -508,6 +584,170 @@ export default function CheckoutPage() {
           .summary, .payments { padding: 0.875rem; }
           .stripe-btn { padding: 12px 18px; font-size: 14px; gap: 8px; }
           .stripe-icon { width: 40px; height: 16px; }
+        }
+
+        /* Success Modal */
+        .success-modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.7);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 10000;
+          padding: 1rem;
+          animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+
+        .success-modal {
+          background: white;
+          border-radius: 20px;
+          padding: 3rem 2rem;
+          max-width: 500px;
+          width: 100%;
+          text-align: center;
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+          animation: slideUp 0.4s ease;
+          position: relative;
+        }
+
+        @keyframes slideUp {
+          from { 
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to { 
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .success-icon {
+          width: 80px;
+          height: 80px;
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 3rem;
+          color: white;
+          margin: 0 auto 1.5rem;
+          animation: scaleIn 0.5s ease 0.2s both;
+        }
+
+        @keyframes scaleIn {
+          from { 
+            transform: scale(0);
+          }
+          to { 
+            transform: scale(1);
+          }
+        }
+
+        .success-modal h2 {
+          font-size: 1.8rem;
+          color: var(--color-navy);
+          margin-bottom: 0.75rem;
+        }
+
+        .success-message {
+          font-size: 1.1rem;
+          color: #666;
+          margin-bottom: 1.5rem;
+          line-height: 1.5;
+        }
+
+        .order-number {
+          background: #f8f9fa;
+          border: 2px dashed var(--color-brown);
+          border-radius: 12px;
+          padding: 1rem;
+          margin-bottom: 1.5rem;
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+
+        .order-number .label {
+          font-size: 0.9rem;
+          color: #666;
+          font-weight: 500;
+        }
+
+        .order-number .value {
+          font-size: 1.5rem;
+          font-weight: 700;
+          color: var(--color-brown);
+          font-family: 'Courier New', monospace;
+          letter-spacing: 2px;
+        }
+
+        .success-details {
+          background: #fff7ed;
+          border-radius: 12px;
+          padding: 1.25rem;
+          margin-bottom: 2rem;
+          text-align: left;
+        }
+
+        .success-details p {
+          margin: 0.5rem 0;
+          color: #555;
+          font-size: 0.95rem;
+          line-height: 1.6;
+        }
+
+        .success-btn {
+          width: 100%;
+          background: var(--color-brown);
+          color: white;
+          border: none;
+          padding: 1rem 2rem;
+          border-radius: 12px;
+          font-size: 1rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 15px rgba(94, 54, 33, 0.3);
+        }
+
+        .success-btn:hover {
+          background: #6d3d0f;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(94, 54, 33, 0.4);
+        }
+
+        @media (max-width: 480px) {
+          .success-modal {
+            padding: 2rem 1.5rem;
+          }
+
+          .success-icon {
+            width: 70px;
+            height: 70px;
+            font-size: 2.5rem;
+          }
+
+          .success-modal h2 {
+            font-size: 1.5rem;
+          }
+
+          .success-message {
+            font-size: 1rem;
+          }
+
+          .order-number .value {
+            font-size: 1.2rem;
+          }
         }
       `}</style>
     </main>
