@@ -263,10 +263,48 @@ export default function CheckoutPage() {
                         })
                       }}
                       onApprove={async (data, actions) => {
-                        const details = await actions.order?.capture()
-                        const payerName = details?.payer?.name?.given_name || 'Cliente'
-                        alert(`Grazie ${payerName}! Pagamento PayPal completato.`)
-                        window.location.href = '/?checkout=success'
+                        try {
+                          // Cattura il pagamento
+                          const details = await actions.order?.capture()
+                          const payerName = details?.payer?.name?.given_name || 'Cliente'
+                          
+                          // Salva l'ordine nel database
+                          const saveResponse = await fetch('/api/paypal-capture', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              paypalOrderId: data.orderID,
+                              orderDetails: {
+                                items: items.map(i => ({
+                                  productId: i.id,
+                                  quantity: i.qty,
+                                  price: i.prezzo
+                                }))
+                              },
+                              userEmail: user?.email || 'guest@local.test',
+                              shippingAddress: {
+                                address: addr,
+                                city: city,
+                                zip: zip,
+                                country: country,
+                                notes: ''
+                              }
+                            })
+                          })
+
+                          const saveResult = await saveResponse.json()
+                          
+                          if (saveResponse.ok && saveResult.success) {
+                            alert(`Grazie ${payerName}! Pagamento PayPal completato. Ordine #${saveResult.orderId}`)
+                            window.location.href = `/?checkout=success&orderId=${saveResult.orderId}`
+                          } else {
+                            console.error('Errore salvataggio ordine:', saveResult.error)
+                            alert(`Pagamento completato ma errore nel salvataggio: ${saveResult.error}`)
+                          }
+                        } catch (err) {
+                          console.error('Errore durante onApprove:', err)
+                          alert('Pagamento completato ma errore nel processare l\'ordine. Contatta il supporto.')
+                        }
                       }}
                       onError={(err) => {
                         console.error('PayPal error', err)
