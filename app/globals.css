@@ -3109,6 +3109,18 @@ main {
   .hero-section {
     padding: 3rem 1.5rem;
   }
+  
+  /* Fallback: rendi visibile dopo 0.5s se l'Intersection Observer non ha triggerato */
+  .hero-section:not(.visible) {
+    animation: forceVisible 0.5s 0.5s forwards;
+  }
+  
+  @keyframes forceVisible {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 }
 
 @media (max-width: 480px) {
@@ -3197,6 +3209,14 @@ main {
   transform: translateY(-4px);
 }
 
+/* Touch support per card su mobile */
+@media (hover: none) and (pointer: coarse) {
+  .hero-product-card:active {
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
+  }
+}
+
 /* Prodotto Principale - 70% */
 .hero-main {
   display: flex;
@@ -3254,6 +3274,13 @@ main {
   transform: scale(1.08);
 }
 
+/* Touch support per zoom immagine su mobile */
+@media (hover: none) and (pointer: coarse) {
+  .hero-product-card:active .hero-image {
+    transform: scale(1.05);
+  }
+}
+
 .hero-image-overlay {
   position: absolute;
   inset: 0;
@@ -3269,6 +3296,27 @@ main {
 
 .hero-product-card:hover .hero-image-overlay {
   opacity: 1;
+}
+
+/* Touch support per mobile */
+@media (hover: none) and (pointer: coarse) {
+  .hero-image-overlay {
+    opacity: 0.5;
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(0, 0, 0, 0.08) 100%
+    );
+  }
+  
+  .hero-product-card:active .hero-image-overlay {
+    opacity: 1;
+  }
+  
+  /* Aggiungi un leggero feedback visivo costante su mobile */
+  .hero-product-card {
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.08);
+  }
 }
 
 /* Badge Minimal */

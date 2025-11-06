@@ -132,25 +132,37 @@ export default function ProdottiConsigliati() {
 
   // Intersection Observer per animazione ingresso
   useEffect(() => {
+    // Fallback: rendi visibile dopo 1 secondo se l'observer non ha triggerato
+    const fallbackTimer = setTimeout(() => {
+      setIsVisible(true)
+    }, 1000)
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsVisible(true)
+          clearTimeout(fallbackTimer)
         }
       },
-      { threshold: 0.1, rootMargin: '100px' }
+      { 
+        threshold: 0.05, // Ridotto per mobile
+        rootMargin: '150px' // Aumentato per triggerare prima
+      }
     )
 
     if (sectionRef.current) {
       observer.observe(sectionRef.current)
     }
 
-    return () => observer.disconnect()
+    return () => {
+      observer.disconnect()
+      clearTimeout(fallbackTimer)
+    }
   }, [])
 
   if (loading) {
     return (
-      <section id="shop" className="hero-section" ref={sectionRef}>
+      <section id="shop" className={`hero-section ${isVisible ? 'visible' : ''}`} ref={sectionRef}>
         <div className="hero-container">
           <div className="hero-header">
             <h2 className="hero-title">I Nostri Prodotti Consigliati</h2>
@@ -172,7 +184,7 @@ export default function ProdottiConsigliati() {
 
   if (products.length === 0) {
     return (
-      <section id="shop" className="hero-section" ref={sectionRef}>
+      <section id="shop" className={`hero-section ${isVisible ? 'visible' : ''}`} ref={sectionRef}>
         <div className="hero-container">
           <div className="hero-header">
             <h2 className="hero-title">I Nostri Prodotti Consigliati</h2>
