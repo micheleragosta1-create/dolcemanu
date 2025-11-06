@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { MapPin, Phone, Mail, Clock } from 'lucide-react'
+import { MapPin, Phone, Mail, Clock, Send, CheckCircle2, AlertCircle } from 'lucide-react'
 
 export default function ContactSection() {
   const [formData, setFormData] = useState({
@@ -11,6 +11,9 @@ export default function ContactSection() {
     message: ''
   })
 
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
+  const [errorMessage, setErrorMessage] = useState('')
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
       ...formData,
@@ -18,12 +21,45 @@ export default function ContactSection() {
     })
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Qui puoi aggiungere la logica per inviare il form
-    console.log('Form submitted:', formData)
-    alert('Messaggio inviato! Ti contatteremo presto.')
-    setFormData({ name: '', email: '', phone: '', message: '' })
+    setStatus('loading')
+    setErrorMessage('')
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Errore nell\'invio del messaggio')
+      }
+
+      setStatus('success')
+      setFormData({ name: '', email: '', phone: '', message: '' })
+      
+      // Reset success message dopo 5 secondi
+      setTimeout(() => {
+        setStatus('idle')
+      }, 5000)
+
+    } catch (error) {
+      console.error('Errore invio form:', error)
+      setStatus('error')
+      setErrorMessage(error instanceof Error ? error.message : 'Errore nell\'invio del messaggio. Riprova più tardi.')
+      
+      // Reset error message dopo 5 secondi
+      setTimeout(() => {
+        setStatus('idle')
+        setErrorMessage('')
+      }, 5000)
+    }
   }
 
   return (
@@ -80,6 +116,29 @@ export default function ContactSection() {
           {/* Modulo di contatto */}
           <div className="contact-form-container">
             <h3>Inviaci un messaggio</h3>
+            
+            {/* Success Message */}
+            {status === 'success' && (
+              <div className="form-message form-message-success">
+                <CheckCircle2 size={20} />
+                <div>
+                  <strong>Messaggio inviato con successo!</strong>
+                  <p>Ti contatteremo al più presto. Grazie!</p>
+                </div>
+              </div>
+            )}
+
+            {/* Error Message */}
+            {status === 'error' && (
+              <div className="form-message form-message-error">
+                <AlertCircle size={20} />
+                <div>
+                  <strong>Errore nell'invio</strong>
+                  <p>{errorMessage}</p>
+                </div>
+              </div>
+            )}
+
             <form className="contact-form" onSubmit={handleSubmit}>
               <div className="form-row">
                 <div className="form-group">
@@ -91,6 +150,7 @@ export default function ContactSection() {
                     value={formData.name}
                     onChange={handleChange}
                     required
+                    disabled={status === 'loading'}
                     className="form-input"
                     placeholder="Il tuo nome"
                   />
@@ -105,6 +165,7 @@ export default function ContactSection() {
                     value={formData.email}
                     onChange={handleChange}
                     required
+                    disabled={status === 'loading'}
                     className="form-input"
                     placeholder="la-tua-email@esempio.com"
                   />
@@ -119,6 +180,7 @@ export default function ContactSection() {
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
+                  disabled={status === 'loading'}
                   className="form-input"
                   placeholder="+39 123 456 7890"
                 />
@@ -132,14 +194,29 @@ export default function ContactSection() {
                   value={formData.message}
                   onChange={handleChange}
                   required
+                  disabled={status === 'loading'}
                   className="form-textarea"
                   rows={5}
                   placeholder="Raccontaci cosa possiamo realizzare per te..."
                 />
               </div>
 
-              <button type="submit" className="btn btn-primary form-submit">
-                Invia Messaggio
+              <button 
+                type="submit" 
+                className="btn btn-primary form-submit"
+                disabled={status === 'loading'}
+              >
+                {status === 'loading' ? (
+                  <>
+                    <span className="spinner"></span>
+                    Invio in corso...
+                  </>
+                ) : (
+                  <>
+                    <Send size={18} />
+                    Invia Messaggio
+                  </>
+                )}
               </button>
             </form>
           </div>
