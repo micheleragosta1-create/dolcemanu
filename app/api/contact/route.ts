@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
 
-// Inizializza Resend con la chiave API
-const resend = new Resend(process.env.RESEND_API_KEY)
+// Inizializza Resend solo se la chiave API è presente
+const resend = process.env.RESEND_API_KEY 
+  ? new Resend(process.env.RESEND_API_KEY)
+  : null
 
 export async function POST(request: Request) {
   try {
@@ -27,11 +29,11 @@ export async function POST(request: Request) {
     }
 
     // Verifica che RESEND_API_KEY sia configurata
-    if (!process.env.RESEND_API_KEY) {
+    if (!resend) {
       console.error('RESEND_API_KEY non configurata')
       return NextResponse.json(
-        { error: 'Servizio email non configurato' },
-        { status: 500 }
+        { error: 'Servizio email non configurato. Contattaci via email a info@ondedicacao.com' },
+        { status: 503 }
       )
     }
 
