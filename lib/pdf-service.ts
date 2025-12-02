@@ -24,7 +24,7 @@ export interface OrderData {
 
 // Dati aziendali
 const COMPANY_INFO = {
-  name: 'Dolce Manu',
+  name: 'Onde di Cacao',
   subtitle: 'Cioccolatini Artigianali dalla Costiera Amalfitana',
   address: 'Via Esempio 123',
   city: '84011 Amalfi (SA)',

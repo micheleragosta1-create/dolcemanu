@@ -11,6 +11,8 @@ export type CartItem = {
   tipo?: string
   pezzi?: number
   qty: number
+  // Dettagli per box personalizzate (es. lista praline scelte)
+  customDetails?: string
 }
 
 type CartContextValue = {

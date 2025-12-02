@@ -10,20 +10,59 @@ export default function ContactSection() {
     phone: '',
     message: ''
   })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitStatus, setSubmitStatus] = useState<{
+    type: 'success' | 'error' | null
+    message: string
+  }>({ type: null, message: '' })
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     })
+    // Reset status quando l'utente modifica il form
+    if (submitStatus.type) {
+      setSubmitStatus({ type: null, message: '' })
+    }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Qui puoi aggiungere la logica per inviare il form
-    console.log('Form submitted:', formData)
-    alert('Messaggio inviato! Ti contatteremo presto.')
-    setFormData({ name: '', email: '', phone: '', message: '' })
+    setIsSubmitting(true)
+    setSubmitStatus({ type: null, message: '' })
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setSubmitStatus({
+          type: 'success',
+          message: 'Messaggio inviato con successo! Ti contatteremo presto.'
+        })
+        setFormData({ name: '', email: '', phone: '', message: '' })
+      } else {
+        setSubmitStatus({
+          type: 'error',
+          message: data.error || 'Errore nell\'invio del messaggio'
+        })
+      }
+    } catch {
+      setSubmitStatus({
+        type: 'error',
+        message: 'Errore di connessione. Riprova più tardi o contattaci via email.'
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -138,8 +177,18 @@ export default function ContactSection() {
                 />
               </div>
 
-              <button type="submit" className="btn btn-primary form-submit">
-                Invia Messaggio
+              {submitStatus.type && (
+                <div className={`form-status ${submitStatus.type === 'success' ? 'form-status-success' : 'form-status-error'}`}>
+                  {submitStatus.message}
+                </div>
+              )}
+
+              <button 
+                type="submit" 
+                className="btn btn-primary form-submit"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Invio in corso...' : 'Invia Messaggio'}
               </button>
             </form>
           </div>

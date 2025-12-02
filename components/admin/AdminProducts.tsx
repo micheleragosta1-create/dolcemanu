@@ -55,7 +55,10 @@ export default function AdminProducts() {
     chocolate_type: '',
     is_new: true,
     is_bestseller: false,
-    discount_percentage: ''
+    discount_percentage: '',
+    // Campi per box personalizzata
+    is_box_praline: false,
+    single_price: ''
   })
   
   // Collezioni predefinite
@@ -140,7 +143,9 @@ export default function AdminProducts() {
       chocolate_type: '',
       is_new: true,
       is_bestseller: false,
-      discount_percentage: ''
+      discount_percentage: '',
+      is_box_praline: false,
+      single_price: ''
     })
     setSelectedProduct('new')
   }
@@ -182,7 +187,9 @@ export default function AdminProducts() {
       chocolate_type: (product as any).chocolate_type || '',
       is_new: (product as any).is_new ?? false,
       is_bestseller: (product as any).is_bestseller ?? false,
-      discount_percentage: (product as any).discount_percentage?.toString() || ''
+      discount_percentage: (product as any).discount_percentage?.toString() || '',
+      is_box_praline: (product as any).is_box_praline ?? false,
+      single_price: (product as any).single_price?.toString() || ''
     })
     setSelectedProduct(product)
   }
@@ -333,7 +340,10 @@ export default function AdminProducts() {
         is_new: formData.is_new,
         is_bestseller: formData.is_bestseller,
         discount_percentage: formData.discount_percentage ? parseInt(formData.discount_percentage) : null,
-        images: allImages.length > 0 ? allImages : null
+        images: allImages.length > 0 ? allImages : null,
+        // Campi per box personalizzata
+        is_box_praline: formData.is_box_praline,
+        single_price: formData.single_price ? parseFloat(formData.single_price) : null
       }
 
       if (editingProduct) {
@@ -699,6 +709,48 @@ export default function AdminProducts() {
                       Percentuale di sconto (0-100). Se maggiore di 0, mostra il badge "In Sconto"
                     </p>
                   </div>
+                </div>
+
+                {/* Sezione Box Personalizzata */}
+                <div className="form-section">
+                  <h4>📦 Box Personalizzata</h4>
+                  <p className="section-description">
+                    Abilita questo prodotto come pralina selezionabile nella sezione "Configura la tua Box"
+                  </p>
+                  
+                  <div className="form-group">
+                    <label className="checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={formData.is_box_praline}
+                        onChange={(e) => setFormData({...formData, is_box_praline: e.target.checked})}
+                      />
+                      <span className="checkbox-text">
+                        🍫 Disponibile per Box Personalizzata
+                      </span>
+                    </label>
+                    <p className="field-hint">
+                      Se attivo, questa pralina apparirà nel configuratore "Crea la tua Box"
+                    </p>
+                  </div>
+
+                  {formData.is_box_praline && (
+                    <div className="form-group">
+                      <label>Prezzo Singola Pralina (EUR)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={formData.single_price}
+                        onChange={(e) => setFormData({...formData, single_price: e.target.value})}
+                        className="form-input"
+                        placeholder="es. 2.50"
+                      />
+                      <p className="field-hint">
+                        Prezzo quando venduta singolarmente nel configuratore box (opzionale, usa prezzo base se vuoto)
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <div className="form-group">
