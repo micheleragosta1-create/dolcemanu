@@ -37,10 +37,9 @@ export async function POST(request: Request) {
       )
     }
 
-    // Usa il dominio verificato su Resend se configurato, altrimenti usa il sandbox
-    // Il sandbox di Resend (onboarding@resend.dev) funziona sempre senza verificare il dominio
+    // Usa il dominio verificato su Resend
     const fromEmail = process.env.RESEND_FROM_EMAIL 
-      || 'onboarding@resend.dev'
+      || 'noreply@ondedicacao.com'
     
     const fromName = 'Onde di Cacao'
 
