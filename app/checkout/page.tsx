@@ -342,6 +342,15 @@ export default function CheckoutPage() {
                           const saveResult = await saveResponse.json()
                           
                           if (saveResponse.ok && saveResult.success) {
+                            // Traccia conversione Google Ads
+                            if (typeof window !== 'undefined' && (window as any).gtag) {
+                              (window as any).gtag('event', 'conversion', {
+                                'send_to': 'AW-17774085187/4QsECMiQwcobEMOIrJtC',
+                                'value': totalAmount,
+                                'currency': 'EUR',
+                                'transaction_id': saveResult.orderId
+                              });
+                            }
                             // Mostra popup di successo
                             setOrderInfo({ orderId: saveResult.orderId, payerName })
                             setShowSuccessModal(true)
