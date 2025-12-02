@@ -141,8 +141,12 @@ export class EmailService {
       `<tr><td>${item.name}</td><td>${item.quantity}</td><td>€${this.formatPriceEUR(item.price)}</td></tr>`
     ).join('')
 
+    // URL del sito per le immagini
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://ondedicacao.com'
+    const logoUrl = `${siteUrl}/images/logo_onde_di_cacao_1024.png`
+
     return {
-      subject: `Conferma Ordine #${data.orderId} - Dolce Manu`,
+      subject: `Conferma Ordine #${data.orderId} - Onde di Cacao`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -153,8 +157,8 @@ export class EmailService {
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
           <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
             <div style="text-align: center; margin-bottom: 30px;">
-              <h1 style="color: #8b4513;">🍫 Dolce Manu</h1>
-              <h2 style="color: #a0522d;">Conferma Ordine</h2>
+              <img src="${logoUrl}" alt="Onde di Cacao" style="max-width: 180px; height: auto; margin-bottom: 15px;" />
+              <h2 style="color: #a0522d; margin: 0;">Conferma Ordine</h2>
             </div>
             
             <p>Ciao ${data.userName || 'Cliente'},</p>
@@ -197,7 +201,7 @@ export class EmailService {
             
             <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
               <p style="color: #666; font-size: 14px;">
-                Dolce Manu - Cioccolatini Artigianali dalla Costiera Amalfitana
+                Onde di Cacao - Cioccolatini Artigianali dalla Costiera Amalfitana
               </p>
             </div>
           </div>
@@ -205,7 +209,7 @@ export class EmailService {
         </html>
       `,
       text: `
-        Conferma Ordine #${data.orderId} - Dolce Manu
+        Conferma Ordine #${data.orderId} - Onde di Cacao
         
         Ciao ${data.userName || 'Cliente'},
         
@@ -220,7 +224,7 @@ export class EmailService {
         
         Il tuo ordine è stato ricevuto e verrà processato al più presto.
         
-        Dolce Manu - Cioccolatini Artigianali dalla Costiera Amalfitana
+        Onde di Cacao - Cioccolatini Artigianali dalla Costiera Amalfitana
       `
     }
   }
@@ -327,7 +331,7 @@ export class EmailService {
             
             <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
               <p style="color: #666; font-size: 14px;">
-                Dolce Manu - Cioccolatini Artigianali dalla Costiera Amalfitana
+                Onde di Cacao - Cioccolatini Artigianali dalla Costiera Amalfitana
               </p>
             </div>
           </div>
@@ -345,7 +349,7 @@ export class EmailService {
         
         Continueremo a tenerti aggiornato sui progressi del tuo ordine.
         
-        Dolce Manu - Cioccolatini Artigianali dalla Costiera Amalfitana
+        Onde di Cacao - Cioccolatini Artigianali dalla Costiera Amalfitana
       `
     }
   }

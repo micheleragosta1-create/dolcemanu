@@ -25,6 +25,13 @@ export default function CartPage() {
                       <h3 className="poppins">{i.nome}</h3>
                       <p>€ {i.prezzo.toFixed(2)}</p>
                       {i.tipo && <span className="badge">{i.tipo}</span>} {i.pezzi && <span className="badge">{i.pezzi} pz</span>}
+                      {/* Dettagli per box personalizzata */}
+                      {i.customDetails && (
+                        <div className="custom-details">
+                          <span className="custom-details-label">Composizione:</span>
+                          <p className="custom-details-text">{i.customDetails}</p>
+                        </div>
+                      )}
                     </div>
                     <div className="cart-actions">
                       <input
@@ -69,6 +76,9 @@ export default function CartPage() {
         .cart-row { display: grid; grid-template-columns: 120px 1fr auto; gap: 1rem; background: #fff; border: 1px solid rgba(0,0,0,.06); border-radius: 12px; padding: .75rem; }
         .cart-thumb { width: 120px; height: 90px; background-size: cover; background-position: center; border-radius: 8px; }
         .badge { background: #f5f3f0; border: 1px solid #e8e3dd; border-radius: 999px; padding: .15rem .5rem; font-size: .75rem; margin-left: .25rem; }
+        .custom-details { margin-top: 0.75rem; padding: 0.75rem; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 8px; border: 1px solid var(--color-brown); }
+        .custom-details-label { font-size: 0.75rem; font-weight: 700; color: var(--color-navy); display: block; margin-bottom: 0.25rem; }
+        .custom-details-text { font-size: 0.8rem; color: #666; margin: 0; line-height: 1.4; }
         .cart-actions { display: grid; gap: .5rem; align-items: start; }
         .qty { width: 80px; padding: .4rem .6rem; border: 2px solid #e9ecef; border-radius: 8px; }
         .cart-summary { background: #fff; border: 1px solid rgba(0,0,0,.06); border-radius: 12px; padding: 1rem; height: fit-content; box-shadow: 0 10px 30px rgba(0,0,0,.06); }

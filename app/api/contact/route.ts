@@ -19,7 +19,7 @@ export async function POST(request: Request) {
       )
     }
 
-    // Email di base validation
+    // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
       return NextResponse.json(
@@ -37,21 +37,23 @@ export async function POST(request: Request) {
       )
     }
 
-    // Invia l'email a info@ondedicacao.com
-    // Per test: usa 'onboarding@resend.dev' se il dominio non è ancora verificato
-    const fromEmail = process.env.NODE_ENV === 'production' 
-      ? 'Sito Web Dolce Manu <noreply@ondedicacao.com>'
-      : 'Dolce Manu <onboarding@resend.dev>' // Dominio sandbox per test
+    // Usa il dominio verificato su Resend se configurato, altrimenti usa il sandbox
+    // Il sandbox di Resend (onboarding@resend.dev) funziona sempre senza verificare il dominio
+    const fromEmail = process.env.RESEND_FROM_EMAIL 
+      || 'onboarding@resend.dev'
+    
+    const fromName = 'Onde di Cacao'
 
-    // In sviluppo con sandbox, Resend permette solo l'invio al tuo email verificato
-    // In produzione, invia a info@ondedicacao.com
-    const toEmail = process.env.NODE_ENV === 'production'
-      ? ['info@ondedicacao.com']
-      : ['michele.ragosta1@gmail.com'] // Email di test in sviluppo
+    // Destinatario: usa la variabile d'ambiente o l'email di default
+    const toEmail = process.env.ADMIN_EMAIL || 'info@ondedicacao.com'
+    
+    // URL del sito per le immagini
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://ondedicacao.com'
+    const logoUrl = `${siteUrl}/images/logo_onde_di_cacao_1024.png`
 
     const { data, error } = await resend.emails.send({
-      from: fromEmail,
-      to: toEmail,
+      from: `${fromName} <${fromEmail}>`,
+      to: [toEmail],
       replyTo: email, // Permette di rispondere direttamente al cliente
       subject: `Nuovo messaggio da ${name} - Sito Web`,
       html: `
@@ -64,8 +66,8 @@ export async function POST(request: Request) {
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
           <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
             <div style="text-align: center; margin-bottom: 30px;">
-              <h1 style="color: #8b4513;">🍫 Dolce Manu</h1>
-              <h2 style="color: #a0522d;">Nuovo Messaggio dal Sito Web</h2>
+              <img src="${logoUrl}" alt="Onde di Cacao" style="max-width: 180px; height: auto; margin-bottom: 15px;" />
+              <h2 style="color: #a0522d; margin: 0;">Nuovo Messaggio dal Sito Web</h2>
             </div>
             
             <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0;">
@@ -90,37 +92,31 @@ export async function POST(request: Request) {
               <p style="color: #666; font-size: 14px;">
                 Questo messaggio è stato inviato tramite il form di contatto su ondedicacao.com
               </p>
-              ${process.env.NODE_ENV !== 'production' ? `
-              <p style="color: #ff6b6b; font-size: 12px; margin-top: 10px;">
-                ⚠️ MODALITÀ TEST: In produzione, questa email andrà a info@ondedicacao.com
-              </p>
-              ` : ''}
             </div>
           </div>
         </body>
         </html>
       `,
       text: `
-        Nuovo Messaggio dal Sito Web - Dolce Manu
-        
-        Dettagli Contatto:
-        Nome: ${name}
-        Email: ${email}
-        ${phone ? `Telefono: ${phone}` : ''}
-        
-        Messaggio:
-        ${message}
-        
-        ---
-        Questo messaggio è stato inviato tramite il form di contatto su ondedicacao.com
-        ${process.env.NODE_ENV !== 'production' ? '\n⚠️ MODALITÀ TEST: In produzione, questa email andrà a info@ondedicacao.com' : ''}
+Nuovo Messaggio dal Sito Web - Onde di Cacao
+
+Dettagli Contatto:
+Nome: ${name}
+Email: ${email}
+${phone ? `Telefono: ${phone}` : ''}
+
+Messaggio:
+${message}
+
+---
+Questo messaggio è stato inviato tramite il form di contatto su ondedicacao.com
       `
     })
 
     if (error) {
       console.error('Errore Resend:', error)
       return NextResponse.json(
-        { error: 'Errore nell\'invio dell\'email' },
+        { error: `Errore nell'invio dell'email: ${error.message}` },
         { status: 500 }
       )
     }
@@ -135,12 +131,7 @@ export async function POST(request: Request) {
       { 
         success: true, 
         message: 'Messaggio inviato con successo!',
-        emailId: data?.id,
-        // Info per debug in sviluppo
-        ...(process.env.NODE_ENV !== 'production' && {
-          testMode: true,
-          sentTo: toEmail[0]
-        })
+        emailId: data?.id
       },
       { status: 200 }
     )

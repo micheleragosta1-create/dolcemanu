@@ -448,6 +448,16 @@ export default function ShopPage() {
               </p>
             </div>
 
+            {/* Banner Configura la tua Box */}
+            <Link href="/shop/configura-box" className="custom-box-banner">
+              <div className="banner-icon">📦</div>
+              <div className="banner-content">
+                <h3>Configura la tua Box</h3>
+                <p>Crea la tua composizione personalizzata! Scegli 8 o 16 praline tra i nostri gusti.</p>
+              </div>
+              <div className="banner-arrow">→</div>
+            </Link>
+
             {/* Horizontal Filters Bar - Desktop Only */}
             <div className="horizontal-filters desktop-only">
               <div className="filters-row">
@@ -804,6 +814,74 @@ export default function ShopPage() {
           color: #666;
           font-size: 1rem;
           margin: 0;
+        }
+
+        /* ========== CUSTOM BOX BANNER ========== */
+        .custom-box-banner {
+          display: flex;
+          align-items: center;
+          gap: 1.5rem;
+          padding: 1.5rem 2rem;
+          background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+          border: 3px solid var(--color-brown);
+          border-radius: 16px;
+          margin-bottom: 2rem;
+          text-decoration: none;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 15px rgba(139, 69, 19, 0.15);
+        }
+
+        .custom-box-banner:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 8px 25px rgba(139, 69, 19, 0.25);
+          border-color: #6d3d0f;
+        }
+
+        .banner-icon {
+          font-size: 2.5rem;
+          flex-shrink: 0;
+        }
+
+        .banner-content {
+          flex: 1;
+        }
+
+        .banner-content h3 {
+          font-size: 1.25rem;
+          font-weight: 700;
+          color: var(--color-navy);
+          margin: 0 0 0.25rem 0;
+          font-family: 'Poppins', sans-serif;
+        }
+
+        .banner-content p {
+          font-size: 0.95rem;
+          color: #666;
+          margin: 0;
+        }
+
+        .banner-arrow {
+          font-size: 1.5rem;
+          color: var(--color-brown);
+          font-weight: 700;
+          transition: transform 0.3s ease;
+        }
+
+        .custom-box-banner:hover .banner-arrow {
+          transform: translateX(5px);
+        }
+
+        @media (max-width: 768px) {
+          .custom-box-banner {
+            flex-direction: column;
+            text-align: center;
+            gap: 1rem;
+            padding: 1.25rem;
+          }
+
+          .banner-arrow {
+            display: none;
+          }
         }
         
         /* ========== HORIZONTAL FILTERS ========== */

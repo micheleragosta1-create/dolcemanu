@@ -111,6 +111,21 @@ export interface Product {
   } | null
   // Immagini multiple - la prima è quella principale mostrata nello shop
   images?: string[] | null // es. ["url1.jpg", "url2.jpg", "url3.jpg"]
+  // Campi per box personalizzata
+  is_box_praline?: boolean | null // Se true, questa pralina è disponibile per box personalizzate
+  single_price?: number | null // Prezzo singola pralina per il configuratore
+}
+
+// Configurazione box personalizzata
+export interface BoxConfiguration {
+  id: string
+  size: 8 | 16
+  base_price: number
+  is_active: boolean
+  description?: string
+  image_url?: string
+  created_at: string
+  updated_at: string
 }
 
 export interface Order {

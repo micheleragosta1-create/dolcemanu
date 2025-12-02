@@ -44,7 +44,11 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { name, description, price, image_url, category, stock_quantity, box_formats, collection, chocolate_type, is_new, is_bestseller, discount_percentage } = body
+    const { 
+      name, description, price, image_url, category, stock_quantity, 
+      box_formats, collection, chocolate_type, is_new, is_bestseller, 
+      discount_percentage, is_box_praline, single_price 
+    } = body
 
     if (!name || !category) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -73,6 +77,9 @@ export async function POST(request: Request) {
         is_new: is_new ?? true,
         is_bestseller: is_bestseller ?? false,
         discount_percentage: discount_percentage || null,
+        // Campi per box personalizzata
+        is_box_praline: is_box_praline ?? false,
+        single_price: single_price || null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
