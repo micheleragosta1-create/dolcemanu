@@ -45,7 +45,7 @@ export async function PUT(
   try {
     const body = await request.json()
     const { 
-      name, description, price, image_url, category, stock_quantity, 
+      name, description, price, image_url, images, category, stock_quantity, 
       box_formats, collection, chocolate_type, is_new, is_bestseller, 
       discount_percentage, is_box_praline, single_price 
     } = body
@@ -95,6 +95,7 @@ export async function PUT(
         description,
         price,
         image_url,
+        images: images || [],
         category,
         stock_quantity,
         box_formats: box_formats ?? null,

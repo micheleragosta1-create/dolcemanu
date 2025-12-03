@@ -17,7 +17,7 @@ type ApiPost = { id: string; caption?: string; media_url?: string; thumbnail_url
 
 export default function InstagramGallery() {
   const [apiPosts, setApiPosts] = useState<ApiPost[] | null>(null)
-  const username = '_dolcemanu_'
+  const username = 'ondedicacao'
 
   useEffect(() => {
     let active = true

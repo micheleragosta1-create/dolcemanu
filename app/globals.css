@@ -2421,59 +2421,80 @@ main {
   flex-shrink: 0;
 }
 
-/* Instagram Gallery Section */
-.instagram-section {
-  padding: 6rem 2rem;
-  background: #f2f4f6;
-}
-
-.instagram-container {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.instagram-header {
-  text-align: center;
-  margin-bottom: 4rem;
-}
-
-.instagram-icon {
-  color: var(--color-brown);
-  margin-bottom: 1rem;
-}
-
-.instagram-title {
-  font-family: 'Poppins', sans-serif;
-  font-size: 2.5rem;
-  font-weight: 400;
-  color: var(--color-navy);
-  margin-bottom: 1rem;
-  letter-spacing: -1px;
-}
-
-.instagram-subtitle {
-  font-size: 1.1rem;
-  color: #495764;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.instagram-grid {
-  display: grid;
-  /* Riduzione dimensione box: min 220px invece di 300px */
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 0.75rem;
-  margin-bottom: 3rem;
-}
-
-.instagram-post {
-  position: relative;
-  aspect-ratio: 1;
-  border-radius: 10px;
-  overflow: hidden;
-  transition: transform 0.3s ease;
-  text-decoration: none;
-}
+  /* Instagram Gallery Section */
+  .instagram-section {
+    padding: 6rem 2rem;
+    background: #f2f4f6;
+  }
+  
+  .instagram-container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .instagram-header {
+    text-align: center;
+    margin-bottom: 4rem;
+  }
+  
+  .instagram-icon {
+    color: var(--color-brown);
+    margin-bottom: 1rem;
+  }
+  
+  .instagram-title {
+    font-family: 'Poppins', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 400;
+    color: var(--color-navy);
+    margin-bottom: 1rem;
+    letter-spacing: -1px;
+  }
+  
+  .instagram-subtitle {
+    font-size: 1.1rem;
+    color: #495764;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  
+  .instagram-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 3rem;
+  }
+  
+  @media (max-width: 1024px) {
+    .instagram-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  
+  @media (max-width: 640px) {
+    .instagram-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+    }
+    
+    .instagram-title {
+      font-size: 1.8rem;
+    }
+    
+    .instagram-subtitle {
+      font-size: 0.95rem;
+      padding: 0 1rem;
+    }
+  }
+  
+  .instagram-post {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+    text-decoration: none;
+  }
 
 .instagram-post:hover {
   transform: scale(1.05);
