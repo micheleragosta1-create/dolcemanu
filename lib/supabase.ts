@@ -101,7 +101,7 @@ export interface Product {
   // Nuovi campi per filtri avanzati
   chocolate_type?: 'fondente' | 'latte' | 'bianco' | 'ruby' | 'misto' | null
   collection?: string | null
-  box_format?: 6 | 9 | 12 | null
+  box_format?: 4 | 6 | 8 | 9 | 12 | null
   is_new?: boolean | null
   is_bestseller?: boolean | null
   discount_percentage?: number | null
@@ -119,7 +119,7 @@ export interface Product {
 // Configurazione box personalizzata
 export interface BoxConfiguration {
   id: string
-  size: 8 | 16
+  size: 4 | 8  // Dimensioni scatole attuali
   base_price: number
   is_active: boolean
   description?: string

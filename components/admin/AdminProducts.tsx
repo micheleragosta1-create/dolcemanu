@@ -39,10 +39,15 @@ export default function AdminProducts() {
   const [imageFiles, setImageFiles] = useState<File[]>([])
   const [imagePreviews, setImagePreviews] = useState<string[]>([])
   const [uploadingImage, setUploadingImage] = useState(false)
-  const [boxFormats, setBoxFormats] = useState<{[key: string]: { enabled: boolean; price: string }}>({
-    '6': { enabled: false, price: '' },
-    '9': { enabled: false, price: '' },
-    '12': { enabled: false, price: '' }
+  // Configurazioni scatole: attive (4, 8) e dormienti (6, 9, 12) per uso futuro
+  const [boxFormats, setBoxFormats] = useState<{[key: string]: { enabled: boolean; price: string; dormant?: boolean }}>({
+    // Formati ATTIVI (scatole attuali)
+    '4': { enabled: false, price: '', dormant: false },
+    '8': { enabled: false, price: '', dormant: false },
+    // Formati DORMIENTI (per uso futuro)
+    '6': { enabled: false, price: '', dormant: true },
+    '9': { enabled: false, price: '', dormant: true },
+    '12': { enabled: false, price: '', dormant: true }
   })
   const [formData, setFormData] = useState({
     name: '',
@@ -128,9 +133,11 @@ export default function AdminProducts() {
     setImageFiles([])
     setImagePreviews([])
     setBoxFormats({
-      '6': { enabled: false, price: '' },
-      '9': { enabled: false, price: '' },
-      '12': { enabled: false, price: '' }
+      '4': { enabled: false, price: '', dormant: false },
+      '8': { enabled: false, price: '', dormant: false },
+      '6': { enabled: false, price: '', dormant: true },
+      '9': { enabled: false, price: '', dormant: true },
+      '12': { enabled: false, price: '', dormant: true }
     })
     setFormData({
       name: '',
@@ -162,17 +169,30 @@ export default function AdminProducts() {
     // Carica i formati box esistenti
     const existingFormats = product.box_formats || {}
     setBoxFormats({
+      '4': { 
+        enabled: existingFormats['4'] !== undefined, 
+        price: existingFormats['4']?.toString() || '',
+        dormant: false
+      },
+      '8': { 
+        enabled: existingFormats['8'] !== undefined, 
+        price: existingFormats['8']?.toString() || '',
+        dormant: false
+      },
       '6': { 
         enabled: existingFormats['6'] !== undefined, 
-        price: existingFormats['6']?.toString() || '' 
+        price: existingFormats['6']?.toString() || '',
+        dormant: true
       },
       '9': { 
         enabled: existingFormats['9'] !== undefined, 
-        price: existingFormats['9']?.toString() || '' 
+        price: existingFormats['9']?.toString() || '',
+        dormant: true
       },
       '12': { 
         enabled: existingFormats['12'] !== undefined, 
-        price: existingFormats['12']?.toString() || '' 
+        price: existingFormats['12']?.toString() || '',
+        dormant: true
       }
     })
     
@@ -894,64 +914,123 @@ export default function AdminProducts() {
 
               {/* Formati Box con Prezzi */}
               <div className="form-section">
-                <h3>Formati Box Disponibili (Opzionale)</h3>
+                <h3>📦 Formati Box Disponibili</h3>
                 <p className="form-hint">
                   Seleziona i formati box per questo prodotto e il prezzo specifico per ciascuno. 
                   Il "Prezzo base" sopra viene usato solo se non selezioni alcun formato.
                 </p>
                 
-                <div className="box-formats-grid">
-                  {Object.entries(boxFormats).map(([size, data]) => (
-                    <div key={size} className="box-format-item">
-                      <label className="box-format-checkbox">
-                        <input
-                          type="checkbox"
-                          checked={data.enabled}
-                          onChange={(e) => {
-                            setBoxFormats({
-                              ...boxFormats,
-                              [size]: { ...data, enabled: e.target.checked }
-                            })
-                          }}
-                        />
-                        <span className="box-format-label">
-                          Box da <strong>{size}</strong> praline
-                        </span>
-                      </label>
-                      
-                      {data.enabled && (
-                        <div className="box-format-price-input">
-                          <label className="price-label">Prezzo (EUR)</label>
+                {/* FORMATI ATTIVI */}
+                <div className="formats-section">
+                  <h4 className="formats-title active">✅ Scatole Attive (Disponibili ora)</h4>
+                  <div className="box-formats-grid">
+                    {Object.entries(boxFormats)
+                      .filter(([_, data]) => !data.dormant)
+                      .map(([size, data]) => (
+                      <div key={size} className="box-format-item active-format">
+                        <label className="box-format-checkbox">
                           <input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={data.price}
+                            type="checkbox"
+                            checked={data.enabled}
                             onChange={(e) => {
                               setBoxFormats({
                                 ...boxFormats,
-                                [size]: { ...data, price: e.target.value }
+                                [size]: { ...data, enabled: e.target.checked }
                               })
                             }}
-                            className="form-input"
-                            placeholder="0.00"
-                            required={data.enabled}
                           />
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                          <span className="box-format-label">
+                            Box da <strong>{size}</strong> praline
+                          </span>
+                        </label>
+                        
+                        {data.enabled && (
+                          <div className="box-format-price-input">
+                            <label className="price-label">Prezzo (EUR)</label>
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              value={data.price}
+                              onChange={(e) => {
+                                setBoxFormats({
+                                  ...boxFormats,
+                                  [size]: { ...data, price: e.target.value }
+                                })
+                              }}
+                              className="form-input"
+                              placeholder="0.00"
+                              required={data.enabled}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* FORMATI DORMIENTI */}
+                <div className="formats-section dormant-section">
+                  <h4 className="formats-title dormant">💤 Scatole Future (Dormienti)</h4>
+                  <p className="dormant-hint">Questi formati non sono attualmente disponibili ma puoi configurarli per uso futuro.</p>
+                  <div className="box-formats-grid">
+                    {Object.entries(boxFormats)
+                      .filter(([_, data]) => data.dormant)
+                      .map(([size, data]) => (
+                      <div key={size} className={`box-format-item dormant-format ${data.enabled ? 'enabled-dormant' : ''}`}>
+                        <label className="box-format-checkbox">
+                          <input
+                            type="checkbox"
+                            checked={data.enabled}
+                            onChange={(e) => {
+                              setBoxFormats({
+                                ...boxFormats,
+                                [size]: { ...data, enabled: e.target.checked }
+                              })
+                            }}
+                          />
+                          <span className="box-format-label">
+                            Box da <strong>{size}</strong> praline
+                            <span className="dormant-badge">Dormiente</span>
+                          </span>
+                        </label>
+                        
+                        {data.enabled && (
+                          <div className="box-format-price-input">
+                            <label className="price-label">Prezzo (EUR)</label>
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              value={data.price}
+                              onChange={(e) => {
+                                setBoxFormats({
+                                  ...boxFormats,
+                                  [size]: { ...data, price: e.target.value }
+                                })
+                              }}
+                              className="form-input"
+                              placeholder="0.00"
+                              required={data.enabled}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
                 
                 {Object.values(boxFormats).some(f => f.enabled) && (
                   <div className="box-formats-preview">
-                    <strong>Anteprima prezzi:</strong>
+                    <strong>Anteprima prezzi configurati:</strong>
                     <div className="preview-items">
                       {Object.entries(boxFormats)
                         .filter(([_, data]) => data.enabled && data.price)
+                        .sort(([a], [b]) => parseInt(a) - parseInt(b))
                         .map(([size, data]) => (
-                          <span key={size} className="preview-badge">
+                          <span key={size} className={`preview-badge ${data.dormant ? 'dormant-preview' : ''}`}>
                             {size} praline: €{parseFloat(data.price).toFixed(2)}
+                            {data.dormant && <span className="preview-dormant-tag">💤</span>}
                           </span>
                         ))}
                     </div>
@@ -1585,6 +1664,7 @@ export default function AdminProducts() {
         .preview-badge {
           display: inline-flex;
           align-items: center;
+          gap: 0.5rem;
           padding: 0.5rem 1rem;
           background: white;
           border: 2px solid #7dd3fc;
@@ -1592,6 +1672,88 @@ export default function AdminProducts() {
           color: #0369a1;
           font-weight: 600;
           font-size: 0.9rem;
+        }
+
+        .preview-badge.dormant-preview {
+          border-color: #d1d5db;
+          background: #f9fafb;
+          color: #6b7280;
+        }
+
+        .preview-dormant-tag {
+          font-size: 0.8rem;
+        }
+
+        /* Sezioni formati attivi/dormienti */
+        .formats-section {
+          margin-bottom: 1.5rem;
+        }
+
+        .formats-title {
+          font-size: 1rem;
+          margin-bottom: 0.75rem;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+
+        .formats-title.active {
+          color: #059669;
+        }
+
+        .formats-title.dormant {
+          color: #6b7280;
+        }
+
+        .dormant-section {
+          border-top: 2px dashed #e5e7eb;
+          padding-top: 1.5rem;
+          margin-top: 1.5rem;
+        }
+
+        .dormant-hint {
+          font-size: 0.85rem;
+          color: #9ca3af;
+          margin-bottom: 1rem;
+          font-style: italic;
+        }
+
+        .active-format {
+          border-color: #10b981 !important;
+          background: #ecfdf5 !important;
+        }
+
+        .active-format:has(input[type="checkbox"]:checked) {
+          background: #d1fae5 !important;
+          border-color: #059669 !important;
+        }
+
+        .dormant-format {
+          border-color: #d1d5db !important;
+          background: #f9fafb !important;
+          opacity: 0.8;
+        }
+
+        .dormant-format:hover {
+          opacity: 1;
+        }
+
+        .dormant-format.enabled-dormant {
+          border-color: #9ca3af !important;
+          background: #f3f4f6 !important;
+          opacity: 1;
+        }
+
+        .dormant-badge {
+          display: inline-block;
+          margin-left: 0.5rem;
+          padding: 0.15rem 0.5rem;
+          background: #e5e7eb;
+          color: #6b7280;
+          border-radius: 999px;
+          font-size: 0.7rem;
+          font-weight: 600;
+          text-transform: uppercase;
         }
 
         .form-actions {

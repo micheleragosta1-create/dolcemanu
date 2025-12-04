@@ -17,12 +17,13 @@ export default function ProductGallery({ images, productName, className = '' }: 
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [showSwipeHint, setShowSwipeHint] = useState(true)
 
-  // Per ora creiamo multiple view della stessa immagine per demo
-  const galleryImages = images.length > 1 ? images : [
-    images[0],
-    images[0] + '?view=side', // Simula vista laterale
-    images[0] + '?view=detail', // Simula dettaglio
-  ]
+  // Filtra immagini vuote o non valide
+  const galleryImages = images.filter(img => img && img.trim() !== '')
+
+  // Reset indice quando cambiano le immagini
+  useEffect(() => {
+    setCurrentIndex(0)
+  }, [images.length])
 
   const goToNext = useCallback(() => {
     if (isTransitioning) return
@@ -68,11 +69,13 @@ export default function ProductGallery({ images, productName, className = '' }: 
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [goToPrevious, goToNext])
 
+  // Se non ci sono immagini o ce n'è solo una, mostra la versione semplice
   if (galleryImages.length <= 1) {
+    const imageToShow = galleryImages[0] || '/images/prodotto-1.svg'
     return (
       <div className={`simple-gallery ${className}`}>
         <div className="main-image">
-          <Image src={galleryImages[0]} alt={productName} width={500} height={500} style={{ width: '100%', height: 'auto', objectFit: 'contain', borderRadius: 16 }} />
+          <Image src={imageToShow} alt={productName} width={500} height={500} style={{ width: '100%', height: 'auto', objectFit: 'contain', borderRadius: 16 }} />
         </div>
         <style jsx>{`
           .simple-gallery {

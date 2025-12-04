@@ -25,7 +25,7 @@ export default function ShopPage() {
   const [ordine, setOrdine] = useState<"prezzo_asc" | "prezzo_desc" | "nome_asc">("prezzo_asc")
   
   // Stato per tenere traccia del formato selezionato per ogni prodotto
-  const [selectedFormats, setSelectedFormats] = useState<Record<string, 6 | 9 | 12>>({})
+  const [selectedFormats, setSelectedFormats] = useState<Record<string, 4 | 6 | 8 | 9 | 12>>({})
   const [filtersOpen, setFiltersOpen] = useState(false)
 
   // Nuovi filtri avanzati
@@ -352,30 +352,36 @@ export default function ShopPage() {
   }
 
   // Ottieni i prezzi dei formati box per un prodotto
+  // Supporta formati: 4, 8 (attivi) + 6, 9, 12 (dormienti/futuri)
   const getBoxPrices = (product: Product) => {
     const productData = product as any
     if (productData.box_formats && typeof productData.box_formats === 'object') {
       const formats = productData.box_formats
       return {
+        4: formats['4'] || 0,
         6: formats['6'] || 0,
+        8: formats['8'] || 0,
         9: formats['9'] || 0,
         12: formats['12'] || 0
       }
     }
-    // Fallback con formule se non configurato
+    // Nessun formato configurato
     return {
-      6: product.price,
-      9: product.price * 1.4,
-      12: product.price * 1.75
+      4: 0,
+      6: 0,
+      8: 0,
+      9: 0,
+      12: 0
     }
   }
 
   // Ottieni formati disponibili per un prodotto
+  // Ordine: formati attivi (4, 8) e dormienti (6, 9, 12)
   const getAvailableFormats = (product: Product) => {
     const productData = product as any
     if (productData?.box_formats && typeof productData.box_formats === 'object') {
       const formats = productData.box_formats
-      return [6, 9, 12].filter(size => formats[String(size)] !== undefined && formats[String(size)] > 0)
+      return [4, 6, 8, 9, 12].filter(size => formats[String(size)] !== undefined && formats[String(size)] > 0)
     }
     return [] // Nessun formato se non configurato
   }
@@ -383,7 +389,7 @@ export default function ShopPage() {
   // Ottieni il formato selezionato per un prodotto (o il primo disponibile)
   const getSelectedFormat = (productId: string, availableFormats: number[]) => {
     if (availableFormats.length === 0) return null
-    return selectedFormats[productId] || (availableFormats[0] as 6 | 9 | 12)
+    return selectedFormats[productId] || (availableFormats[0] as 4 | 6 | 8 | 9 | 12)
   }
 
   // Ottieni il prezzo corrente in base al formato selezionato
@@ -657,12 +663,12 @@ export default function ShopPage() {
                                   onClick={(e) => {
                                     e.preventDefault()
                                     e.stopPropagation()
-                                    setSelectedFormats((prev: Record<string, 6 | 9 | 12>) => ({ ...prev, [p.id]: format as 6 | 9 | 12 }))
+                                    setSelectedFormats((prev: Record<string, 4 | 6 | 8 | 9 | 12>) => ({ ...prev, [p.id]: format as 4 | 6 | 8 | 9 | 12 }))
                                   }}
                                 >
                                   <span className="format-size">{format}</span>
                                   <span className="format-label-text">pz</span>
-                                  <span className="format-price">€{boxPrices[format as 6 | 9 | 12].toFixed(2)}</span>
+                                  <span className="format-price">€{boxPrices[format as 4 | 6 | 8 | 9 | 12].toFixed(2)}</span>
                                 </button>
                               ))}
                             </div>
