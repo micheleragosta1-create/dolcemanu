@@ -30,7 +30,7 @@ export default function ProductPage() {
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [qty, setQty] = useState(1)
-  const [selectedBoxSize, setSelectedBoxSize] = useState<6 | 9 | 12>(6)
+  const [selectedBoxSize, setSelectedBoxSize] = useState<4 | 6 | 8 | 9 | 12>(4)
   const [carouselPosition, setCarouselPosition] = useState(0)
 
   useEffect(() => {
@@ -70,56 +70,81 @@ export default function ProductPage() {
 
   const related = useRelated(product)
 
+  // Verifica se il prodotto è una pralina con formati box configurati
+  const isBoxPraline = useMemo(() => {
+    if (!product) return false
+    const productData = product as any
+    // È una pralina se ha il flag is_box_praline OPPURE se ha box_formats configurati
+    const hasBoxFormats = productData.box_formats && 
+      typeof productData.box_formats === 'object' && 
+      Object.keys(productData.box_formats).length > 0
+    return productData.is_box_praline === true || hasBoxFormats
+  }, [product])
+
   // Calcola il prezzo in base alla dimensione del box
+  // Supporta tutti i formati: 4, 8 (attivi) + 6, 9, 12 (dormienti/futuri)
   const boxPrices = useMemo(() => {
-    if (!product) return { 6: 0, 9: 0, 12: 0 }
+    if (!product) return { 4: 0, 8: 0, 6: 0, 9: 0, 12: 0 }
     
     // Se il prodotto ha formati box personalizzati dal database, usali
     const productData = product as any
     if (productData.box_formats && typeof productData.box_formats === 'object') {
       const formats = productData.box_formats
       return {
+        4: formats['4'] || 0,
+        8: formats['8'] || 0,
         6: formats['6'] || 0,
         9: formats['9'] || 0,
         12: formats['12'] || 0
       }
     }
     
-    // Altrimenti usa le formule di fallback
-    const basePrice = product.price
-    return {
-      6: basePrice,
-      9: basePrice * 1.4, // circa 40% in più
-      12: basePrice * 1.75 // circa 75% in più
-    }
+    // Nessun formato configurato
+    return { 4: 0, 8: 0, 6: 0, 9: 0, 12: 0 }
   }, [product])
 
   // Determina quali formati sono disponibili
+  // Ordine: prima formati attivi (4, 8), poi dormienti (6, 9, 12)
   const availableFormats = useMemo(() => {
+    // Se non è una pralina, non mostrare formati
+    if (!isBoxPraline) return []
+    
     const productData = product as any
     if (productData?.box_formats && typeof productData.box_formats === 'object') {
-      // Se ci sono formati personalizzati, mostra solo quelli configurati
+      // Mostra solo i formati con prezzo configurato > 0
       const formats = productData.box_formats
-      return [6, 9, 12].filter(size => formats[String(size)] !== undefined && formats[String(size)] > 0)
+      // Tutti i formati supportati, ordinati per dimensione
+      return [4, 6, 8, 9, 12].filter(size => formats[String(size)] !== undefined && formats[String(size)] > 0)
     }
-    // Altrimenti mostra tutti i formati (comportamento predefinito)
-    return [6, 9, 12]
-  }, [product])
+    // Nessun formato configurato
+    return []
+  }, [product, isBoxPraline])
 
-  const currentPrice = boxPrices[selectedBoxSize]
+  // Prezzo corrente: usa il prezzo box se disponibile, altrimenti prezzo base
+  const currentPrice = availableFormats.length > 0 && availableFormats.includes(selectedBoxSize) 
+    ? boxPrices[selectedBoxSize] 
+    : (product?.price || 0)
 
   // Assicura che il formato selezionato sia disponibile
   useEffect(() => {
     if (availableFormats.length > 0 && !availableFormats.includes(selectedBoxSize)) {
-      setSelectedBoxSize(availableFormats[0] as 6 | 9 | 12)
+      setSelectedBoxSize(availableFormats[0] as 4 | 6 | 8 | 9 | 12)
     }
   }, [availableFormats, selectedBoxSize])
 
   const addToCart = () => {
     if (!product) return
-    const productName = `${product.name} (${selectedBoxSize} praline)`
+    // Se è una pralina con formati, aggiungi il formato selezionato al nome
+    const hasFormats = availableFormats.length > 0
+    const productName = hasFormats 
+      ? `${product.name} (${selectedBoxSize} praline)` 
+      : product.name
+    const productId = hasFormats 
+      ? `${product.id}-${selectedBoxSize}` 
+      : product.id
+    
     addItem({ 
-      id: `${product.id}-${selectedBoxSize}`, 
+      id: productId, 
       nome: productName, 
       prezzo: currentPrice, 
       immagine: product.image_url 
@@ -127,10 +152,10 @@ export default function ProductPage() {
     if (typeof window !== 'undefined') {
       // GA4 event
       // @ts-ignore
-      window.gtag && window.gtag('event','add_to_cart',{currency:'EUR', value: currentPrice*qty, items:[{item_id:`${product.id}-${selectedBoxSize}`, item_name:productName, price:currentPrice, quantity:qty}]})
+      window.gtag && window.gtag('event','add_to_cart',{currency:'EUR', value: currentPrice*qty, items:[{item_id: productId, item_name:productName, price:currentPrice, quantity:qty}]})
       // Meta Pixel
       // @ts-ignore
-      window.fbq && window.fbq('track','AddToCart',{content_ids:[`${product.id}-${selectedBoxSize}`], content_name:productName, currency:'EUR', value: currentPrice*qty})
+      window.fbq && window.fbq('track','AddToCart',{content_ids:[productId], content_name:productName, currency:'EUR', value: currentPrice*qty})
     }
   }
 

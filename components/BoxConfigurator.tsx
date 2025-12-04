@@ -30,7 +30,7 @@ const getPralinePrice = (product: Product): number => {
 
 export default function BoxConfigurator({ pralines }: BoxConfiguratorProps) {
   const { addItem } = useCartWithToast()
-  const [boxSize, setBoxSize] = useState<8 | 16>(8)
+  const [boxSize, setBoxSize] = useState<4 | 8>(4)
   const [selections, setSelections] = useState<Map<string, SelectedPraline>>(new Map())
   const [isAdding, setIsAdding] = useState(false)
 
@@ -142,17 +142,18 @@ export default function BoxConfigurator({ pralines }: BoxConfiguratorProps) {
         </h3>
         <div className="size-options">
           <button
+            className={`size-option ${boxSize === 4 ? 'active' : ''}`}
+            onClick={() => setBoxSize(4)}
+          >
+            <span className="size-number">4</span>
+            <span className="size-label">praline</span>
+            <span className="size-badge">Perfetta per assaggi!</span>
+          </button>
+          <button
             className={`size-option ${boxSize === 8 ? 'active' : ''}`}
             onClick={() => setBoxSize(8)}
           >
             <span className="size-number">8</span>
-            <span className="size-label">praline</span>
-          </button>
-          <button
-            className={`size-option ${boxSize === 16 ? 'active' : ''}`}
-            onClick={() => setBoxSize(16)}
-          >
-            <span className="size-number">16</span>
             <span className="size-label">praline</span>
             <span className="size-badge">Più scelta!</span>
           </button>
