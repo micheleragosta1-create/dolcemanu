@@ -266,39 +266,31 @@ export default function ProductPage() {
                     <div className="box-size-selector">
                       <label className="box-size-label">Formato Box:</label>
                       <div className="box-size-options">
-                        {availableFormats.includes(6) && boxPrices[6] > 0 && (
-                          <button
-                            className={`box-size-btn ${selectedBoxSize === 6 ? 'active' : ''}`}
-                            onClick={() => setSelectedBoxSize(6)}
-                          >
-                            <span className="box-size-number">6</span>
-                            <span className="box-size-text">praline</span>
-                            <span className="box-size-price">€ {boxPrices[6].toFixed(2)}</span>
-                          </button>
-                        )}
-                        {availableFormats.includes(9) && boxPrices[9] > 0 && (
-                          <button
-                            className={`box-size-btn ${selectedBoxSize === 9 ? 'active' : ''}`}
-                            onClick={() => setSelectedBoxSize(9)}
-                          >
-                            <span className="box-size-number">9</span>
-                            <span className="box-size-text">praline</span>
-                            <span className="box-size-price">€ {boxPrices[9].toFixed(2)}</span>
-                          </button>
-                        )}
-                        {availableFormats.includes(12) && boxPrices[12] > 0 && (
-                          <button
-                            className={`box-size-btn ${selectedBoxSize === 12 ? 'active' : ''}`}
-                            onClick={() => setSelectedBoxSize(12)}
-                          >
-                            <span className="box-size-number">12</span>
-                            <span className="box-size-text">praline</span>
-                            <span className="box-size-price">€ {boxPrices[12].toFixed(2)}</span>
-                            {boxPrices[12] < boxPrices[6] * 2 && (
-                              <span className="box-size-badge">Conveniente</span>
-                            )}
-                          </button>
-                        )}
+                        {availableFormats.map((size) => {
+                          const price = boxPrices[size as keyof typeof boxPrices]
+                          const isActive = selectedBoxSize === size
+                          // Mostra badge "Conveniente" se il formato più grande ha prezzo/pezzo inferiore
+                          const smallestFormat = availableFormats[0]
+                          const smallestPrice = boxPrices[smallestFormat as keyof typeof boxPrices]
+                          const isConvenient = size > smallestFormat && 
+                            smallestPrice > 0 && 
+                            (price / size) < (smallestPrice / smallestFormat)
+                          
+                          return (
+                            <button
+                              key={size}
+                              className={`box-size-btn ${isActive ? 'active' : ''}`}
+                              onClick={() => setSelectedBoxSize(size as 4 | 6 | 8 | 9 | 12)}
+                            >
+                              <span className="box-size-number">{size}</span>
+                              <span className="box-size-text">praline</span>
+                              <span className="box-size-price">€ {price.toFixed(2)}</span>
+                              {isConvenient && (
+                                <span className="box-size-badge">Conveniente</span>
+                              )}
+                            </button>
+                          )
+                        })}
                       </div>
                     </div>
                   )}
