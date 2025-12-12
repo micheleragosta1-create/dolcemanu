@@ -319,7 +319,7 @@ export default function ProductPage() {
               {!loading && related.length > 0 && (
                 <div className="related">
                   <h2 className="poppins">Potrebbero piacerti</h2>
-                  <div className="choco-carousel">
+                  <div className="related-carousel">
                     <div className="carousel-container">
                       <div 
                         className="carousel-track"
@@ -329,7 +329,7 @@ export default function ProductPage() {
                         }}
                       >
                         {related.map((r, index) => (
-                          <div key={r.id} className="choco-card">
+                          <div key={r.id} className="related-card">
                             <a href={`/product/${r.id}`} className="card-link">
                               <div className="card-image">
                                 <img src={r.image_url} alt={r.name} />
@@ -397,7 +397,7 @@ export default function ProductPage() {
         .product-section {
           position: relative;
           z-index: 10;
-          padding: 15rem 2rem 8rem;
+          padding: var(--section-padding-top) var(--section-padding-x) var(--section-padding-bottom);
           min-height: calc(100vh - 200px);
         }
         .product-container { max-width: 1200px; margin: 0 auto; }
@@ -416,7 +416,7 @@ export default function ProductPage() {
           font-weight: 600;
           cursor: pointer;
           transition: all 0.3s ease;
-          margin-bottom: 2rem;
+          margin-bottom: 1.5rem;
           box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
 
@@ -434,9 +434,9 @@ export default function ProductPage() {
         .product-grid { display: grid; grid-template-columns: 2fr 3fr; gap: 2rem; }
         .product-gallery { width: 100%; }
         .details { display: grid; gap: 1rem; align-content: start; }
-        .name { font-size: 2rem; }
-        .price { font-size: 1.6rem; font-weight: 700; color: var(--color-brown); }
-        .desc { color: #555; line-height: 1.7; }
+        .name { font-size: var(--h1-size); }
+        .price { font-size: 1.5rem; font-weight: 700; color: var(--color-brown); }
+        .desc { color: #555; line-height: 1.7; font-size: var(--body-size); }
         
         /* Box Size Selector */
         .box-size-selector {
@@ -540,8 +540,8 @@ export default function ProductPage() {
           font-weight: 600;
         }
 
-        /* Choco Carousel */
-        .choco-carousel {
+        /* Related Products Carousel */
+        .related-carousel {
           position: relative;
           margin: 0 auto;
           max-width: 100%;
@@ -559,7 +559,7 @@ export default function ProductPage() {
           padding: 1rem 0;
         }
 
-        .choco-card {
+        .related-card {
           flex: 0 0 280px;
           background: white;
           border-radius: 16px;
@@ -569,7 +569,7 @@ export default function ProductPage() {
           position: relative;
         }
 
-        .choco-card:hover {
+        .related-card:hover {
           transform: translateY(-8px);
           box-shadow: 0 15px 35px rgba(0,0,0,0.15);
         }
@@ -593,7 +593,7 @@ export default function ProductPage() {
           transition: transform 0.3s ease;
         }
 
-        .choco-card:hover .card-image img {
+        .related-card:hover .card-image img {
           transform: scale(1.05);
         }
 
@@ -611,7 +611,7 @@ export default function ProductPage() {
           transition: opacity 0.3s ease;
         }
 
-        .choco-card:hover .card-overlay {
+        .related-card:hover .card-overlay {
           opacity: 1;
         }
 
@@ -728,61 +728,161 @@ export default function ProductPage() {
           .back-button-product {
             font-size: 0.9rem;
             padding: 0.625rem 1rem;
+            margin-bottom: 1rem;
           }
 
-          .product-grid { grid-template-columns: 1fr; }
+          .product-grid { 
+            grid-template-columns: 1fr; 
+            gap: 1.5rem;
+          }
+
+          .name {
+            font-size: 1.75rem;
+          }
+
+          .price {
+            font-size: 1.4rem;
+          }
           
-          .choco-card {
-            flex: 0 0 240px;
+          .related-card {
+            flex: 0 0 220px;
           }
           
           .card-image {
-            height: 180px;
+            height: 160px;
+          }
+        }
+
+        @media (max-width: 768px) {
+          .back-button-product {
+            font-size: 0.85rem;
+            padding: 0.5rem 0.875rem;
+            border-radius: 10px;
+          }
+
+          .name {
+            font-size: 1.5rem;
+          }
+
+          .price {
+            font-size: 1.25rem;
+          }
+
+          .desc {
+            font-size: 0.95rem;
+          }
+
+          .box-size-selector {
+            padding: 1rem;
+          }
+
+          .box-size-options {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+          }
+          
+          .box-size-btn {
+            padding: 0.75rem 0.5rem;
+          }
+          
+          .box-size-number {
+            font-size: 1.4rem;
+          }
+          
+          .box-size-text {
+            font-size: 0.7rem;
+          }
+
+          .box-size-price {
+            font-size: 0.85rem;
+          }
+
+          .related-card {
+            flex: 0 0 180px;
+          }
+          
+          .card-image {
+            height: 140px;
+          }
+
+          .card-content {
+            padding: 0.875rem;
+          }
+          
+          .card-title {
+            font-size: 0.9rem;
+          }
+          
+          .card-price {
+            font-size: 1rem;
           }
         }
         
-        @media (max-width: 600px) {
+        @media (max-width: 480px) {
+          .name {
+            font-size: 1.35rem;
+          }
+
+          .price {
+            font-size: 1.15rem;
+          }
+
+          .desc {
+            font-size: 0.9rem;
+            line-height: 1.6;
+          }
+
+          .box-size-selector {
+            padding: 0.75rem;
+          }
+
           .box-size-options {
             grid-template-columns: 1fr;
+            gap: 0.5rem;
           }
           
           .box-size-btn {
             flex-direction: row;
             justify-content: space-between;
-            padding: 0.875rem 1rem;
+            padding: 0.75rem 1rem;
           }
           
           .box-size-number {
-            font-size: 1.5rem;
+            font-size: 1.25rem;
           }
           
           .box-size-text {
             margin: 0 auto 0 0.5rem;
           }
 
-          .choco-card {
-            flex: 0 0 200px;
+          .related-card {
+            flex: 0 0 160px;
           }
           
           .card-image {
-            height: 160px;
+            height: 120px;
           }
           
           .card-content {
-            padding: 1rem;
+            padding: 0.75rem;
           }
           
           .card-title {
-            font-size: 1rem;
+            font-size: 0.85rem;
           }
           
           .card-price {
-            font-size: 1.1rem;
+            font-size: 0.95rem;
           }
           
           .carousel-btn {
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
+          }
+
+          .indicator {
+            width: 10px;
+            height: 10px;
           }
         }
       `}</style>

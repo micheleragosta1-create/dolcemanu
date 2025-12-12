@@ -15,7 +15,6 @@ export default function Home() {
       <Suspense fallback={null}>
         <GoogleAdsConversion />
       </Suspense>
-      <div className="chocolate-background"></div>
       <Header />
       <HeroVideo />
       <ChocoShowcase />

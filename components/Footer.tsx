@@ -70,13 +70,6 @@ export default function Footer() {
               loading="lazy"
               decoding="async"
             />
-            <img 
-              src="https://js.stripe.com/v3/fingerprinted/img/stripe-logo-2x.png" 
-              alt="Stripe" 
-              className="payment-icon"
-              loading="lazy"
-              decoding="async"
-            />
           </div>
           
           <p style={{marginTop: '1rem', fontSize: '0.9rem', color: '#ccc'}}>
