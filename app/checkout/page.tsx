@@ -3,15 +3,10 @@
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import { useCart } from "@/components/CartContext"
-import { loadStripe } from "@stripe/stripe-js"
 import { PayPalScriptProvider, PayPalButtons, FUNDING } from "@paypal/react-paypal-js"
 import { useEffect, useState } from "react"
 import { useAuth } from "@/components/AuthContext"
 import { getOwnProfile } from "@/lib/supabase"
-
-const stripePromise = typeof window !== 'undefined' && process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
-  ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
-  : null
 
 export default function CheckoutPage() {
   const { items, totalAmount } = useCart()
@@ -51,60 +46,6 @@ export default function CheckoutPage() {
     return () => window.clearTimeout(timer)
   }, [mounted, paypalReady])
   const payableAmount = Number.isFinite(totalAmount) && totalAmount > 0 ? totalAmount : 1
-
-  const handleStripeCheckout = async () => {
-    try {
-      // 1) Crea l'ordine lato server per ottenere order_id (metadati Stripe)
-      let orderId: string | null = null
-      try {
-        const orderRes = await fetch('/api/orders', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            user_email: user?.email || 'guest@local.test',
-            items: items.map(i => ({ product_id: String(i.id), quantity: i.qty })),
-            shipping_address: addr,
-            shipping_city: city,
-            shipping_postal_code: zip,
-            shipping_country: country
-          })
-        })
-        const orderData = await orderRes.json()
-        if (orderRes.ok && orderData?.order_id) {
-          orderId = orderData.order_id
-        }
-      } catch (e) {
-        // Se fallisce, proseguiamo senza metadata
-        console.warn('Creazione ordine preliminare fallita, proseguo senza metadata', e)
-      }
-
-      // 2) Crea la sessione Stripe passando anche i metadata se disponibili
-      const res = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          items: items.map(i => ({
-            name: i.nome,
-            unit_amount: Math.round(i.prezzo * 100),
-            quantity: i.qty
-          })),
-          success_url: `${window.location.origin}/?checkout=success`,
-          cancel_url: `${window.location.origin}/cart`,
-          order_id: orderId || '',
-          user_email: user?.email || ''
-        })
-      })
-      const data = await res.json()
-      if (data?.url) {
-        window.location.href = data.url
-      } else {
-        alert('Errore durante il checkout Stripe')
-      }
-    } catch (e) {
-      console.error(e)
-      alert('Errore di rete durante il checkout Stripe')
-    }
-  }
 
   // Preferisce env, fallback sandbox
   // Fallback sandbox ufficiale di PayPal e trim per evitare spazi invisibili
@@ -240,16 +181,6 @@ export default function CheckoutPage() {
                       <input id="ship-country" type="text" value={country} onChange={e=>setCountry(e.target.value)} disabled={useProfileAddress} placeholder="Italia" />
                     </div>
                   </div>
-                </div>
-                <button className="stripe-btn" onClick={handleStripeCheckout} aria-label="Paga con Stripe">
-                  <svg className="stripe-icon" viewBox="0 0 32 14" width="44" height="19" aria-hidden="true" style={{fill:'white'}}>
-                    <path d="M12.5 8.72c-.62 0-1.06.43-1.06 1.07 0 .56.37 1.07 1.06 1.07.75 0 1.18-.44 1.18-1.07 0-.63-.43-1.07-1.18-1.07zm-2.93 3.42h2.37V5.7H9.57v6.44zm-1.62 0V9.28c-.25-.43-.81-.74-1.37-.74-.75 0-1.25.43-1.25 1.12v2.48H2.96V5.7h2.37v.8c.56-.55 1.18-.8 1.87-.8 1.18 0 2.37.93 2.37 3.22v3.22zm-6.8-2.23c0 1.55-1.12 2.3-2.43 2.3-1.37 0-2.43-.87-2.43-2.3 0-1.42 1.12-2.3 2.43-2.3 1.25 0 2.43.8 2.43 2.3zM1.18 5.7h1.87c0 .37-.12.62-.3.8-.25-.18-.56-.24-.87-.24-1.18 0-1.87.93-1.87 2.42 0 1.24.5 2.17 1.55 2.17.56 0 .93-.18 1.12-.43v-1.3H1.18v-1.8h3.8v5.02c-.8.43-1.75.62-2.68.62C.93 12.95 0 11.7 0 9.9c0-2.3 1.3-4.22 4.03-4.22.8 0 1.62.18 2.24.43L6.02 7.7c-.5-.18-1.06-.3-1.5-.3-.93 0-1.43.55-1.43 1.36h-.06c-.06-.93-.68-1.42-1.55-1.42-.8 0-1.3.55-1.3 1.36zm23.5 6.44h2.37v-8.7h-2.37v8.7zm-2.93 0V9.28c-.25-.43-.8-.74-1.37-.74-.74 0-1.24.43-1.24 1.12v2.48h-2.37V5.7h2.37v.8c.56-.55 1.18-.8 1.87-.8 1.18 0 2.37.93 2.37 3.22v3.22zm6.87-2.67c0 1.36-.87 2.23-2.17 2.23-.8 0-1.37-.3-1.68-.8l-.06.68h-2.24V5.7h2.37v.8c.37-.55.93-.8 1.68-.8 1.3 0 2.1 1.05 2.1 2.42zm-2.3 0c0-.8-.3-1.3-.93-1.3-.62 0-1.06.5-1.06 1.3 0 .8.44 1.3 1.06 1.3.62 0 .93-.5.93-1.3z"/>
-                  </svg>
-                  Paga con Carta di Credito
-                </button>
-
-                <div className="divider">
-                  <span>oppure</span>
                 </div>
 
                 <div className="paypal-container">
@@ -499,69 +430,6 @@ export default function CheckoutPage() {
         .total { border-top: 1px solid #eee; padding-top: .5rem; margin-top: .5rem; }
         .note { text-align: center; color: #888; font-size: .9rem; }
         
-        /* Stripe Button */
-        .stripe-btn {
-          width: 100%;
-          background: linear-gradient(135deg, #635bff 0%, #5147e8 100%);
-          color: white;
-          border: none;
-          padding: 16px 24px;
-          border-radius: 12px;
-          font-size: 16px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 12px;
-          box-shadow: 0 4px 15px rgba(99, 91, 255, 0.3);
-          margin-bottom: 20px;
-          position: relative;
-          overflow: hidden;
-        }
-        
-        .stripe-btn:hover {
-          background: linear-gradient(135deg, #5147e8 0%, #4338ca 100%);
-          transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(99, 91, 255, 0.4);
-        }
-
-        .stripe-icon { 
-          filter: brightness(0) invert(1); 
-          width: 44px; 
-          height: 18px; 
-          flex-shrink: 0; 
-          display: block; 
-        }
-        
-        /* Divider */
-        .divider {
-          position: relative;
-          text-align: center;
-          margin: 20px 0;
-          color: #666;
-          font-size: 14px;
-        }
-        
-        .divider:before {
-          content: '';
-          position: absolute;
-          top: 50%;
-          left: 0;
-          right: 0;
-          height: 1px;
-          background: #e5e5e5;
-          z-index: 0;
-        }
-        
-        .divider span {
-          background: white;
-          padding: 0 15px;
-          position: relative;
-          z-index: 1;
-        }
-        
         /* PayPal Container */
         .paypal-container {
           margin-top: 10px;
@@ -589,7 +457,6 @@ export default function CheckoutPage() {
           .auth-required h2 { font-size: 1.5rem; }
           .auth-actions { flex-direction: column; }
           .auth-actions .btn { width: 100%; }
-          .stripe-btn { padding: 14px 20px; font-size: 15px; }
           .ship-grid { grid-template-columns: 1fr !important; }
         }
         @media (max-width: 480px) { 
@@ -601,8 +468,6 @@ export default function CheckoutPage() {
           .auth-benefits { padding: 1rem; }
           .auth-actions .btn { padding: 0.75rem 1.5rem; font-size: 0.95rem; }
           .summary, .payments { padding: 0.875rem; }
-          .stripe-btn { padding: 12px 18px; font-size: 14px; gap: 8px; }
-          .stripe-icon { width: 40px; height: 16px; }
         }
 
         /* Success Modal */

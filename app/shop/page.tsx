@@ -760,13 +760,13 @@ export default function ShopPage() {
         .shop-section { 
           position: relative; 
           z-index: 10; 
-          padding: 13rem 2rem 3rem;
+          padding: var(--section-padding-top) var(--section-padding-x) var(--section-padding-bottom);
           background: var(--color-cream);
           min-height: 100vh;
         }
         
         .shop-container { 
-          max-width: 1400px; 
+          max-width: var(--container-max-width); 
           width: 100%;
           margin: 0 auto; 
           display: flex;
@@ -1567,20 +1567,17 @@ export default function ShopPage() {
         }
         
         @media (max-width: 992px) { 
-          .shop-section {
-            padding: 10rem 1.5rem 2rem;
-          }
-          
           .desktop-only {
             display: none !important;
           }
           
           .page-header h1 {
-            font-size: 2rem;
-        }
+            font-size: var(--h1-size);
+          }
         
           .grid {
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 1.25rem;
           }
         }
         
@@ -1591,170 +1588,198 @@ export default function ShopPage() {
           }
 
           .page-header h1 {
-            font-size: 1.8rem;
+            font-size: 1.75rem;
           }
           
           .grid {
             grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
+            gap: 0.875rem;
           }
           
           .product-card {
             font-size: 0.9rem;
+            border-radius: 14px;
           }
 
           .product-image {
-            height: 200px;
-            padding: 1rem;
+            height: 180px;
+            padding: 0.875rem;
           }
 
           .product-content {
-            padding: 1rem;
+            padding: 0.875rem;
             gap: 0.5rem;
           }
 
           .product-name {
-            font-size: 1rem;
+            font-size: 0.95rem;
           }
 
           .product-description {
-            font-size: 0.85rem;
-            -webkit-line-clamp: 2;
-          }
-
-          .btn-add {
-            padding: 0.625rem 0.875rem;
-            font-size: 0.85rem;
-          }
-
-          .price {
-            font-size: 1.1rem;
-          }
-
-          .price-discounted {
-            font-size: 1.1rem;
-          }
-
-          .box-format-selector-shop {
-            padding: 0.75rem;
-            margin: 0.5rem 0;
-          }
-
-          .format-btn {
-            min-width: 60px;
-            padding: 0.5rem 0.25rem;
             font-size: 0.8rem;
-          }
-
-          .format-size {
-            font-size: 1rem;
-          }
-
-          .format-price {
-            font-size: 0.75rem;
-          }
-        }
-        
-        @media (max-width: 480px) {
-          .shop-section {
-            padding: 8rem 0.75rem 2rem;
-          }
-
-          .grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 0.75rem;
-          }
-
-          .product-card {
-            border-radius: 12px;
-          }
-
-          .product-image {
-            height: 160px;
-            padding: 0.75rem;
-          }
-
-          .product-content {
-            padding: 0.75rem;
-            gap: 0.4rem;
-          }
-
-          .product-name {
-            font-size: 0.9rem;
-            line-height: 1.2;
-          }
-
-          .product-description {
-            font-size: 0.75rem;
             -webkit-line-clamp: 2;
-          }
-
-          .product-meta {
-            gap: 0.35rem;
-          }
-
-          .meta-badge {
-            font-size: 0.65rem;
-            padding: 0.2rem 0.5rem;
-          }
-
-          .badge {
-            padding: 0.3rem 0.6rem;
-            font-size: 0.65rem;
           }
 
           .btn-add {
             padding: 0.5rem 0.75rem;
             font-size: 0.8rem;
+            border-radius: 8px;
           }
 
           .price {
-            font-size: 1rem;
-          }
-
-          .price-original {
-            font-size: 0.8rem;
+            font-size: 1.1rem;
           }
 
           .price-discounted {
-            font-size: 1rem;
+            font-size: 1.1rem;
           }
 
           .box-format-selector-shop {
-            padding: 0.5rem;
-            margin: 0.4rem 0;
-          }
-
-          .format-label {
-            font-size: 0.75rem;
-            margin-bottom: 0.5rem;
+            padding: 0.625rem;
+            margin: 0.5rem 0;
           }
 
           .format-btn {
-            min-width: 50px;
+            min-width: 55px;
             padding: 0.4rem 0.2rem;
-            gap: 0.15rem;
+            font-size: 0.75rem;
           }
 
           .format-size {
-            font-size: 0.9rem;
-          }
-
-          .format-label-text {
-            font-size: 0.65rem;
+            font-size: 0.95rem;
           }
 
           .format-price {
             font-size: 0.7rem;
           }
+        }
+        
+        @media (max-width: 480px) {
+          .grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.625rem;
+          }
+
+          .product-card {
+            border-radius: 10px;
+          }
+
+          .product-image {
+            height: 140px;
+            padding: 0.5rem;
+          }
+
+          .product-content {
+            padding: 0.625rem;
+            gap: 0.35rem;
+          }
+
+          .product-name {
+            font-size: 0.85rem;
+            line-height: 1.2;
+          }
+
+          .product-description {
+            font-size: 0.7rem;
+            -webkit-line-clamp: 2;
+          }
+
+          .product-meta {
+            gap: 0.25rem;
+          }
+
+          .meta-badge {
+            font-size: 0.6rem;
+            padding: 0.15rem 0.4rem;
+          }
+
+          .badge {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.6rem;
+          }
+
+          .product-badges {
+            top: 0.5rem;
+            left: 0.5rem;
+            gap: 0.35rem;
+          }
+
+          .btn-add {
+            padding: 0.4rem 0.6rem;
+            font-size: 0.75rem;
+          }
+
+          .price {
+            font-size: 0.95rem;
+          }
+
+          .price-original {
+            font-size: 0.7rem;
+          }
+
+          .price-discounted {
+            font-size: 0.95rem;
+          }
+
+          .product-footer {
+            padding-top: 0.5rem;
+            gap: 0.5rem;
+          }
+
+          .box-format-selector-shop {
+            padding: 0.4rem;
+            margin: 0.35rem 0;
+          }
+
+          .format-label {
+            font-size: 0.7rem;
+            margin-bottom: 0.35rem;
+          }
+
+          .format-btn {
+            min-width: 45px;
+            padding: 0.3rem 0.15rem;
+            gap: 0.1rem;
+            border-radius: 6px;
+          }
+
+          .format-size {
+            font-size: 0.8rem;
+          }
+
+          .format-label-text {
+            font-size: 0.55rem;
+          }
+
+          .format-price {
+            font-size: 0.6rem;
+          }
           
           .pagination {
             flex-direction: column;
-            gap: 1rem;
+            gap: 0.75rem;
           }
           
           .pagination-btn {
             width: 100%;
+            padding: 0.75rem 1rem;
+          }
+
+          .custom-box-banner {
+            padding: 1rem;
+            gap: 0.75rem;
+          }
+
+          .banner-icon {
+            font-size: 2rem;
+          }
+
+          .banner-content h3 {
+            font-size: 1rem;
+          }
+
+          .banner-content p {
+            font-size: 0.8rem;
           }
         }
       `}</style>

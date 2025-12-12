@@ -4,10 +4,10 @@ import { useEffect, useRef, useState } from 'react'
 
 export default function HeroVideo() {
   const videoRef = useRef<HTMLVideoElement | null>(null)
-  const [isReady, setIsReady] = useState(true) // Inizia come ready per mostrare subito
+  const sectionRef = useRef<HTMLElement | null>(null)
   const [hadError, setHadError] = useState(false)
+  const [scrollY, setScrollY] = useState(0)
   
-  // Usa video locale per performance migliori
   const videoUrl = '/video/videoHP.mp4'
 
   useEffect(() => {
@@ -21,7 +21,6 @@ export default function HeroVideo() {
     
     v.addEventListener('error', onError)
     
-    // Autoplay best effort - più aggressivo
     const play = async () => {
       try {
         await v.play()
@@ -30,7 +29,6 @@ export default function HeroVideo() {
       }
     }
     
-    // Prova a fare play subito
     if (v.readyState >= 2) {
       play()
     } else {
@@ -42,12 +40,24 @@ export default function HeroVideo() {
     }
   }, [])
 
+  // Effetto parallax al scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollY(window.scrollY)
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  const parallaxOffset = scrollY * 0.4
+
   return (
-    <section className="hero hero-video">
+    <section ref={sectionRef} className="hero hero-video hero-fullscreen">
       <div className="hero-video-container">
         <video
           ref={videoRef}
           className="hero-video-el is-ready"
+          style={{ transform: `translateY(${parallaxOffset}px) scale(1.1)` }}
           playsInline
           muted
           loop
@@ -59,15 +69,22 @@ export default function HeroVideo() {
           x-webkit-airplay="deny"
         >
           {!hadError && <source src={videoUrl} type="video/mp4" />}
-          {/* Fallback testo */}
           Il tuo browser non supporta il video HTML5.
         </video>
         <div className="hero-video-overlay">
           <div className="hero-content">
+            <span className="hero-label">Costiera Amalfitana</span>
             <h1 className="poppins">Emozioni di Cioccolato</h1>
-            <p>Artigianalità dalla Costiera Amalfitana, gusto e passione in ogni morso.</p>
-            <a href="/shop" className="btn btn-primary">Scopri i Prodotti</a>
+            <p>Artigianalità e passione in ogni creazione</p>
+            <a href="/shop" className="btn btn-primary">Scopri la Collezione</a>
           </div>
+        </div>
+        {/* Scroll indicator */}
+        <div className="scroll-indicator">
+          <div className="scroll-mouse">
+            <div className="scroll-wheel"></div>
+          </div>
+          <span>Scorri</span>
         </div>
       </div>
     </section>

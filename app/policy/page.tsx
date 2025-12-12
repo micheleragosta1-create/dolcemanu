@@ -122,7 +122,7 @@ export default function PolicyPage() {
       <Footer />
 
       <style jsx global>{`
-        .policy-section { position: relative; z-index: 10; padding: 7rem 2rem 3rem; background: var(--color-cream); }
+        .policy-section { position: relative; z-index: 10; padding: 15rem 2rem 3rem; background: var(--color-cream); }
         .policy-container { max-width: 900px; margin: 0 auto; background: #fff; border: 1px solid rgba(0,0,0,.06); border-radius: 12px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,.06); }
         .policy-content { display: grid; gap: 1rem; color: #333; }
         h1 { margin-bottom: .25rem; color: var(--color-navy); font-size: 2rem; }

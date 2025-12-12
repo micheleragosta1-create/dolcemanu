@@ -36,13 +36,13 @@ NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 
-# Stripe Configuration (for payments)
-STRIPE_SECRET_KEY=your_stripe_secret_key
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
-
 # PayPal Configuration (for payments)
 NEXT_PUBLIC_PAYPAL_CLIENT_ID=your_paypal_client_id
 PAYPAL_CLIENT_SECRET=your_paypal_client_secret
+
+# Instagram API Configuration (see INSTAGRAM_SETUP_GUIDE.md)
+IG_USER_ID=your_instagram_user_id
+IG_ACCESS_TOKEN=your_instagram_access_token
 
 # App Configuration
 NEXT_PUBLIC_APP_URL=http://localhost:3000
