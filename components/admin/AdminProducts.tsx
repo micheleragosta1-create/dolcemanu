@@ -76,13 +76,12 @@ export default function AdminProducts() {
     'Natale'
   ]
   
-  // Categorie prodotto predefinite
-  const productCategories = [
+  // Macrocategorie prodotto (per filtro shop)
+  const macroCategories = [
     'Praline',
     'Drops',
     'Tavolette',
-    'Box Regalo',
-    'Altro'
+    'Natale'
   ]
   
   // Tipi di cioccolato
@@ -629,15 +628,15 @@ export default function AdminProducts() {
 
                 <div className="form-row">
                   <div className="form-group">
-                    <label>Categoria *</label>
+                    <label>Macrocategoria * <span style={{fontSize: '0.8rem', color: '#6b7280', fontWeight: 'normal'}}>(usata per filtri shop)</span></label>
                     <select
                       required
                       value={formData.category}
                       onChange={(e) => setFormData({...formData, category: e.target.value})}
                       className="form-input"
                     >
-                      <option value="">Seleziona categoria...</option>
-                      {productCategories.map(cat => (
+                      <option value="">Seleziona macrocategoria...</option>
+                      {macroCategories.map(cat => (
                         <option key={cat} value={cat}>{cat}</option>
                       ))}
                     </select>

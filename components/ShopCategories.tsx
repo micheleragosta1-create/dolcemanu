@@ -20,7 +20,7 @@ const categories: Category[] = [
     name: 'Praline',
     description: 'Eleganti praline artigianali con ripieni cremosi e croccanti',
     image: '/images/categories/praline.jpg',
-    filterType: 'collection',
+    filterType: 'category',
     filterValue: 'Praline',
     color: '#8B4513',
     icon: '🍫'
@@ -30,7 +30,7 @@ const categories: Category[] = [
     name: 'Drops',
     description: 'Piccole gocce di puro cioccolato, perfette per ogni momento',
     image: '/images/categories/drops.jpg',
-    filterType: 'collection',
+    filterType: 'category',
     filterValue: 'Drops',
     color: '#5D3A1A',
     icon: '🫘'
@@ -40,7 +40,7 @@ const categories: Category[] = [
     name: 'Tavolette',
     description: 'Tavolette di cioccolato artigianale in diverse percentuali',
     image: '/images/categories/tavolette.jpg',
-    filterType: 'collection',
+    filterType: 'category',
     filterValue: 'Tavolette',
     color: '#3E2723',
     icon: '🍫'
@@ -50,7 +50,7 @@ const categories: Category[] = [
     name: 'Natale',
     description: 'Collezione speciale per le festività natalizie',
     image: '/images/categories/natale.jpg',
-    filterType: 'collection',
+    filterType: 'category',
     filterValue: 'Natale',
     color: '#8B1538',
     icon: '🎄'
