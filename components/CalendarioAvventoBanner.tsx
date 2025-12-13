@@ -86,7 +86,7 @@ export default function CalendarioAvventoBanner() {
           {/* Testo e CTA */}
           <div className="advent-text">
             <span className="advent-tag">
-              🎄 Edizione Limitata Natale 2025
+              🎄 Edizione Limitata Natale {new Date().getFullYear()}
             </span>
             
             <h2 className="advent-title poppins">
@@ -128,13 +128,45 @@ export default function CalendarioAvventoBanner() {
             </div>
 
             <div className="advent-actions">
-              <Link href={`/product/${product.id}`} className="advent-btn primary">
+              <Link 
+                href={`/product/${product.id}`} 
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '1rem 2rem',
+                  borderRadius: '50px',
+                  fontWeight: 600,
+                  fontSize: '1rem',
+                  textDecoration: 'none',
+                  background: 'linear-gradient(135deg, #ffd700, #ffb700)',
+                  color: '#1a472a',
+                  boxShadow: '0 4px 20px rgba(255, 215, 0, 0.4)',
+                  transition: 'all 0.3s ease'
+                }}
+              >
                 <span>Scopri il Calendario</span>
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                   <path d="M4 10h12m0 0l-4-4m4 4l-4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </Link>
-              <Link href="/shop?collection=Natale" className="advent-btn secondary">
+              <Link 
+                href="/shop?collection=Natale" 
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '1rem 2rem',
+                  borderRadius: '50px',
+                  fontWeight: 600,
+                  fontSize: '1rem',
+                  textDecoration: 'none',
+                  background: 'rgba(255, 255, 255, 0.15)',
+                  color: 'white',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  transition: 'all 0.3s ease'
+                }}
+              >
                 Tutti i prodotti Natale
               </Link>
             </div>
