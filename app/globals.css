@@ -15,9 +15,9 @@
   /* ================================
      RESPONSIVE SPACING SYSTEM
      ================================ */
-  /* Padding sezioni - desktop */
+  /* Padding sezioni - desktop (header ~150px) */
   --section-padding-x: 2rem;
-  --section-padding-top: 10rem;
+  --section-padding-top: 12rem;
   --section-padding-bottom: 4rem;
   
   /* Container width */
@@ -35,7 +35,7 @@
 @media (max-width: 992px) {
   :root {
     --section-padding-x: 1.5rem;
-    --section-padding-top: 9rem;
+    --section-padding-top: 11rem;
     --section-padding-bottom: 3rem;
   }
 }
@@ -43,7 +43,7 @@
 @media (max-width: 768px) {
   :root {
     --section-padding-x: 1.25rem;
-    --section-padding-top: 8rem;
+    --section-padding-top: 10rem;
     --section-padding-bottom: 2.5rem;
   }
 }
@@ -51,7 +51,7 @@
 @media (max-width: 480px) {
   :root {
     --section-padding-x: 1rem;
-    --section-padding-top: 7rem;
+    --section-padding-top: 9rem;
     --section-padding-bottom: 2rem;
   }
 }
@@ -4325,6 +4325,386 @@ main {
 @media (max-width: 480px) {
   .price-responsive {
     font-size: 1rem;
+  }
+}
+
+/* ================================
+   OMEGA-STYLE PRODUCT CAROUSEL
+   ================================ */
+.omega-carousel-section {
+  padding: 4rem 0;
+  background: #fff;
+}
+
+.omega-carousel-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* Header con Tabs */
+.omega-carousel-header {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 3rem;
+}
+
+.omega-tabs {
+  display: flex;
+  gap: 2rem;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 0;
+}
+
+.omega-tab {
+  background: none;
+  border: none;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  color: #9ca3af;
+  padding: 0.75rem 0.5rem;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.3s ease;
+}
+
+.omega-tab::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--color-brown);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.omega-tab:hover {
+  color: var(--color-navy);
+}
+
+.omega-tab.active {
+  color: var(--color-navy);
+}
+
+.omega-tab.active::after {
+  transform: scaleX(1);
+}
+
+/* Carousel Wrapper */
+.omega-carousel-wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+.omega-carousel {
+  display: flex;
+  gap: 1.5rem;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 1rem 0;
+}
+
+.omega-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+/* Product Card */
+.omega-product-card {
+  flex: 0 0 280px;
+  min-width: 280px;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  animation: fadeInUp 0.6s ease forwards;
+  opacity: 0;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.omega-product-card:hover .omega-product-image img {
+  transform: scale(1.05);
+}
+
+/* Badge */
+.omega-badge {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 10;
+  background: var(--color-navy);
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  padding: 0.35rem 0.75rem;
+  text-transform: uppercase;
+}
+
+/* Product Image */
+.omega-product-image {
+  width: 100%;
+  aspect-ratio: 1;
+  background: linear-gradient(145deg, #f8f9fa 0%, #e9ecef 100%);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+
+.omega-product-image img {
+  width: 85%;
+  height: 85%;
+  object-fit: contain;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Product Info */
+.omega-product-info {
+  text-align: center;
+  padding: 0 0.5rem;
+}
+
+.omega-product-name {
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-navy);
+  margin-bottom: 0.35rem;
+  line-height: 1.4;
+}
+
+.omega-product-collection {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-bottom: 0.75rem;
+}
+
+.omega-product-price {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-navy);
+  letter-spacing: 0.02em;
+}
+
+/* Progress Bar e Arrows */
+.omega-carousel-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 2.5rem;
+  gap: 2rem;
+}
+
+.omega-progress-container {
+  flex: 1;
+  height: 3px;
+  background: #e5e7eb;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.omega-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-brown) 0%, #8b5a3c 100%);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.omega-arrows {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.omega-arrow {
+  width: 44px;
+  height: 44px;
+  border: 1px solid #d1d5db;
+  border-radius: 50%;
+  background: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  color: var(--color-navy);
+}
+
+.omega-arrow:hover:not(.disabled) {
+  border-color: var(--color-navy);
+  background: var(--color-navy);
+  color: white;
+}
+
+.omega-arrow.disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Skeleton Loading */
+.omega-product-card.skeleton {
+  animation: none;
+  opacity: 1;
+}
+
+.skeleton-img {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.omega-product-info .skeleton-text {
+  height: 14px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+  margin: 0 auto 0.5rem;
+}
+
+.skeleton-text:first-child {
+  width: 80%;
+}
+
+.skeleton-text.small {
+  width: 50%;
+  height: 12px;
+}
+
+.skeleton-text.price {
+  width: 40%;
+  height: 16px;
+  margin-top: 0.75rem;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .omega-product-card {
+    flex: 0 0 240px;
+    min-width: 240px;
+  }
+}
+
+@media (max-width: 768px) {
+  .omega-carousel-section {
+    padding: 3rem 0;
+  }
+  
+  .omega-carousel-container {
+    padding: 0 1.25rem;
+  }
+  
+  .omega-tabs {
+    gap: 1.25rem;
+  }
+  
+  .omega-tab {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.25rem;
+  }
+  
+  .omega-product-card {
+    flex: 0 0 200px;
+    min-width: 200px;
+  }
+  
+  .omega-carousel {
+    gap: 1rem;
+  }
+  
+  .omega-product-name {
+    font-size: 0.75rem;
+  }
+  
+  .omega-product-collection {
+    font-size: 0.7rem;
+  }
+  
+  .omega-product-price {
+    font-size: 0.8rem;
+  }
+  
+  .omega-arrow {
+    width: 38px;
+    height: 38px;
+  }
+}
+
+@media (max-width: 480px) {
+  .omega-carousel-section {
+    padding: 2rem 0;
+  }
+  
+  .omega-carousel-container {
+    padding: 0 1rem;
+  }
+  
+  .omega-tabs {
+    gap: 0.75rem;
+  }
+  
+  .omega-tab {
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+  }
+  
+  .omega-product-card {
+    flex: 0 0 160px;
+    min-width: 160px;
+  }
+  
+  .omega-product-image {
+    margin-bottom: 0.75rem;
+  }
+  
+  .omega-product-name {
+    font-size: 0.7rem;
+  }
+  
+  .omega-carousel-controls {
+    margin-top: 1.5rem;
+    gap: 1rem;
+  }
+  
+  .omega-arrow {
+    width: 34px;
+    height: 34px;
+  }
+  
+  .omega-arrow svg {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .omega-badge {
+    font-size: 0.55rem;
+    padding: 0.25rem 0.5rem;
+    top: 0.5rem;
+    left: 0.5rem;
   }
 }
 

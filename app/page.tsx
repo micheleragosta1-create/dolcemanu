@@ -1,5 +1,7 @@
 import Header from '@/components/Header'
 import HeroVideo from '@/components/HeroVideo'
+import CalendarioAvventoBanner from '@/components/CalendarioAvventoBanner'
+import ProductCarousel from '@/components/ProductCarousel'
 import ChocoShowcase from '@/components/ChocoShowcase'
 import Storia from '@/components/Storia'
 import InstagramGallery from '@/components/InstagramGallery'
@@ -17,6 +19,8 @@ export default function Home() {
       </Suspense>
       <Header />
       <HeroVideo />
+      <CalendarioAvventoBanner />
+      <ProductCarousel />
       <ChocoShowcase />
       <Storia />
       <InstagramGallery />

@@ -8,6 +8,12 @@ import { useEffect, useState } from "react"
 import { useAuth } from "@/components/AuthContext"
 import { getOwnProfile } from "@/lib/supabase"
 
+interface ShippingSettings {
+  shipping_cost: string
+  free_shipping_threshold: string
+  shipping_enabled: string
+}
+
 export default function CheckoutPage() {
   const { items, totalAmount } = useCart()
   const { user } = useAuth()
@@ -21,7 +27,33 @@ export default function CheckoutPage() {
   const [country, setCountry] = useState('Italia')
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [orderInfo, setOrderInfo] = useState<{ orderId: string; payerName: string } | null>(null)
+  const [shippingSettings, setShippingSettings] = useState<ShippingSettings>({
+    shipping_cost: '5.00',
+    free_shipping_threshold: '50.00',
+    shipping_enabled: 'true'
+  })
+  
   useEffect(() => setMounted(true), [])
+  
+  // Carica impostazioni spedizione
+  useEffect(() => {
+    async function fetchSettings() {
+      try {
+        const res = await fetch('/api/settings')
+        if (res.ok) {
+          const data = await res.json()
+          setShippingSettings({
+            shipping_cost: data.shipping_cost || '5.00',
+            free_shipping_threshold: data.free_shipping_threshold || '50.00',
+            shipping_enabled: data.shipping_enabled || 'true'
+          })
+        }
+      } catch (error) {
+        console.error('Errore caricamento impostazioni:', error)
+      }
+    }
+    fetchSettings()
+  }, [])
   useEffect(() => {
     ;(async () => {
       try {
@@ -45,7 +77,16 @@ export default function CheckoutPage() {
     }, 5000)
     return () => window.clearTimeout(timer)
   }, [mounted, paypalReady])
-  const payableAmount = Number.isFinite(totalAmount) && totalAmount > 0 ? totalAmount : 1
+  
+  // Calcola costo spedizione
+  const shippingCost = shippingSettings.shipping_enabled === 'true' 
+    ? (totalAmount >= parseFloat(shippingSettings.free_shipping_threshold) 
+        ? 0 
+        : parseFloat(shippingSettings.shipping_cost))
+    : 0
+  
+  const finalTotal = totalAmount + shippingCost
+  const payableAmount = Number.isFinite(finalTotal) && finalTotal > 0 ? finalTotal : 1
 
   // Preferisce env, fallback sandbox
   // Fallback sandbox ufficiale di PayPal e trim per evitare spazi invisibili
@@ -148,9 +189,29 @@ export default function CheckoutPage() {
                     </li>
                   ))}
                 </ul>
+                <div className="row subtotal">
+                  <span>Subtotale</span>
+                  <strong>€ {totalAmount.toFixed(2)}</strong>
+                </div>
+                {shippingSettings.shipping_enabled === 'true' && (
+                  <div className="row shipping-row">
+                    <span>
+                      🚚 Spedizione
+                      {shippingCost === 0 && <span className="free-badge">GRATIS</span>}
+                    </span>
+                    <strong className={shippingCost === 0 ? 'free-shipping' : ''}>
+                      {shippingCost === 0 ? '€ 0.00' : `€ ${shippingCost.toFixed(2)}`}
+                    </strong>
+                  </div>
+                )}
+                {shippingCost > 0 && totalAmount < parseFloat(shippingSettings.free_shipping_threshold) && (
+                  <div className="shipping-hint">
+                    💡 Aggiungi € {(parseFloat(shippingSettings.free_shipping_threshold) - totalAmount).toFixed(2)} per la spedizione gratuita!
+                  </div>
+                )}
                 <div className="row total">
                   <span>Totale</span>
-                  <strong>€ {totalAmount.toFixed(2)}</strong>
+                  <strong>€ {finalTotal.toFixed(2)}</strong>
                 </div>
               </div>
 
@@ -218,7 +279,8 @@ export default function CheckoutPage() {
                           quantity: String(i.qty),
                           unit_amount: { currency_code: 'EUR', value: i.prezzo.toFixed(2) }
                         }))
-                        const total = items.reduce((sum, i) => sum + i.prezzo * i.qty, 0)
+                        const subtotal = items.reduce((sum, i) => sum + i.prezzo * i.qty, 0)
+                        const orderTotal = subtotal + shippingCost
                         return actions.order.create({
                           intent: 'CAPTURE',
                           purchase_units: [
@@ -227,9 +289,10 @@ export default function CheckoutPage() {
                               items: paypalItems,
                               amount: {
                                 currency_code: 'EUR',
-                                value: total.toFixed(2),
+                                value: orderTotal.toFixed(2),
                                 breakdown: {
-                                  item_total: { currency_code: 'EUR', value: total.toFixed(2) }
+                                  item_total: { currency_code: 'EUR', value: subtotal.toFixed(2) },
+                                  shipping: { currency_code: 'EUR', value: shippingCost.toFixed(2) }
                                 }
                               }
                             }
@@ -426,8 +489,19 @@ export default function CheckoutPage() {
         .checkout-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
         .summary, .payments { background: #fff; border: 1px solid rgba(0,0,0,.06); border-radius: 12px; padding: 1rem; box-shadow: 0 10px 30px rgba(0,0,0,.06); }
         .list { list-style: none; padding: 0; margin: 0; display: grid; gap: .35rem; }
-        .row { display: flex; justify-content: space-between; }
-        .total { border-top: 1px solid #eee; padding-top: .5rem; margin-top: .5rem; }
+        .row { display: flex; justify-content: space-between; align-items: center; }
+        .subtotal { border-top: 1px dashed #e5e7eb; padding-top: .5rem; margin-top: .5rem; color: #6b7280; font-size: .9rem; }
+        .shipping-row { padding: .35rem 0; font-size: .9rem; }
+        .shipping-row .free-badge { 
+          background: #dcfce7; color: #166534; font-size: .7rem; padding: 2px 6px; 
+          border-radius: 4px; margin-left: 6px; font-weight: 600; 
+        }
+        .free-shipping { color: #16a34a !important; }
+        .shipping-hint { 
+          background: #fef3c7; padding: 8px 12px; border-radius: 8px; 
+          font-size: .8rem; color: #92400e; text-align: center; margin: .5rem 0; 
+        }
+        .total { border-top: 2px solid var(--color-navy); padding-top: .75rem; margin-top: .5rem; font-size: 1.1rem; }
         .note { text-align: center; color: #888; font-size: .9rem; }
         
         /* PayPal Container */

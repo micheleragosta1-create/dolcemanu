@@ -10,13 +10,14 @@ import AdminDashboard from '@/components/admin/AdminDashboard'
 import AdminOrders from '@/components/admin/AdminOrders'
 import AdminProducts from '@/components/admin/AdminProducts'
 import AdminUsers from '@/components/admin/AdminUsers'
-import { Shield, Package, Users, ShoppingCart } from 'lucide-react'
+import AdminSettings from '@/components/admin/AdminSettings'
+import { Shield, Package, Users, ShoppingCart, Settings } from 'lucide-react'
 
 export default function AdminPage() {
   const { user } = useAuth()
   const { isAdmin, loading: roleLoading } = useAdmin()
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'orders' | 'products' | 'users'>('dashboard')
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'orders' | 'products' | 'users' | 'settings'>('dashboard')
 
   // Opzione: non reindirizzare automaticamente per facilitare debug/whitelisting
   useEffect(() => {
@@ -111,6 +112,13 @@ export default function AdminPage() {
               <Users size={18} />
               Utenti
             </button>
+            <button
+              className={`admin-tab ${activeTab === 'settings' ? 'active' : ''}`}
+              onClick={() => setActiveTab('settings')}
+            >
+              <Settings size={18} />
+              Impostazioni
+            </button>
           </div>
 
           {/* Contenuto delle tab */}
@@ -119,6 +127,7 @@ export default function AdminPage() {
             {activeTab === 'orders' && <AdminOrders />}
             {activeTab === 'products' && <AdminProducts />}
             {activeTab === 'users' && <AdminUsers />}
+            {activeTab === 'settings' && <AdminSettings />}
           </div>
         </div>
       </div>
