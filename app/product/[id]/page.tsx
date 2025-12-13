@@ -124,6 +124,14 @@ export default function ProductPage() {
   const currentPrice = availableFormats.length > 0 && availableFormats.includes(selectedBoxSize) 
     ? boxPrices[selectedBoxSize] 
     : (product?.price || 0)
+  
+  // Calcola prezzo scontato se c'è uno sconto
+  const discountPercentage = (product as any)?.discount_percentage || 0
+  const hasDiscount = discountPercentage > 0
+  const discountedPrice = hasDiscount 
+    ? currentPrice * (1 - discountPercentage / 100) 
+    : currentPrice
+  const savings = hasDiscount ? currentPrice - discountedPrice : 0
 
   // Assicura che il formato selezionato sia disponibile
   useEffect(() => {
@@ -146,16 +154,16 @@ export default function ProductPage() {
     addItem({ 
       id: productId, 
       nome: productName, 
-      prezzo: currentPrice, 
+      prezzo: discountedPrice, 
       immagine: product.image_url 
     }, qty)
     if (typeof window !== 'undefined') {
       // GA4 event
       // @ts-ignore
-      window.gtag && window.gtag('event','add_to_cart',{currency:'EUR', value: currentPrice*qty, items:[{item_id: productId, item_name:productName, price:currentPrice, quantity:qty}]})
+      window.gtag && window.gtag('event','add_to_cart',{currency:'EUR', value: discountedPrice*qty, items:[{item_id: productId, item_name:productName, price:discountedPrice, quantity:qty}]})
       // Meta Pixel
       // @ts-ignore
-      window.fbq && window.fbq('track','AddToCart',{content_ids:[productId], content_name:productName, currency:'EUR', value: currentPrice*qty})
+      window.fbq && window.fbq('track','AddToCart',{content_ids:[productId], content_name:productName, currency:'EUR', value: discountedPrice*qty})
     }
   }
 
@@ -258,7 +266,25 @@ export default function ProductPage() {
                 />
                 <div className="details">
                   <h1 className="poppins name">{product.name}</h1>
-                  <p className="price">€ {currentPrice.toFixed(2)}</p>
+                  
+                  {/* Prezzo con eventuale sconto */}
+                  <div className="price-section">
+                    {hasDiscount ? (
+                      <>
+                        <div className="price-row">
+                          <span className="price-original">€ {currentPrice.toFixed(2)}</span>
+                          <span className="price-discounted">€ {discountedPrice.toFixed(2)}</span>
+                        </div>
+                        <div className="discount-info">
+                          <span className="discount-badge">-{discountPercentage}%</span>
+                          <span className="discount-savings">Risparmi € {savings.toFixed(2)}</span>
+                        </div>
+                      </>
+                    ) : (
+                      <p className="price">€ {currentPrice.toFixed(2)}</p>
+                    )}
+                  </div>
+                  
                   <p className="desc">{product.description}</p>
 
                   {/* Selettore dimensione box */}
@@ -436,6 +462,56 @@ export default function ProductPage() {
         .details { display: grid; gap: 1rem; align-content: start; }
         .name { font-size: var(--h1-size); }
         .price { font-size: 1.5rem; font-weight: 700; color: var(--color-brown); }
+        
+        /* Sezione prezzo con sconto */
+        .price-section {
+          margin-bottom: 0.5rem;
+        }
+        
+        .price-row {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          flex-wrap: wrap;
+        }
+        
+        .price-original {
+          font-size: 1.2rem;
+          font-weight: 500;
+          color: #999;
+          text-decoration: line-through;
+        }
+        
+        .price-discounted {
+          font-size: 1.75rem;
+          font-weight: 700;
+          color: #dc2626;
+        }
+        
+        .discount-info {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          margin-top: 0.5rem;
+          flex-wrap: wrap;
+        }
+        
+        .discount-badge {
+          background: linear-gradient(135deg, #dc2626, #b91c1c);
+          color: white;
+          font-size: 0.85rem;
+          font-weight: 700;
+          padding: 0.35rem 0.75rem;
+          border-radius: 6px;
+          letter-spacing: 0.02em;
+        }
+        
+        .discount-savings {
+          color: #16a34a;
+          font-size: 0.95rem;
+          font-weight: 600;
+        }
+        
         .desc { color: #555; line-height: 1.7; font-size: var(--body-size); }
         
         /* Box Size Selector */
