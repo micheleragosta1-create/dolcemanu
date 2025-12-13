@@ -86,7 +86,7 @@ export default function CalendarioAvventoBanner() {
           {/* Testo e CTA */}
           <div className="advent-text">
             <span className="advent-tag">
-              🎄 Edizione Limitata Natale 2024
+              🎄 Edizione Limitata Natale {new Date().getFullYear()}
             </span>
             
             <h2 className="advent-title poppins">
@@ -128,13 +128,45 @@ export default function CalendarioAvventoBanner() {
             </div>
 
             <div className="advent-actions">
-              <Link href={`/product/${product.id}`} className="advent-btn primary">
+              <Link 
+                href={`/product/${product.id}`} 
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '1rem 2rem',
+                  borderRadius: '50px',
+                  fontWeight: 600,
+                  fontSize: '1rem',
+                  textDecoration: 'none',
+                  background: 'linear-gradient(135deg, #ffd700, #ffb700)',
+                  color: '#1a472a',
+                  boxShadow: '0 4px 20px rgba(255, 215, 0, 0.4)',
+                  transition: 'all 0.3s ease'
+                }}
+              >
                 <span>Scopri il Calendario</span>
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                   <path d="M4 10h12m0 0l-4-4m4 4l-4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </Link>
-              <Link href="/shop?collection=Natale" className="advent-btn secondary">
+              <Link 
+                href="/shop?collection=Natale" 
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '1rem 2rem',
+                  borderRadius: '50px',
+                  fontWeight: 600,
+                  fontSize: '1rem',
+                  textDecoration: 'none',
+                  background: 'rgba(255, 255, 255, 0.15)',
+                  color: 'white',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  transition: 'all 0.3s ease'
+                }}
+              >
                 Tutti i prodotti Natale
               </Link>
             </div>
@@ -337,37 +369,47 @@ export default function CalendarioAvventoBanner() {
           flex-wrap: wrap;
         }
 
+        .advent-actions :global(a.advent-btn),
         .advent-btn {
-          display: inline-flex;
-          align-items: center;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center;
           gap: 0.5rem;
-          padding: 1rem 2rem;
-          border-radius: 50px;
-          font-weight: 600;
-          font-size: 1rem;
-          text-decoration: none;
+          padding: 1rem 2rem !important;
+          border-radius: 50px !important;
+          font-weight: 600 !important;
+          font-size: 1rem !important;
+          text-decoration: none !important;
           transition: all 0.3s ease;
+          border: none;
+          cursor: pointer;
         }
 
+        .advent-actions :global(a.primary),
         .advent-btn.primary {
-          background: linear-gradient(135deg, #ffd700, #ffb700);
-          color: #1a472a;
+          background: linear-gradient(135deg, #ffd700, #ffb700) !important;
+          color: #1a472a !important;
           box-shadow: 0 4px 20px rgba(255, 215, 0, 0.4);
         }
 
+        .advent-actions :global(a.primary:hover),
         .advent-btn.primary:hover {
           transform: translateY(-2px);
           box-shadow: 0 6px 25px rgba(255, 215, 0, 0.5);
+          text-decoration: none !important;
         }
 
+        .advent-actions :global(a.secondary),
         .advent-btn.secondary {
-          background: rgba(255, 255, 255, 0.15);
-          color: white;
-          border: 1px solid rgba(255, 255, 255, 0.3);
+          background: rgba(255, 255, 255, 0.15) !important;
+          color: white !important;
+          border: 2px solid rgba(255, 255, 255, 0.4) !important;
         }
 
+        .advent-actions :global(a.secondary:hover),
         .advent-btn.secondary:hover {
-          background: rgba(255, 255, 255, 0.25);
+          background: rgba(255, 255, 255, 0.25) !important;
+          text-decoration: none !important;
         }
 
         /* Immagine */
@@ -534,9 +576,10 @@ export default function CalendarioAvventoBanner() {
             font-size: 1.75rem;
           }
 
+          .advent-actions :global(a.advent-btn),
           .advent-btn {
-            padding: 0.875rem 1.5rem;
-            font-size: 0.95rem;
+            padding: 0.875rem 1.5rem !important;
+            font-size: 0.95rem !important;
           }
 
           .deco {
@@ -575,9 +618,10 @@ export default function CalendarioAvventoBanner() {
             flex-direction: column;
           }
 
+          .advent-actions :global(a.advent-btn),
           .advent-btn {
-            width: 100%;
-            justify-content: center;
+            width: 100% !important;
+            justify-content: center !important;
           }
 
           .advent-image {

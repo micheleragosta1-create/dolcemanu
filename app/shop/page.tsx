@@ -7,12 +7,13 @@ import Footer from "@/components/Footer"
 import { useCartWithToast } from "@/components/useCartWithToast"
 import { ProductGridSkeleton } from "@/components/Skeleton"
 import MobileFilters from "@/components/MobileFilters"
+import ShopCategories from "@/components/ShopCategories"
 import Link from "next/link"
 import Image from 'next/image'
 import { useRouter } from "next/navigation"
 import { useProducts } from "@/hooks/useSupabase"
 import type { Product } from "@/lib/supabase"
-import { Tag, Percent, Sparkles, TrendingUp, X, ArrowLeft } from 'lucide-react'
+import { Tag, Percent, Sparkles, TrendingUp, X, ArrowLeft, Home } from 'lucide-react'
 
 type PriceRange = 'all' | 'under5' | '5to10' | '10to20' | 'over20'
 
@@ -31,22 +32,63 @@ export default function ShopPage() {
   // Nuovi filtri avanzati
   const [chocolateType, setChocolateType] = useState<string>("tutti")
   const [collection, setCollection] = useState<string>("tutti")
+  const [category, setCategory] = useState<string>("tutti")
   const [priceRange, setPriceRange] = useState<PriceRange>('all')
   const [boxFormat, setBoxFormat] = useState<string>("tutti")
   const [showOnlyNew, setShowOnlyNew] = useState(false)
   const [showOnlyBestseller, setShowOnlyBestseller] = useState(false)
   const [showOnlyDiscount, setShowOnlyDiscount] = useState(false)
+  
+  // Stato per mostrare/nascondere le macrocategorie
+  const [showCategories, setShowCategories] = useState(true)
 
-  // Leggi il parametro collection dall'URL al caricamento della pagina
+  // Leggi i parametri dall'URL al caricamento della pagina
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search)
       const collectionParam = params.get('collection')
+      const categoryParam = params.get('category')
+      
       if (collectionParam) {
         setCollection(collectionParam)
+        setShowCategories(false)
+      }
+      if (categoryParam) {
+        setCategory(categoryParam)
+        setShowCategories(false)
+      }
+      
+      // Se ci sono parametri, nascondi le categorie
+      if (collectionParam || categoryParam) {
+        setShowCategories(false)
       }
     }
   }, [])
+  
+  // Handler per selezione categoria dalla landing
+  const handleSelectCategory = (filterType: string, filterValue: string) => {
+    if (filterType === 'category') {
+      setCategory(filterValue)
+    } else if (filterType === 'collection') {
+      setCollection(filterValue)
+    }
+    setShowCategories(false)
+    setPagina(1)
+  }
+  
+  // Handler per tornare alle categorie
+  const handleBackToCategories = () => {
+    setCategory("tutti")
+    setCollection("tutti")
+    setChocolateType("tutti")
+    setPriceRange('all')
+    setBoxFormat("tutti")
+    setShowOnlyNew(false)
+    setShowOnlyBestseller(false)
+    setShowOnlyDiscount(false)
+    setShowCategories(true)
+    setPagina(1)
+  }
 
   // Get unique values for filters
   const chocolateTypes = useMemo(() => {
@@ -66,6 +108,9 @@ export default function ShopPage() {
 
   const filtrati = useMemo(() => {
     let out = [...prodotti]
+    
+    // Filtro categoria (macrocategoria)
+    if (category !== "tutti") out = out.filter(p => p.category === category)
     
     // Filtro tipo di cioccolato
     if (chocolateType !== "tutti") out = out.filter(p => p.chocolate_type === chocolateType)
@@ -118,17 +163,19 @@ export default function ShopPage() {
 
   // Check if filters are active
   const hasActiveFilters = useMemo(() => {
-    return chocolateType !== "tutti" || 
+    return category !== "tutti" ||
+           chocolateType !== "tutti" || 
            collection !== "tutti" || 
            priceRange !== 'all' || 
            boxFormat !== "tutti" ||
            showOnlyNew || 
            showOnlyBestseller || 
            showOnlyDiscount
-  }, [chocolateType, collection, priceRange, boxFormat, showOnlyNew, showOnlyBestseller, showOnlyDiscount])
+  }, [category, chocolateType, collection, priceRange, boxFormat, showOnlyNew, showOnlyBestseller, showOnlyDiscount])
 
   const onReset = () => {
     setOrdine("prezzo_asc")
+    setCategory("tutti")
     setChocolateType("tutti")
     setCollection("tutti")
     setPriceRange('all')
@@ -142,6 +189,7 @@ export default function ShopPage() {
   // Count active filters for badge
   const activeFiltersCount = useMemo(() => {
     let count = 0
+    if (category !== "tutti") count++
     if (chocolateType !== "tutti") count++
     if (collection !== "tutti") count++
     if (priceRange !== 'all') count++
@@ -150,7 +198,14 @@ export default function ShopPage() {
     if (showOnlyBestseller) count++
     if (showOnlyDiscount) count++
     return count
-  }, [chocolateType, collection, priceRange, boxFormat, showOnlyNew, showOnlyBestseller, showOnlyDiscount])
+  }, [category, chocolateType, collection, priceRange, boxFormat, showOnlyNew, showOnlyBestseller, showOnlyDiscount])
+  
+  // Nome della categoria/collezione attiva per il breadcrumb
+  const activeCategoryName = useMemo(() => {
+    if (category !== "tutti") return category
+    if (collection !== "tutti") return collection
+    return null
+  }, [category, collection])
 
   if (loading) {
     return (
@@ -423,36 +478,41 @@ export default function ShopPage() {
             }}
           />
           
-          {/* Mobile Filters */}
-          <MobileFilters
-            resultsCount={filtrati.length}
-            isOpen={filtersOpen}
-            onToggle={() => setFiltersOpen(!filtersOpen)}
-            onReset={onReset}
-            hasActiveFilters={hasActiveFilters}
-          >
-            <FilterContent />
-          </MobileFilters>
+          {/* Mostra Macrocategorie o Prodotti */}
+          {showCategories ? (
+            <ShopCategories onSelectCategory={handleSelectCategory} />
+          ) : (
+            <>
+              {/* Mobile Filters */}
+              <MobileFilters
+                resultsCount={filtrati.length}
+                isOpen={filtersOpen}
+                onToggle={() => setFiltersOpen(!filtersOpen)}
+                onReset={onReset}
+                hasActiveFilters={hasActiveFilters}
+              >
+                <FilterContent />
+              </MobileFilters>
 
-          {/* Product List with Filters */}
-          <section className="shop-list-full">
-            {/* Back Button */}
-            <button 
-              className="back-button"
-              onClick={() => router.push('/')}
-              aria-label="Torna alla home"
-            >
-              <ArrowLeft size={20} />
-              <span>Torna alla home</span>
-            </button>
+              {/* Product List with Filters */}
+              <section className="shop-list-full">
+                {/* Back to Categories Button */}
+                <button 
+                  className="back-button"
+                  onClick={handleBackToCategories}
+                  aria-label="Torna alle categorie"
+                >
+                  <ArrowLeft size={20} />
+                  <span>Tutte le categorie</span>
+                </button>
 
-            {/* Header with Title */}
-            <div className="page-header">
-              <h1 className="poppins">I Nostri Prodotti</h1>
-              <p className="results-count">
-                {filtrati.length} {filtrati.length === 1 ? 'prodotto trovato' : 'prodotti trovati'}
-              </p>
-            </div>
+                {/* Header with Title */}
+                <div className="page-header">
+                  <h1 className="poppins">{activeCategoryName || 'I Nostri Prodotti'}</h1>
+                  <p className="results-count">
+                    {filtrati.length} {filtrati.length === 1 ? 'prodotto trovato' : 'prodotti trovati'}
+                  </p>
+                </div>
 
             {/* Banner Configura la tua Box */}
             <Link href="/shop/configura-box" className="custom-box-banner">
@@ -752,6 +812,8 @@ export default function ShopPage() {
               </div>
             )}
           </section>
+            </>
+          )}
         </div>
       </section>
       <Footer />
