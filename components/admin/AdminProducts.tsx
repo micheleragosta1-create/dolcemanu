@@ -68,13 +68,9 @@ export default function AdminProducts() {
   
   // Collezioni predefinite
   const collections = [
+    'Praline dal Mondo',
     'Costiera Amalfitana',
-    'Tradizione Napoletana',
-    'Sapori di Sicilia',
-    'Dolci Mediterranei',
-    'Limited Edition',
-    'Stagionale',
-    'Praline dal Mondo'
+    'Natale'
   ]
   
   // Tipi di cioccolato
