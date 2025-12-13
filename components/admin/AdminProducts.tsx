@@ -68,6 +68,9 @@ export default function AdminProducts() {
   
   // Collezioni predefinite
   const collections = [
+    'Praline',
+    'Drops',
+    'Tavolette',
     'Praline dal Mondo',
     'Costiera Amalfitana',
     'Natale'
