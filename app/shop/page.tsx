@@ -109,8 +109,10 @@ export default function ShopPage() {
   const filtrati = useMemo(() => {
     let out = [...prodotti]
     
-    // Filtro categoria (macrocategoria)
-    if (category !== "tutti") out = out.filter(p => p.category === category)
+    // Filtro categoria (macrocategoria) - case insensitive
+    if (category !== "tutti") {
+      out = out.filter(p => p.category?.toLowerCase() === category.toLowerCase())
+    }
     
     // Filtro tipo di cioccolato
     if (chocolateType !== "tutti") out = out.filter(p => p.chocolate_type === chocolateType)

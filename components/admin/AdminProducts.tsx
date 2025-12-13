@@ -73,6 +73,15 @@ export default function AdminProducts() {
     'Natale'
   ]
   
+  // Categorie prodotto predefinite
+  const productCategories = [
+    'Praline',
+    'Drops',
+    'Tavolette',
+    'Box Regalo',
+    'Altro'
+  ]
+  
   // Tipi di cioccolato
   const chocolateTypes = [
     'fondente',
@@ -618,14 +627,17 @@ export default function AdminProducts() {
                 <div className="form-row">
                   <div className="form-group">
                     <label>Categoria *</label>
-                    <input
-                      type="text"
+                    <select
                       required
                       value={formData.category}
                       onChange={(e) => setFormData({...formData, category: e.target.value})}
                       className="form-input"
-                      placeholder="es. Praline, Tavolette, etc."
-                    />
+                    >
+                      <option value="">Seleziona categoria...</option>
+                      {productCategories.map(cat => (
+                        <option key={cat} value={cat}>{cat}</option>
+                      ))}
+                    </select>
                   </div>
 
                   <div className="form-group">
