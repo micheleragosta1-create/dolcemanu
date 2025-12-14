@@ -156,7 +156,7 @@ export default function ShopPage() {
     if (ordine === "nome_asc") out.sort((a, b) => a.name.localeCompare(b.name))
     
     return out
-  }, [prodotti, ordine, chocolateType, collection, priceRange, boxFormat, showOnlyNew, showOnlyBestseller, showOnlyDiscount])
+  }, [prodotti, ordine, category, chocolateType, collection, priceRange, boxFormat, showOnlyNew, showOnlyBestseller, showOnlyDiscount])
 
   const totalePagine = Math.max(1, Math.ceil(filtrati.length / perPagina))
   const paginaSicura = Math.min(Math.max(1, pagina), totalePagine)
