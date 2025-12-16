@@ -25,9 +25,9 @@ export default function SEO() {
 
   return (
     <>
-      <link rel="icon" href="/images/ondedicacao.png" />
-      <link rel="apple-touch-icon" href="/images/ondedicacao.png" />
-      <meta name="theme-color" content="#5e3621" />
+      <link rel="icon" href="/icon" />
+      <link rel="apple-touch-icon" href="/apple-icon" />
+      <meta name="theme-color" content="#E5A922" />
       {/* GA4 (env) */}
       {process.env.NEXT_PUBLIC_GA_ID && (
         <>

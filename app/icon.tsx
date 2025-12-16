@@ -9,18 +9,21 @@ export default function Icon() {
     (
       <div
         style={{
-          fontSize: 24,
-          background: '#0b2a42',
           width: '100%',
           height: '100%',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          color: 'white',
-          borderRadius: '50%',
+          background: 'transparent',
         }}
       >
-        OC
+        <svg width="32" height="32" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="256" cy="256" rx="120" ry="180" fill="#E5A922"/>
+          <ellipse cx="200" cy="256" rx="15" ry="160" fill="#FFF"/>
+          <ellipse cx="256" cy="256" rx="15" ry="180" fill="#FFF"/>
+          <ellipse cx="312" cy="256" rx="15" ry="160" fill="#FFF"/>
+          <rect x="236" y="80" width="40" height="30" rx="5" fill="#B8860B"/>
+        </svg>
       </div>
     ),
     {
