@@ -15,6 +15,7 @@ export const metadata: Metadata = {
   description: 'Cioccolatini artigianali di alta qualità dalla Costiera Amalfitana. Esperienza stellata, ingredienti premium.',
   openGraph: {
     type: 'website',
+    siteName: 'Onde di Cacao',
     title: 'Onde di Cacao',
     description: 'Cioccolatini artigianali premium dalla Costiera Amalfitana',
     url: '/',
