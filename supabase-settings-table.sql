@@ -52,3 +52,5 @@ CREATE TRIGGER trigger_update_settings_timestamp
 -- ✅ Verifica
 SELECT * FROM site_settings;
 
+
+
