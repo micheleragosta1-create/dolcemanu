@@ -246,9 +246,11 @@ export function useAdmin() {
       if (error) throw error
       
       // Aggiorna la lista utenti
-      setUsers(prev => prev.map(user => 
-        user.user_id === userId ? { ...user, role: newRole } : user
-      ))
+      // Gestisce sia user.id che user.user_id per compatibilità
+      setUsers(prev => prev.map(user => {
+        const currentUserId = user.id || user.user_id
+        return currentUserId === userId ? { ...user, role: newRole } : user
+      }))
       
       return { data, error: null }
     } catch (error: any) {
