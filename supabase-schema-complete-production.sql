@@ -322,6 +322,8 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- Funzione RPC per aggiornare ruolo utente (solo super_admin)
 CREATE OR REPLACE FUNCTION update_user_role(target_user_id UUID, new_role VARCHAR)
 RETURNS BOOLEAN AS $$
+DECLARE
+  rows_affected INTEGER;
 BEGIN
   -- Solo super_admin può modificare i ruoli
   IF get_user_role(auth.uid()) != 'super_admin' THEN
@@ -333,12 +335,30 @@ BEGIN
     RAISE EXCEPTION 'Cannot modify your own role';
   END IF;
   
+  -- Verifica che il nuovo ruolo sia valido
+  IF new_role NOT IN ('user', 'admin', 'super_admin') THEN
+    RAISE EXCEPTION 'Invalid role: must be user, admin, or super_admin';
+  END IF;
+  
+  -- Esegui l'INSERT/UPDATE
   INSERT INTO user_roles (user_id, role)
   VALUES (target_user_id, new_role)
   ON CONFLICT (user_id) 
   DO UPDATE SET role = new_role, updated_at = NOW();
   
-  RETURN TRUE;
+  -- Verifica quante righe sono state modificate
+  GET DIAGNOSTICS rows_affected = ROW_COUNT;
+  
+  -- Log per debug
+  RAISE NOTICE 'Update user role: user_id=%, new_role=%, rows_affected=%', 
+    target_user_id, new_role, rows_affected;
+  
+  -- Restituisci TRUE solo se almeno una riga è stata modificata
+  IF rows_affected > 0 THEN
+    RETURN TRUE;
+  ELSE
+    RAISE EXCEPTION 'Failed to update user role: no rows affected';
+  END IF;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -490,6 +510,9 @@ CREATE POLICY "Users can create order items for their orders" ON order_items
 
 DROP POLICY IF EXISTS "User roles are viewable by admins" ON user_roles;
 DROP POLICY IF EXISTS "User roles are manageable by super_admins" ON user_roles;
+DROP POLICY IF EXISTS "User roles insertable by super_admins" ON user_roles;
+DROP POLICY IF EXISTS "User roles updatable by super_admins" ON user_roles;
+DROP POLICY IF EXISTS "User roles deletable by super_admins" ON user_roles;
 
 -- Solo admin possono vedere i ruoli
 CREATE POLICY "User roles are viewable by admins" ON user_roles
@@ -497,9 +520,22 @@ CREATE POLICY "User roles are viewable by admins" ON user_roles
     get_user_role(auth.uid()) IN ('admin', 'super_admin')
   );
 
--- Solo super_admin possono modificare ruoli
-CREATE POLICY "User roles are manageable by super_admins" ON user_roles
-  FOR ALL USING (
+-- Policy separate per ogni operazione (più granulari)
+-- INSERT: solo super_admin
+CREATE POLICY "User roles insertable by super_admins" ON user_roles
+  FOR INSERT WITH CHECK (
+    get_user_role(auth.uid()) = 'super_admin'
+  );
+
+-- UPDATE: solo super_admin
+CREATE POLICY "User roles updatable by super_admins" ON user_roles
+  FOR UPDATE 
+  USING (get_user_role(auth.uid()) = 'super_admin')
+  WITH CHECK (get_user_role(auth.uid()) = 'super_admin');
+
+-- DELETE: solo super_admin
+CREATE POLICY "User roles deletable by super_admins" ON user_roles
+  FOR DELETE USING (
     get_user_role(auth.uid()) = 'super_admin'
   );
 
