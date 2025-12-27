@@ -108,16 +108,30 @@ export default function AdminUsers() {
     if (!selectedUser) return
 
     const userId = selectedUser.id || selectedUser.user_id
+    console.log('handleRoleChange: userId=', userId, 'newRole=', newRole)
     setUpdatingUser(userId)
     try {
       const result = await changeUserRole(userId, newRole as any)
+      console.log('Risultato changeUserRole:', result)
+      
       if (result && result.error) {
         alert(`Errore: ${result.error}`)
       } else {
+        // Aggiorna lo stato locale del popup
         setSelectedUser({ ...selectedUser, role: newRole })
-        fetchAllUsers()
+        
+        // Aspetta un momento per dare tempo al database di aggiornarsi
+        // prima di fare il refresh
+        setTimeout(() => {
+          console.log('Ricaricamento lista utenti...')
+          fetchAllUsers()
+        }, 500)
+        
         alert('Ruolo aggiornato con successo!')
       }
+    } catch (error) {
+      console.error('Errore in handleRoleChange:', error)
+      alert(`Errore: ${error}`)
     } finally {
       setUpdatingUser(null)
     }

@@ -217,11 +217,17 @@ export function useAdmin() {
           .order('created_at', { ascending: false })
         
         if (!rolesError && rolesData) {
+          console.log('Utenti recuperati da user_roles (fallback):', rolesData.length)
           setUsers(rolesData || [])
         } else {
+          console.error('Errore anche nel fallback:', rolesError)
           setUsers([])
         }
       } else {
+        console.log('Utenti recuperati da get_all_users():', data?.length, 'utenti')
+        if (data && data.length > 0) {
+          console.log('Esempio primo utente:', data[0])
+        }
         setUsers(data || [])
       }
       
@@ -242,18 +248,33 @@ export function useAdmin() {
     if (!isSuperAdmin) return { error: 'Solo i super admin possono modificare i ruoli' }
     
     try {
+      console.log('Cambio ruolo per utente:', userId, 'nuovo ruolo:', newRole)
       const { data, error } = await updateUserRole(userId, newRole)
-      if (error) throw error
       
-      // Aggiorna la lista utenti
+      if (error) {
+        console.error('Errore updateUserRole:', error)
+        throw error
+      }
+      
+      console.log('Ruolo aggiornato nel DB, risultato:', data)
+      
+      // Aggiorna immediatamente lo stato locale
       // Gestisce sia user.id che user.user_id per compatibilità
-      setUsers(prev => prev.map(user => {
-        const currentUserId = user.id || user.user_id
-        return currentUserId === userId ? { ...user, role: newRole } : user
-      }))
+      setUsers(prev => {
+        const updated = prev.map(user => {
+          const currentUserId = user.id || user.user_id
+          if (currentUserId === userId) {
+            console.log('Aggiornando utente nello stato:', currentUserId, 'da', user.role, 'a', newRole)
+            return { ...user, role: newRole }
+          }
+          return user
+        })
+        return updated
+      })
       
       return { data, error: null }
     } catch (error: any) {
+      console.error('Errore in changeUserRole:', error)
       return { error: error.message }
     }
   }, [isSuperAdmin])

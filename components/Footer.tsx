@@ -29,7 +29,7 @@ export default function Footer() {
           <h3>Contatti</h3>
           <ul>
             <li>Email: info@ondedicacao.com</li>
-            <li>Tel: +39 089 123 456</li>
+            <li>Tel: +39 331 980 3189</li>
             <li>Costiera Amalfitana, Italia</li>
           </ul>
           

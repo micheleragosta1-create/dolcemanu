@@ -4,6 +4,7 @@
 -- Soluzione: Usare LEFT JOIN per mostrare tutti gli utenti da auth.users
 
 -- Ricrea la funzione get_all_users() con LEFT JOIN
+-- IMPORTANTE: Il campo viene chiamato 'user_id' per mantenere compatibilità
 CREATE OR REPLACE FUNCTION get_all_users()
 RETURNS TABLE (
   user_id UUID,
@@ -17,9 +18,10 @@ BEGIN
     RAISE EXCEPTION 'Access denied: admin privileges required';
   END IF;
   
+  -- Usa LEFT JOIN per mostrare tutti gli utenti, anche senza ruolo in user_roles
   RETURN QUERY
   SELECT 
-    u.id,
+    u.id as user_id,
     u.email::TEXT,
     COALESCE(ur.role, 'user')::VARCHAR as role,
     u.created_at
