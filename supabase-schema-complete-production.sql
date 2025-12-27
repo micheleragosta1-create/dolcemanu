@@ -293,7 +293,7 @@ BEGIN
   -- Usa LEFT JOIN per mostrare tutti gli utenti, anche quelli senza record in user_roles
   RETURN QUERY
   SELECT 
-    u.id,
+    u.id as user_id,
     u.email::TEXT,
     COALESCE(ur.role, 'user')::VARCHAR as role,
     u.created_at

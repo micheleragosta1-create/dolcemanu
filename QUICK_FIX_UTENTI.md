@@ -74,23 +74,46 @@ SELECT COUNT(*) as utenti_totali FROM auth.users;
 SELECT * FROM get_all_users();
 ```
 
-## ✅ Fine!
+## ✅ Cosa Fare Ora
 
-I problemi sono risolti:
+### 1️⃣ Applica lo Script SQL
+Esegui lo script SQL aggiornato nel SQL Editor di Supabase (vedi sopra)
+
+### 2️⃣ Deploy del Codice
+```bash
+git add .
+git commit -m "Fix: Visualizzazione e aggiornamento ruoli utenti"
+git push
+```
+
+### 3️⃣ Test con Debug
+Dopo il deploy:
+
+1. Apri la dashboard admin
+2. **Apri la Console del browser** (F12 → Console)
+3. Vai alla sezione Utenti
+4. Prova a cambiare il ruolo di un utente
+5. **Osserva i log nella console** per vedere cosa succede
+
+## 🚨 Se il Problema Persiste
+
+Ho aggiunto **logging dettagliato** per identificare il problema:
+
+- Consulta `DEBUG_CAMBIO_RUOLO.md` per una guida completa al debug
+- I log nella console del browser ti mostreranno esattamente dove si blocca
+- Posso aiutarti a interpretare i log se necessario
+
+## ✅ Risultati Attesi
+
+Dopo aver applicato tutte le correzioni:
 - ✅ La dashboard mostra tutti gli utenti (non solo admin)
-- ✅ Il cambio ruolo aggiorna correttamente lo stato dell'interfaccia
+- ✅ Il cambio ruolo aggiorna il database
+- ✅ L'interfaccia si aggiorna dopo 500ms
 - ✅ Il conteggio degli utenti è accurato
-
-### Test Finale
-
-Dopo aver applicato la correzione SQL e ricaricato la pagina:
-
-1. Vai alla sezione **Utenti** nella dashboard admin
-2. Dovresti vedere tutti gli account registrati
-3. Prova a cambiare il ruolo di un utente
-4. Il ruolo dovrebbe aggiornarsi immediatamente nella lista
 
 ---
 
-📖 Per maggiori dettagli tecnici, consulta: `FIX_VISUALIZZAZIONE_UTENTI.md`
+📖 **Guide disponibili**:
+- `FIX_VISUALIZZAZIONE_UTENTI.md` - Documentazione tecnica completa
+- `DEBUG_CAMBIO_RUOLO.md` - Guida al debug con log dettagliati
 

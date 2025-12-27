@@ -24,13 +24,13 @@ export interface OrderData {
 
 // Dati aziendali
 const COMPANY_INFO = {
-  name: 'Onde di Cacao',
+  name: 'Onde di Cacao di Emanuela Napolitano',
   subtitle: 'Cioccolatini Artigianali dalla Costiera Amalfitana',
   address: 'Via Esempio 123',
   city: '84011 Amalfi (SA)',
   country: 'Italia',
   vatNumber: 'P.IVA: 12345678901',
-  phone: 'Tel: +39 089 123456',
+  phone: 'Tel: +39 331 980 3189',
   email: 'info@ondedicacao.com'
 }
 

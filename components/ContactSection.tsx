@@ -87,7 +87,7 @@ export default function ContactSection() {
               <div className="contact-info-overlay">
                 <div className="contact-item-overlay">
                   <Phone size={18} />
-                  <span>+39 089 123 456</span>
+                  <span>+39 331 980 3189</span>
                 </div>
                 <div className="contact-item-overlay">
                   <Mail size={18} />
