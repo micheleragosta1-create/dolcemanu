@@ -1,6 +1,6 @@
 import Header from '@/components/Header'
 import HeroVideo from '@/components/HeroVideo'
-import CalendarioAvventoBanner from '@/components/CalendarioAvventoBanner'
+// import CalendarioAvventoBanner from '@/components/CalendarioAvventoBanner'
 import ProductCarousel from '@/components/ProductCarousel'
 import ChocoShowcase from '@/components/ChocoShowcase'
 import Storia from '@/components/Storia'
@@ -19,7 +19,7 @@ export default function Home() {
       </Suspense>
       <Header />
       <HeroVideo />
-      <CalendarioAvventoBanner />
+      {/* <CalendarioAvventoBanner /> */}
       <ProductCarousel />
       <ChocoShowcase />
       <Storia />
